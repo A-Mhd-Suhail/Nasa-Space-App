@@ -4,6 +4,7 @@ import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber"
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { COVERAGE_LAT, R_MOON_M } from "@/lib/lunar";
+import { setPerfScene } from "../shell/PerfPanel";
 import { type HeightMap, heightAt, MOON_RADIUS_M, reliefSphere } from "./globe-math";
 
 /**
@@ -291,6 +292,9 @@ export function GlobeScene({
   }, [focusKey]);
   const sunPos = sun ? toScene(sun.lat, sun.lon, 20) : null;
   const mode = lightMode === "sun" && !sunPos ? "relief" : lightMode;
+  useEffect(() => {
+    setPerfScene(autoRotate ? "home-globe" : "globe", { reliefLod: relief.shown ?? "loading", meshSegments: relief.shown ? RELIEF_FILES[relief.shown].seg.join("x") : "160x80", exaggeration, lighting: mode });
+  }, [relief.shown, exaggeration, mode, autoRotate]);
   const useLight = mode === "sun";
   const btn = "rounded-[4px] bg-[rgb(28_26_23/0.8)] px-2 py-1 text-[11px] text-[#efe9dd] hover:bg-[rgb(28_26_23/0.95)]";
   return (

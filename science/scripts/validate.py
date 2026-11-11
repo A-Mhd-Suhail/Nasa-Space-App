@@ -65,8 +65,14 @@ for r in rep["records"]:
     )
 lines += [
     "",
+    "## How to read the LOLA illumination rows",
+    "- The LOLA team's products (Mazarico et al. 2011) average Sun visibility over an 18.6-year cycle at 120 m, from the surface; MoonNav samples 2 years every 6 h with SPICE geometry and a LOLA horizon, 2 m above the surface. Solar geometry at the Moon repeats yearly (the 1.54 deg obliquity does not change with the 18.6-year nodal cycle), so 2 years is representative for the Sun, not for the Earth, which is why Earth visibility is not compared.",
+    "- Rim and ridge points can change by 0.5 between adjacent 120 m pixels. For named sites the 3x3 (360 m) neighbourhood range is reported next to the centre pixel; the `ldem240m` value shows how much the 5/20/40 m near-field terrain changes the result.",
+    "- Tolerances were fixed before the comparison was run and were not tuned to the results.",
+    "",
     "## Not compared",
-    "- **SVS 4930 rendered illumination frames (pixels):** the frames are published as images without a machine-readable projection/extent, so pixel-level lit/shadow comparison is not performed. The numeric values stamped on those frames (sub-solar point, sub-Earth point, distance) are compared above through the SVS Dial-a-Moon API.",
+    "- **SVS 4930 rendered illumination frames (pixels):** the frames are published as images without a machine-readable projection, extent or time-to-pixel registration, so a pixel-level lit/shadow comparison would mostly measure registration error. Instead, (1) the numeric values stamped on those frames (sub-solar point, sub-Earth point, distance, RA/Dec, apparent diameter, illuminated fraction) are compared above through the SVS Dial-a-Moon API, and (2) MoonNav's lit/shadow output is compared with the LOLA team's machine-readable, georeferenced illumination rasters (rows `lola-*`).",
+    "- **Earth visibility vs AVGVISIB_EARTH:** needs a full 18.6-year run per point; not part of the routine suite.",
     "",
 ]
 (ROOT / "docs/VALIDATION_REPORT.md").write_text("\n".join(lines))

@@ -71,7 +71,7 @@ Requirement-to-codebase matrix against `Lunar_Landing_Site_Navigator_Feature_Che
 |---|---|---|
 | 1. Whole-Moon LOLA relief | COMPLETED AND TESTED | `LDEM_16` → 4/8 px/deg maps; displaced globe geometry with LOD (1° / ⅓° meshes by camera distance), true scale by default, labelled exaggeration; markers/picks on the relief surface; GPU geometry disposed on change; unit tests (`features.test.ts`), E2E `planner.spec.ts` |
 | 2. High-resolution terrain | COMPLETED AND TESTED | PDS `LDEM_875S_5M` / `LDEM_85S_20M` / `LDEM_80S_40M` via byte-range tiles, `lola-multires-v1` composite in analyses, hazards, suitability; 17 sites ingested; validation vs 240 m (median 1.6–1.9 m); pytest `test_screening_and_tiles.py` |
-| 3. Validation framework | COMPLETED AND TESTED | `validation.py` + `npm run science:validate` → `docs/VALIDATION_REPORT.md`, `/validation`; 38 pass / 0 fail / 1 unavailable; SVS pixel comparison not performed (no machine-readable projection) |
+| 3. Validation framework | COMPLETED AND TESTED | `validation.py` + `npm run science:validate` → `docs/VALIDATION_REPORT.md`, `/validation`; 52 pass / 0 fail / 1 unavailable (2026-11-12); SVS pixel comparison not performed (no machine-readable projection) |
 | 4. Dynamic suitability map | COMPLETED AND TESTED | `/app/planner` suitability grid + site × date matrix for any 75–90°S point and window; hard constraints (missing → unknown), explainable score |
 | 5. Terrain hazard screening | COMPLETED AND TESTED | slope, roughness, relief, rim/ridge, configurable thresholds, landing-zone verdict; synthetic-terrain tests (exact slope) |
 | 6. Sensitivity analysis | COMPLETED AND TESTED | location grid + date shifts, computed alternatives only |
@@ -81,7 +81,21 @@ Requirement-to-codebase matrix against `Lunar_Landing_Site_Navigator_Feature_Che
 | Demo access | COMPLETED AND TESTED | "Continue with demo" on `/login` → isolated 24 h account seeded with the precomputed analyses; admin denied, credential changes and invitations blocked; second demo cannot read the first (E2E) |
 
 ### Remaining limitations
-- High-resolution tiles are fetched on demand (first use at a new area can take 1–2 min for 5 m data); offline machines fall back to 240 m and say so.
+- High-resolution tiles are fetched on demand (first use at a new 5 m area ≈ 8 s since the 2026-11-12 parallel fetch; was ~2 min); offline machines fall back to 240 m and say so.
 - Horizon far field and the suitability grid use 240 m terrain; only the near field (≤ 6 km) and terrain stencils use 5/20/40 m.
 - SVS 4930 frames are not compared pixel-by-pixel; the SVS Dial-a-Moon tables currently end on 2026-12-31.
 - Hazard screening cannot see boulders or craters smaller than the DEM cell (5–40 m); it is screening, not certification.
+
+## Final 8 workstreams pass (2026-11-12)
+Full checklist with evidence and blockers: **`FINAL_8_WORKSTREAMS.md`**.
+
+| Workstream | Status |
+|---|---|
+| 1. GitHub push incl. CI | Blocked: the PAT lacks Contents write (HTTP 403). The CI job fixes are committed locally. |
+| 2. Vercel deployment | Blocked: no Vercel login/token or science host account. |
+| 3. Real SMTP email | Blocked: no SMTP/Resend credentials. `npm run mail:test` is ready. |
+| 4. SVS 4930 validation | Verified Complete (numeric). Pixel comparison is not data-feasible. 52 pass / 0 fail / 1 unavailable. |
+| 5. PSR map layer | Verified Complete: LOLA LPSR/AVGVISIB layers, point lookup, report row, tests. |
+| 6. FPS instrumentation | Verified Complete on Apple M5 / Chromium: perf panel, baseline JSON, tests. |
+| 7. High-res terrain use | Verified Complete: all planner tools, coverage preview, first use 112.5 s → 8.0 s. |
+| 8. Terrain limitations | Verified Complete: the limitation table in `KNOWN_LIMITATIONS.md` and the validation evidence. |

@@ -18,8 +18,10 @@ import hashlib
 import json
 import math
 import re
+import threading
 import time
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -33,6 +35,21 @@ from . import SOFTWARE_VERSION
 from .dem import REQUIRED_KEYS, DemValidationError, PolarDem, _num, parse_pds3_label
 
 TILE = 512
+FETCH_WORKERS = 6  # concurrent tile downloads (each tile = 4 range requests of 128 rows)
+_LOCKS_GUARD = threading.Lock()
+_TILE_LOCKS: dict[tuple[str, int, int], threading.Lock] = {}
+_FETCH_STATS = {"tiles": 0, "seconds": 0.0}  # running mean seconds per tile, for ETA estimates
+
+
+def _tile_lock(key: tuple[str, int, int]) -> threading.Lock:
+    with _LOCKS_GUARD:
+        return _TILE_LOCKS.setdefault(key, threading.Lock())
+
+
+def seconds_per_tile() -> float | None:
+    return _FETCH_STATS["seconds"] / _FETCH_STATS["tiles"] if _FETCH_STATS["tiles"] else None
+
+
 ROWS_PER_REQUEST = 128
 USER_AGENT = f"MoonNav/{SOFTWARE_VERSION} (NASA Space Apps lunar site navigator; research prototype)"
 PDS_POLAR = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img"
@@ -211,7 +228,17 @@ class TiledPolarDem:
         return arr
 
     def fetch_tile(self, tr: int, tc: int, client: httpx.Client) -> dict[str, Any]:
-        """Download one tile with multipart range requests and store it with provenance."""
+        """Download one tile (deduplicated across concurrent requests) and store it with provenance."""
+        with _tile_lock((self.product_id, tr, tc)):
+            if self.has_tile(tr, tc):  # another request fetched it while we waited
+                return {"productId": self.product_id, "tile": [tr, tc], "deduplicated": True}
+            t0 = time.time()
+            meta = self._fetch_tile_unlocked(tr, tc, client)
+            _FETCH_STATS["tiles"] += 1
+            _FETCH_STATS["seconds"] += time.time() - t0
+            return meta
+
+    def _fetch_tile_unlocked(self, tr: int, tc: int, client: httpx.Client) -> dict[str, Any]:
         r0, c0 = tr * TILE, tc * TILE
         if r0 >= self.lines or c0 >= self.samples or r0 < 0 or c0 < 0:
             raise ValueError("tile outside image")
@@ -253,31 +280,62 @@ class TiledPolarDem:
         cs = range(max(0, int((col[0] - rpx) // TILE)), min((self.samples - 1) // TILE, int((col[0] + rpx) // TILE)) + 1)
         return [(r, c) for r in rs for c in cs]
 
+    def coverage(self, lat: float, lon: float, radius_m: float) -> dict[str, Any]:
+        """Which tiles an operation needs here and how many are already cached (no network)."""
+        if not self.covers(lat):
+            return {"productId": self.product_id, "resolutionM": self.scale_m, "covered": False, "tiles": 0, "cached": 0, "missing": 0}
+        need = self.tiles_for_region(lat, lon, radius_m)
+        missing = sum(1 for t in need if not self.has_tile(*t))
+        spt = seconds_per_tile()
+        return {
+            "productId": self.product_id,
+            "resolutionM": self.scale_m,
+            "covered": True,
+            "tiles": len(need),
+            "cached": len(need) - missing,
+            "missing": missing,
+            "downloadMB": round(missing * TILE * TILE * 2 / 1e6, 1),
+            "estimatedSeconds": None if spt is None else round(missing * spt / FETCH_WORKERS, 1),
+        }
+
     def ensure_region(
         self, lat: float, lon: float, radius_m: float, client: httpx.Client | None = None, max_new_tiles: int = 64
     ) -> dict[str, Any]:
-        """Fetch missing tiles around a point (bounded). Returns a coverage summary."""
+        """Fetch missing tiles around a point, FETCH_WORKERS at a time (bounded). Returns a coverage summary."""
         if not self.covers(lat):
             return {"productId": self.product_id, "covered": False, "fetched": 0, "cached": 0, "missing": 0}
         need = self.tiles_for_region(lat, lon, radius_m)
-        todo = [t for t in need if not self.has_tile(*t)]
+        todo = [t for t in need if not self.has_tile(*t)][:max_new_tiles]
         own = client is None
-        c = client or httpx.Client(timeout=120, headers={"User-Agent": USER_AGENT}, follow_redirects=True)
-        fetched = 0
+        c = client or httpx.Client(
+            timeout=120, headers={"User-Agent": USER_AGENT}, follow_redirects=True, limits=httpx.Limits(max_connections=FETCH_WORKERS)
+        )
+        errors: list[str] = []
+        t0 = time.time()
         try:
-            for t in todo[:max_new_tiles]:
-                self.fetch_tile(*t, client=c)
-                fetched += 1
+            if todo:
+                with ThreadPoolExecutor(max_workers=min(FETCH_WORKERS, len(todo))) as pool:
+                    for fut in [pool.submit(self.fetch_tile, tr, tc, c) for tr, tc in todo]:
+                        try:
+                            fut.result()
+                        except (TileFetchError, OSError, httpx.HTTPError) as exc:
+                            errors.append(str(exc))
         finally:
             if own:
                 c.close()
+        still = [t for t in need if not self.has_tile(*t)]
+        if errors and len(still) == len(need):
+            raise TileFetchError(errors[0])
         return {
             "productId": self.product_id,
+            "resolutionM": self.scale_m,
             "covered": True,
             "tiles": len(need),
-            "fetched": fetched,
-            "cached": len(need) - len(todo),
-            "missing": max(0, len(todo) - max_new_tiles),
+            "fetched": len(todo) - len(errors),
+            "cached": len(need) - len(still),
+            "missing": len(still),
+            "seconds": round(time.time() - t0, 1),
+            "errors": errors[:3],
         }
 
     # --- sampling ---------------------------------------------------------

@@ -1,7 +1,7 @@
 "use client";
 import { Play } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EXPLAIN } from "@/lib/explain";
 import { AdvancedOnly } from "../shell/ModeToggle";
 import { Button, Card, CardHeader, cx, DataTag, Field, InfoTip, Input, Notice, Select } from "../ui";
@@ -28,6 +28,22 @@ type SensResult = {
   resolution: Record<string, unknown>;
 };
 type MatrixResult = { rows: { key: string; latitudeDeg: number; longitudeEastDeg: number; cells: (Cell & { startUtc: string })[] }[]; startsUtc: string[]; hours: number; method: string };
+
+type TerrainData = { productId: string; resolutionM?: number | null; status?: string; fetched?: number; missing?: number; seconds?: number; reason?: string | null; reasons?: string[] }[];
+type Coverage = { covered: boolean; baseResolutionM: number; finestAvailableResolutionM: number | null; layers: { productId: string; resolutionM: number; covered: boolean; tiles: number; cached: number; missing: number; downloadMB?: number; estimatedSeconds?: number | null }[] };
+
+/** Which terrain resolution a result actually used, including any fallback to coarser data. */
+function TerrainDataNote({ data }: { data?: TerrainData }) {
+  if (!data) return null;
+  if (data.length === 0) return <p className="text-xs text-muted" data-testid="terrain-data">Terrain: 240 m LOLA (no higher-resolution product covers this point).</p>;
+  const fb = data.filter((d) => d.status === "fallback" || d.status === "partial");
+  return (
+    <p className={cx("text-xs", fb.length ? "text-warn" : "text-muted")} data-testid="terrain-data">
+      Terrain used: {data.map((d) => `${d.resolutionM ?? "?"} m ${d.status === "ok" || d.status === "cached-only" ? "✓" : d.status === "fallback" ? "(fallback)" : d.status === "partial" ? "(partial)" : ""}${d.fetched ? ` · ${d.fetched} tiles downloaded${d.seconds ? ` in ${d.seconds} s` : ""}` : ""}`).join(" · ")}; far field and gaps use 240 m.
+      {fb.map((d) => (d.reason ?? d.reasons?.join("; ")) && <span key={d.productId} className="block">{d.resolutionM} m: {d.reason ?? d.reasons?.join("; ")}</span>)}
+    </p>
+  );
+}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -96,6 +112,8 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
   const [cfg, setCfg] = useState({ minSunPct: "30", minDtePct: "20", maxSlopeDeg: "15", maxRoughnessM: "1.5", maxUnknownPct: "5", maxDarkHours: "", antennaMaskDeg: "" });
   const [w, setW] = useState({ sun: 35, dte: 30, slope: 20, roughness: 10, solarElevation: 5 });
   const [busy, setBusy] = useState<string | null>(null);
+  const [fetchHighRes, setFetchHighRes] = useState(true);
+  const [cov, setCov] = useState<{ key: string; data: Coverage | null } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const site = useMemo(() => {
@@ -108,6 +126,23 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
     return { lat: la, lon: lo, label: `${Math.abs(la).toFixed(3)}°S ${(((lo % 360) + 360) % 360).toFixed(3)}°E` };
   }, [siteKey, custom, sites]);
   const siteError = siteKey === "custom" && site && (site.lat < -90 || site.lat > -75) ? "Latitude must be between −90° and −75° (LOLA polar terrain coverage)" : siteKey === "custom" && site && Math.abs(site.lon) > 360 ? "Longitude must be within ±360° (east-positive)" : null;
+  const covKey = site && !siteError ? `${site.lat.toFixed(4)},${site.lon.toFixed(4)}` : "";
+  useEffect(() => {
+    if (!covKey) return;
+    const [la, lo] = covKey.split(",");
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      fetch(`/api/v1/terrain/coverage?lat=${la}&lon=${lo}&radiusM=1620`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => setCov({ key: covKey, data: d }))
+        .catch(() => {});
+    }, 300);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [covKey, busy]);
+  const coverage = cov && cov.key === covKey ? cov.data : null;
   const startUtc = isoUtc(date, time);
   const hours = Number(days) * 24;
   const endUtc = useMemo(() => {
@@ -144,19 +179,19 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
       const base = { latitudeDeg: site.lat, longitudeEastDeg: site.lon };
       if (what === "suitability") {
         const n = Number(gridSize);
-        const r = await post<GridResult>("/api/v1/suitability/grid", { ...base, startUtc, endUtc, stepSeconds: Number(step), gridSize: n, halfSizeM: n === 1 ? 0 : Number(extentKm) * 1000, config: config() });
+        const r = await post<GridResult>("/api/v1/suitability/grid", { ...base, startUtc, endUtc, stepSeconds: Number(step), gridSize: n, halfSizeM: n === 1 ? 0 : Number(extentKm) * 1000, config: config(), fetchHighRes });
         setGrid(r);
         setSel({ row: (n - 1) / 2, col: (n - 1) / 2 });
       } else if (what === "hazards") {
-        const r = await post<HazardResult>("/api/v1/terrain/hazards", { ...base, halfSizeM: Number(hazHalf), ...Object.fromEntries(Object.entries(hazTh).map(([k, v]) => [k, Number(v)])) });
+        const r = await post<HazardResult>("/api/v1/terrain/hazards", { ...base, halfSizeM: Number(hazHalf), ...Object.fromEntries(Object.entries(hazTh).map(([k, v]) => [k, Number(v)])), fetchHighRes });
         setHaz(r);
         setHazSel({ row: Math.floor(r.grid.size / 2), col: Math.floor(r.grid.size / 2) });
       } else if (what === "sensitivity") {
-        setSens(await post<SensResult>("/api/v1/sensitivity", { ...base, startUtc, hours, stepSeconds: Number(step), spacingM: Number(sensSpacing), gridSize: 5, config: config() }));
+        setSens(await post<SensResult>("/api/v1/sensitivity", { ...base, startUtc, hours, stepSeconds: Number(step), spacingM: Number(sensSpacing), gridSize: 5, config: config(), fetchHighRes }));
       } else {
         const starts = mxStarts.split(/[,\s]+/).filter(Boolean).map((d) => (d.includes("T") ? d : `${d}T${time}:00Z`));
         const chosen = mxSites.map((k) => (k === "custom" && site ? { key: site.label, latitudeDeg: site.lat, longitudeEastDeg: site.lon } : sites.find((s) => s.key === k))).filter(Boolean) as { key?: string; name?: string; latitudeDeg: number; longitudeEastDeg: number }[];
-        const r = await post<MatrixResult>("/api/v1/suitability/matrix", { sites: chosen.map((s) => ({ key: s.name ?? s.key, latitudeDeg: s.latitudeDeg, longitudeEastDeg: s.longitudeEastDeg })), startsUtc: starts, hours, stepSeconds: Number(step), config: config() });
+        const r = await post<MatrixResult>("/api/v1/suitability/matrix", { sites: chosen.map((s) => ({ key: s.name ?? s.key, latitudeDeg: s.latitudeDeg, longitudeEastDeg: s.longitudeEastDeg })), startsUtc: starts, hours, stepSeconds: Number(step), config: config(), fetchHighRes });
         setMatrix(r);
         setMxSel(null);
       }
@@ -222,6 +257,20 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
               </div>
             )}
             {siteError && <p role="alert" className="text-xs text-bad">{siteError}</p>}
+            <div className="rounded-md border border-line bg-panel-2 p-2.5 text-xs text-text-2" data-testid="coverage-box" aria-live="polite">
+              {!coverage ? "Checking high-resolution terrain coverage…" : !coverage.covered ? "Outside LOLA polar terrain coverage." : (() => {
+                const best = coverage.layers.find((l) => l.covered);
+                if (!best) return <>Best terrain here: <strong>240 m</strong> LOLA (no 5/20/40 m product covers this point).</>;
+                return (
+                  <>
+                    Best terrain here: <strong>{best.resolutionM} m</strong> LOLA ({best.cached}/{best.tiles} tiles cached around the site).
+                    {best.missing > 0 && <span className="block">First run downloads {best.missing} tile{best.missing === 1 ? "" : "s"} (~{best.downloadMB} MB) from NASA PDS{best.estimatedSeconds ? `, about ${Math.max(1, Math.round(best.estimatedSeconds))} s` : ""}; later runs are instant.</span>}
+                  </>
+                );
+              })()}
+              <label className="mt-1.5 flex items-center gap-2"><input type="checkbox" checked={fetchHighRes} onChange={(e) => setFetchHighRes(e.target.checked)} data-testid="fetch-highres" /> Download missing high-resolution tiles</label>
+              {!fetchHighRes && <span className="mt-1 block text-warn">Fast mode: only cached tiles are used; elsewhere results fall back to 240 m and say so.</span>}
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Start date (UTC)" htmlFor="pl-date"><Input id="pl-date" type="date" min="2023-01-01" max="2049-12-31" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
               <Field label="Start time (UTC)" htmlFor="pl-time"><Input id="pl-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
@@ -283,6 +332,7 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
                       </div>
                     )}
                     {grid.bestPassing.length > 0 && <p className="text-xs text-text-2">Highest-scoring passing cells: {grid.bestPassing.map((b) => <button key={`${b.row}-${b.col}`} type="button" className="mr-2 underline" onClick={() => setSel({ row: b.row, col: b.col })}>{b.score.toFixed(1)} at ({b.row + 1},{b.col + 1})</button>)}</p>}
+                    <TerrainDataNote data={(grid as GridResult & { terrainData?: TerrainData }).terrainData} />
                     <AdvancedOnly><p className="text-xs text-muted">{grid.method}</p></AdvancedOnly>
                     <p className="text-xs text-muted">{grid.disclaimer}</p>
                   </div>
@@ -366,6 +416,7 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
                       <p className="num rounded border border-line p-2 text-xs">Selected cell: height {fmt(haz.heightM[hazSel.row][hazSel.col], 1, " m")} · slope {fmt(haz.slopeDeg[hazSel.row][hazSel.col], 2, "°")} · roughness {fmt(haz.roughnessM[hazSel.row][hazSel.col], 2, " m")} · class {["unknown", "within thresholds", "caution", "exceeds"][haz.hazardClass[hazSel.row][hazSel.col] + 1]}{haz.rimRidge[hazSel.row][hazSel.col] ? " · rim/ridge" : ""}</p>
                     )}
                     <AdvancedOnly><p className="text-xs text-muted">{haz.method}</p></AdvancedOnly>
+                    <TerrainDataNote data={(haz as HazardResult & { terrainData?: TerrainData }).terrainData} />
                     <p className="text-xs text-muted">{haz.disclaimer}</p>
                   </div>
                 </div>
@@ -407,6 +458,7 @@ export function PlannerClient({ sites }: { sites: Site[] }) {
                       <tbody className="num">{sens.date.rows.map((r) => <tr key={r.dayShift} className={cx("border-t border-line", r.dayShift === 0 && "bg-accent-soft")}><td className="px-2 py-1">{r.dayShift > 0 ? "+" : ""}{r.dayShift} d</td><td className="px-2 py-1">{r.startUtc.slice(0, 16).replace("T", " ")}</td><td className="px-2 py-1">{fmt(r.sunHours, 1, " h")}</td><td className="px-2 py-1">{fmt(r.deltaSunHours, 1)}</td><td className="px-2 py-1">{fmt(r.dteHours, 1, " h")}</td><td className="px-2 py-1">{fmt(r.deltaDteHours, 1)}</td><td className={cx("px-2 py-1 uppercase", STATUS_CLS[r.status])}>{r.status}</td><td className="px-2 py-1">{r.score == null ? "—" : r.score.toFixed(1)}</td></tr>)}</tbody>
                     </table>
                   </div>
+                  <TerrainDataNote data={(sens as SensResult & { terrainData?: TerrainData }).terrainData} />
                   <p className="text-xs text-muted">Resolution: {Object.entries(sens.resolution).map(([k, v]) => `${k} ${String(v)}`).join(" · ")}</p>
                 </div>
               )}

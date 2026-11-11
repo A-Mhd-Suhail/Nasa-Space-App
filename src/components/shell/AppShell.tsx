@@ -3,6 +3,7 @@ import { currentWorkspace, listWorkspaces, type SessionUser } from "@/lib/dal";
 import { isDemoUser } from "@/lib/demo";
 import { MoonNavMark } from "./Mark";
 import { ModeToggle } from "./ModeToggle";
+import { PerfPanel, PerfToggle } from "./PerfPanel";
 import { AppSidebar, MobileAppNav } from "./AppNav";
 import { CommandPalette } from "./CommandPalette";
 import { DataStatus } from "./DataStatus";
@@ -25,6 +26,7 @@ export async function AppShell({ user, children }: { user: SessionUser; children
           </div>
           <div className="ml-auto flex items-center gap-2">
             <ModeToggle signedIn compact className="hidden lg:flex" />
+            <div className="hidden lg:block"><PerfToggle /></div>
             <CommandPalette />
             <DataStatus />
             <div className="hidden lg:block"><ThemeToggle /></div>
@@ -41,6 +43,7 @@ export async function AppShell({ user, children }: { user: SessionUser; children
           <main id="main" className="min-w-0 flex-1 px-4 pb-16 pt-7 sm:px-6 lg:px-10">{children}</main>
         </div>
       </div>
+      <PerfPanel />
     </Providers>
   );
 }

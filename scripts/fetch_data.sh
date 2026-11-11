@@ -59,6 +59,9 @@ for p in cat["products"]:
         continue
     path = pathlib.Path("data") / p["localPath"]
     if not path.exists():
+        if p.get("optional"):
+            print(f"SKIP {path} (optional; npm run data:illum)")
+            continue
         print(f"FAIL {path} (missing)")
         ok = False
         continue

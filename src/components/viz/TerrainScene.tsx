@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { HorizonData } from "@/lib/analysis-types";
+import { setPerfScene } from "../shell/PerfPanel";
 import { Swatch } from "../ui";
 
 export type TerrainPatch = { grid: number; halfSizeM: number; spacingM: number; siteHeightM: number; missingSamples: number; heights: string; frame: string; product: Record<string, unknown> };
@@ -84,6 +85,9 @@ export function TerrainScene({
   earth?: { az: number; el: number; state: string } | null;
   height?: number;
 }) {
+  useEffect(() => {
+    setPerfScene("site-terrain-patch", { patch: patch ? "loaded" : "loading", sun: !!sun, earth: !!earth });
+  }, [patch, sun, earth]);
   const [webgl] = useState<boolean>(() => {
     try {
       const c = document.createElement("canvas");

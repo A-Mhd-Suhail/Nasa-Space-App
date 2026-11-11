@@ -25,8 +25,10 @@
     "prod:local": "next build && next start -p 3100",
     "science:validate": "cd science && uv run python scripts/validate.py",
     "data:hires": "cd science && uv run python scripts/ingest_hires.py",
+    "data:illum": "cd science && uv run python scripts/fetch_illumination.py && uv run python scripts/build_illumination_layers.py",
     "data:relief": "cd science && uv run python scripts/build_global_relief.py",
-    "dev:web": "next dev -p 3100"
+    "dev:web": "next dev -p 3100",
+    "mail:test": "tsx --env-file=.env.local scripts/mail-test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1165.0",

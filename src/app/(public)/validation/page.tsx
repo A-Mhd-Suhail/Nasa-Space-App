@@ -24,7 +24,7 @@ export default function ValidationPage() {
     <div className="mx-auto max-w-[1240px] space-y-6 px-4 py-12 sm:px-6">
       <header className="max-w-3xl">
         <h1 className="font-display text-[clamp(2rem,1.4rem+2vw,3rem)] leading-tight">Scientific validation</h1>
-        <p className="mt-3 text-text-2">Reproducible comparisons of MoonNav&apos;s engine against NASA and JPL references: the SVS Dial-a-Moon / SVS 4930 values, the JPL Horizons API, NAIF SPICE time and frame identities, and independent NASA PDS LOLA products. Re-run with <code className="font-mono text-sm">npm run science:validate</code>.</p>
+        <p className="mt-3 text-text-2">Reproducible comparisons of MoonNav&apos;s engine against NASA and JPL references: the SVS Dial-a-Moon / SVS 4930 values, the JPL Horizons API, NAIF SPICE time and frame identities, independent NASA PDS LOLA products, and the LOLA teamthe JPL Horizons API, NAIF SPICE time and frame identities, and independent NASA PDS LOLA products.apos;s permanent-shadow and long-term sunlight maps (Mazarico et al. 2011). Re-run with <code className="font-mono text-sm">npm run science:validate</code>.</p>
       </header>
       {!rep ? <Notice tone="warn">No validation report has been generated on this server yet.</Notice> : (
         <>

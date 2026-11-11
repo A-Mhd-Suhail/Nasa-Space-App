@@ -22,6 +22,7 @@ const GlobeScene = dynamic(() => import("../viz/GlobeScene").then((m) => m.Globe
 
 type Site = { key: string; name: string; featureType: string; latitudeDeg: number; longitudeEastDeg: number; diameterKm: number | null; heightM: number | null; source: string; sourceUrl: string | null; note: string };
 type Point = { latitudeDeg: number; longitudeEastDeg: number; heightM: number | null; slopeDeg: number | null; covered: boolean; message: string | null };
+type Illum = { permanentShadow: boolean | null; averageSunVisibility: number | null; averageEarthVisibility: number | null; caveat: string };
 type Tab = "sun" | "earth" | "3d" | "region" | "globe";
 const TABS: [Tab, string][] = [["sun", "Sun & Power"], ["earth", "Earth & DTE"], ["3d", "Site 3D"], ["region", "Polar region 3D"], ["globe", "Global Moon"]];
 
@@ -31,7 +32,7 @@ export function ExploreClient({ sites, featured, window: win, initialSite, initi
   const [pointState, setPointState] = useState<{ key: string; data: Point | null; err: string | null } | null>(null);
   const [tab, setTab] = useState<Tab>((TABS.some(([k]) => k === initialTab) ? initialTab : "sun") as Tab);
   const [imagery, setImagery] = useState<ImageryStatus>("idle");
-  const [layers, setLayers] = useState<MapLayers>({ hillshade: true, imagery: false, feasibility: false, elevation: false, slope: false, graticule: true, sites: true, coverage: true, saved: true });
+  const [layers, setLayers] = useState<MapLayers>({ hillshade: true, imagery: false, feasibility: false, elevation: false, slope: false, psr: false, sunAverage: false, graticule: true, sites: true, coverage: true, saved: true });
   const [demoState, setDemoState] = useState<{ key: string; demo?: AnalysisResult; patch?: TerrainPatch } | null>(null);
   const [regional, setRegional] = useState<RegionalGrid | null>(null);
   const [saved, setSaved] = useState<SavedPoint[]>([]);
@@ -104,6 +105,18 @@ export function ExploreClient({ sites, featured, window: win, initialSite, initi
     if (!demo || !row || row.sunAzDeg == null || row.sunElDeg == null) return null;
     return { ...directionLatLon(demo.site.latitudeDeg, demo.site.longitudeEastDeg, row.sunAzDeg, row.sunElDeg), label: fmtUtc(row.utc) };
   }, [demo]);
+  const [illumState, setIllumState] = useState<{ key: string; d: Illum } | null>(null);
+  useEffect(() => {
+    if (!picked) return;
+    const key = `${picked.lat},${picked.lon}`;
+    const ctrl = new AbortController();
+    fetch(`/api/v1/illumination/point?lat=${picked.lat.toFixed(6)}&lon=${picked.lon.toFixed(6)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setIllumState({ key, d }))
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [picked]);
+  const illum = illumState && picked && illumState.key === `${picked.lat},${picked.lon}` ? illumState.d : null;
   const list = useMemo(() => sites.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()) || s.featureType.toLowerCase().includes(q.toLowerCase())), [sites, q]);
   const analyseHref = (path: string) => (signedIn ? path : `/login?next=${encodeURIComponent(path)}`);
   const saveHref = analyseHref(`/app/scenarios/new?site=${site?.key ?? ""}`);
@@ -152,6 +165,8 @@ export function ExploreClient({ sites, featured, window: win, initialSite, initi
               ["feasibility", "Feasibility"],
               ["elevation", "Elevation"],
               ["slope", "Slope"],
+              ["psr", "Permanent shadow (PSR)"],
+              ["sunAverage", "Long-term sunlight"],
               ["graticule", "Grid"],
               ["sites", "Named sites"],
               ...(signedIn ? ([["saved", "Saved locations"]] as const) : []),
@@ -170,6 +185,15 @@ export function ExploreClient({ sites, featured, window: win, initialSite, initi
             </p>
           )}
           {layers.feasibility && <FeasibilityPanel f={feas} />}
+          {(layers.psr || layers.sunAverage) && (
+            <div className="space-y-1.5 rounded-[6px] border border-line bg-panel px-3 py-2 text-xs text-muted" data-testid="illum-legend">
+              <div className="flex flex-wrap items-center gap-6">
+                {layers.psr && <span className="flex items-center gap-1.5"><span aria-hidden className="inline-block h-3 w-3 rounded-[2px] border border-[rgb(40,60,120)] bg-[rgb(60,92,176)] [background-image:repeating-linear-gradient(45deg,transparent_0_2px,rgba(255,255,255,0.35)_2px_3px)]" /> Permanently shadowed (source: LOLA team PSR map)</span>}
+                {layers.sunAverage && <Legend label="Average sunlight, 18.6 yr" from="0%" to="100%" stops={["#141628", "#3c326e", "#aa5a46", "#ebaf46", "#fff5c8"]} />}
+              </div>
+              <p>Source: LPSR / AVGVISIB_75S_120M_201608 (V1.05), LOLA team — Mazarico et al. 2011, NASA GSFC PGDA product 69 / PDS LOLA node. 120 m source, shown at 240 m (PSR cell shaded when ≥ 2 of 4 source pixels are permanent shadow); click a point for the exact 120 m value. Outside 75°S: no data. A PSR is not evidence of water ice and does not by itself make a nearby site unsafe.</p>
+            </div>
+          )}
           {(layers.elevation || layers.slope) && (
             <div className="flex flex-wrap gap-6 text-xs text-muted">
               {layers.elevation && <Legend label="Elevation" from="−6 km" to="+6 km" stops={["#2a2620", "#4e5448", "#7e8876", "#a99d84", "#d8c08a", "#faf5eb"]} />}
@@ -217,7 +241,11 @@ export function ExploreClient({ sites, featured, window: win, initialSite, initi
                 <dt className="text-muted">Longitude</dt><dd>{fmtLon(picked.lon)}</dd>
                 <dt className="text-muted">Height</dt><dd>{point?.heightM != null ? `${point.heightM.toFixed(1)} m` : "—"}</dd>
                 <dt className="text-muted">Slope (480 m)</dt><dd>{point?.slopeDeg != null ? `${point.slopeDeg.toFixed(1)}°` : "—"}</dd>
+                <dt className="text-muted">Permanent shadow</dt><dd data-testid="point-psr">{illum ? (illum.permanentShadow == null ? <span className="text-unknown">unknown</span> : illum.permanentShadow ? "yes (PSR)" : "no") : "…"}</dd>
+                <dt className="text-muted">Sunlight, 18.6-yr avg</dt><dd>{illum ? (illum.averageSunVisibility == null ? <span className="text-unknown">unknown</span> : `${(illum.averageSunVisibility * 100).toFixed(1)}%`) : "…"}</dd>
+                <dt className="text-muted">Earth visible, avg</dt><dd>{illum ? (illum.averageEarthVisibility == null ? <span className="text-unknown">unknown</span> : `${(illum.averageEarthVisibility * 100).toFixed(1)}%`) : "…"}</dd>
               </dl>
+              {illum && <p className="adv-only px-5 pb-2 text-[11px] text-muted">Long-term values: LOLA team 120 m products (Mazarico et al. 2011), source data — not a MoonNav calculation. {illum.caveat}</p>}
               {pointErr && <p className="px-5 pb-3 text-xs text-warn">{pointErr}</p>}
               {layers.feasibility && feas.grid && (() => {
                 const [x, y] = toXY(picked.lat, picked.lon);

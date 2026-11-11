@@ -1,0 +1,185 @@
+{
+  "kind": "moonnav.perf-baseline",
+  "measuredAtUtc": "2026-11-11T20:45:44.000Z",
+  "method": "6 s requestAnimationFrame sampling per scene after 1.5 s settle (5 s during the hazard request); Playwright Chromium new-headless, ANGLE Metal; dev server (next dev), not a production build",
+  "env": {
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Unspecified Version)",
+    "dpr": 2,
+    "viewport": "1440x900",
+    "threads": 10
+  },
+  "results": [
+    {
+      "name": "home globe (auto-rotate, low LOD)",
+      "frames": 361,
+      "fpsMean": 60.1,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "home-globe",
+        "detail": {
+          "reliefLod": "low",
+          "meshSegments": "360x180",
+          "exaggeration": 1,
+          "lighting": "relief"
+        }
+      }
+    },
+    {
+      "name": "home globe zoomed (high LOD)",
+      "frames": 361,
+      "fpsMean": 60,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "home-globe",
+        "detail": {
+          "reliefLod": "high",
+          "meshSegments": "1080x540",
+          "exaggeration": 1,
+          "lighting": "relief"
+        }
+      }
+    },
+    {
+      "name": "explore globe, SPICE-lit, high LOD",
+      "frames": 361,
+      "fpsMean": 60.1,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "globe",
+        "detail": {
+          "reliefLod": "high",
+          "meshSegments": "1080x540",
+          "exaggeration": 1,
+          "lighting": "sun"
+        }
+      }
+    },
+    {
+      "name": "explore globe high LOD, 10x relief",
+      "frames": 361,
+      "fpsMean": 60.1,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "globe",
+        "detail": {
+          "reliefLod": "high",
+          "meshSegments": "1080x540",
+          "exaggeration": 10,
+          "lighting": "sun"
+        }
+      }
+    },
+    {
+      "name": "polar region 3D (75S terrain)",
+      "frames": 361,
+      "fpsMean": 60.1,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "regional-75S-terrain",
+        "detail": {
+          "grid": "loaded",
+          "exaggeration": 5,
+          "sunLit": true
+        }
+      }
+    },
+    {
+      "name": "site 3D terrain patch",
+      "frames": 361,
+      "fpsMean": 60.1,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "site-terrain-patch",
+        "detail": {
+          "patch": "loaded",
+          "sun": true,
+          "earth": true
+        }
+      }
+    },
+    {
+      "name": "Sun view, timeline playing 3600x",
+      "frames": 363,
+      "fpsMean": 60.4,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": {
+        "scene": "timeline-playback",
+        "detail": {
+          "samples": 1442,
+          "speed": 3600,
+          "path": "/app/analysis/sun"
+        }
+      }
+    },
+    {
+      "name": "Compare charts (4 scenarios)",
+      "frames": 361,
+      "fpsMean": 60.2,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": null
+    },
+    {
+      "name": "planner hazards, new 5 m area -89.076,261.47",
+      "frames": 301,
+      "fpsMean": 60.2,
+      "p50": 16.7,
+      "p95": 16.7,
+      "p99": 16.8,
+      "max": 16.8,
+      "slow": 0,
+      "longTasks": 0,
+      "longTaskMs": 0,
+      "scene": null,
+      "requestSeconds": 112.496
+    }
+  ]
+}

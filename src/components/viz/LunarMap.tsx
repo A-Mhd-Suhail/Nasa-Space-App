@@ -18,7 +18,7 @@ import { ScaleLine, Zoom, defaults as defaultControls } from "ol/control";
 import { COVERAGE_LAT, MAP_EXTENT, toLatLon, toXY } from "@/lib/lunar";
 
 export type MapSite = { key: string; name: string; latitudeDeg: number; longitudeEastDeg: number; featureType?: string };
-export type MapLayers = { hillshade: boolean; imagery?: boolean; elevation: boolean; slope?: boolean; feasibility?: boolean; graticule: boolean; sites: boolean; coverage: boolean; saved?: boolean };
+export type MapLayers = { hillshade: boolean; imagery?: boolean; elevation: boolean; slope?: boolean; feasibility?: boolean; psr?: boolean; sunAverage?: boolean; graticule: boolean; sites: boolean; coverage: boolean; saved?: boolean };
 export type ImageryStatus = "idle" | "loading" | "ok" | "error";
 /** Client-rendered raster overlay in map metres (used by the feasibility layer). */
 export type RasterOverlay = { url: string; extent: [number, number, number, number]; opacity?: number };
@@ -74,7 +74,7 @@ export function LunarMap({
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
-  const refs = useRef<{ img?: TileLayer<WMTS>; feas?: ImageLayer<Static>; hill?: ImageLayer<Static>; elev?: ImageLayer<Static>; slope?: ImageLayer<Static>; grat?: VectorLayer; sites?: VectorLayer; pick?: VectorLayer; cov?: VectorLayer; saved?: VectorLayer }>({});
+  const refs = useRef<{ img?: TileLayer<WMTS>; feas?: ImageLayer<Static>; hill?: ImageLayer<Static>; elev?: ImageLayer<Static>; slope?: ImageLayer<Static>; sunAvg?: ImageLayer<Static>; psr?: ImageLayer<Static>; grat?: VectorLayer; sites?: VectorLayer; pick?: VectorLayer; cov?: VectorLayer; saved?: VectorLayer }>({});
   const cb = useRef({ onPick, onSelectSite, onImageryStatus });
   useEffect(() => {
     cb.current = { onPick, onSelectSite, onImageryStatus };
@@ -117,6 +117,9 @@ export function LunarMap({
     const feas = new ImageLayer<Static>({ visible: false, opacity: 0.85 });
     const elev = new ImageLayer({ source: new Static({ url: "/data/lola_75s_240m_elevation.webp", imageExtent: MAP_EXTENT, projection: proj }), opacity: 0.85 });
     const slope = new ImageLayer({ source: new Static({ url: "/data/lola_75s_240m_slope.webp", imageExtent: MAP_EXTENT, projection: proj }), opacity: 0.85 });
+    // LOLA team illumination products (PGDA 69): long-term solar visibility and permanently shadowed regions.
+    const sunAvg = new ImageLayer({ source: new Static({ url: "/data/lola_avgsun_75s_240m.webp", imageExtent: MAP_EXTENT, projection: proj, attributions: "Average solar visibility, LOLA team (Mazarico et al. 2011), NASA PGDA/PDS" }), opacity: 0.9, visible: false });
+    const psr = new ImageLayer({ source: new Static({ url: "/data/lola_psr_75s_240m.png", imageExtent: MAP_EXTENT, projection: proj, interpolate: false, attributions: "Permanently shadowed regions LPSR_75S_120M, LOLA team (Mazarico et al. 2011), NASA PGDA/PDS" }), visible: false });
     const gratStyle = (f: Feature) => new Style({ stroke: new Stroke({ color: "rgba(239,233,221,0.16)", width: 1 }), text: new Text({ text: f.get("label"), placement: "line", font: "10px 'IBM Plex Mono', monospace", fill: new Fill({ color: "rgba(239,233,221,0.6)" }) }) });
     const grat = new VectorLayer({ source: new VectorSource({ features: graticule() }), style: (f) => gratStyle(f as Feature) });
     const covRing = new Feature(new LineString(Array.from({ length: 361 }, (_, i) => toXY(COVERAGE_LAT, i))));
@@ -124,10 +127,10 @@ export function LunarMap({
     const siteLayer = new VectorLayer({ source: new VectorSource(), declutter: true });
     const savedLayer = new VectorLayer({ source: new VectorSource(), declutter: true });
     const pick = new VectorLayer({ source: new VectorSource() });
-    refs.current = { img, feas, hill, elev, slope, grat, sites: siteLayer, pick, cov, saved: savedLayer };
+    refs.current = { img, feas, hill, elev, slope, sunAvg, psr, grat, sites: siteLayer, pick, cov, saved: savedLayer };
     const m = new Map({
       target: el.current,
-      layers: [img, hill, elev, slope, feas, grat, cov, savedLayer, siteLayer, pick],
+      layers: [img, hill, elev, slope, sunAvg, psr, feas, grat, cov, savedLayer, siteLayer, pick],
       view: new View({ projection: proj, center: [0, 0], zoom: 2, extent: MAP_EXTENT, constrainOnlyCenter: true, showFullExtent: true, maxZoom: 12 }),
       controls: defaultControls({ zoom: false, rotate: false }).extend([new Zoom(), new ScaleLine({ units: "metric" })]),
     });
@@ -161,6 +164,8 @@ export function LunarMap({
     r.hill?.setVisible(layers.hillshade);
     r.elev?.setVisible(layers.elevation);
     r.slope?.setVisible(!!layers.slope);
+    r.sunAvg?.setVisible(!!layers.sunAverage);
+    r.psr?.setVisible(!!layers.psr);
     r.saved?.setVisible(layers.saved !== false);
     r.grat?.setVisible(layers.graticule);
     r.sites?.setVisible(layers.sites);

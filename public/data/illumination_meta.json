@@ -1,0 +1,36 @@
+{
+ "kind": "moonnav.illumination-layers",
+ "generatedAtUtc": "2026-11-11T20:57:51Z",
+ "source": {
+  "provider": "NASA GSFC / LRO LOLA team (PGDA product 69; PDS LOLA data node)",
+  "reference": "Mazarico, E., Neumann, G.A., Smith, D.E., Zuber, M.T., Torrence, M.H. (2011), Illumination conditions of the lunar polar regions using LOLA topography, Icarus 211, 1066-1081",
+  "url": "https://pgda.gsfc.nasa.gov/products/69",
+  "archiveUrl": "http://imbrium.mit.edu/EXTRAS/ILLUMINATION/IMG/"
+ },
+ "extentM": [
+  -457440.0,
+  -457440.0,
+  457440.0,
+  457440.0
+ ],
+ "displayResolutionM": 240.0,
+ "sourceResolutionM": 120.0,
+ "layers": {
+  "psr": {
+   "file": "/data/lola_psr_75s_240m.png",
+   "sha256": "ebda04d967af5911e23dab980e1265a35880455dd7340e30818ca30d7fbe1ff9",
+   "product": "LPSR_75S_120M_201608",
+   "productVersion": "V1.05",
+   "displayRule": "240 m display cell shaded when >= 2 of 4 source 120 m pixels are permanent shadow",
+   "psrAreaKm2_source": 27702.0
+  },
+  "sunAverage": {
+   "file": "/data/lola_avgsun_75s_240m.webp",
+   "sha256": "3c6191ec635bbb139b7bb46708cae227bd310633ac78ea819bf9adf54464f4eb",
+   "product": "AVGVISIB_75S_120M_201608",
+   "productVersion": "V1.05",
+   "displayRule": "2x2 mean of the 120 m average solar visibility (0..1)",
+   "ramp": "dark violet 0 -> copper 0.5 -> pale gold 1"
+  }
+ }
+}

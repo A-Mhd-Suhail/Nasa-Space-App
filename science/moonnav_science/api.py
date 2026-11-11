@@ -415,15 +415,55 @@ from .analysis import MULTIRES_ID  # noqa: E402
 from .screening import HazardThresholds, SuitabilityConfig, date_series, hazard_screen, sensitivity, suitability_grid  # noqa: E402
 
 
-def _terrain(lat: float, lon: float, fetch: bool = True) -> tuple[Any, Any]:
+def _terrain(
+    lat: float, lon: float, radius_m: float | None = None, fetch: bool = True, points: list[tuple[float, float]] | None = None
+) -> tuple[Any, Any, list[dict[str, Any]]]:
+    """Multi-resolution terrain for an operation: fetch only the high-resolution tiles it needs
+    (radius around the site, or small stencils around each grid point). Returns (dem, base, provenance)."""
     validate_lat_ = __import__("moonnav_science.geometry", fromlist=["validate_lat"]).validate_lat
     validate_lat_(lat)
     dem = get_dem(MULTIRES_ID)
     if not dem.covers(lat):
         raise AnalysisInputError(f"site is outside LOLA polar coverage ({dem.metadata()['coverage']})", "latitudeDeg")
-    if fetch:
-        dem.prepare(lat, lon)
-    return dem, dem.base_dem
+    if points:
+        prov = dem.prepare_points(points, 120.0, fetch)
+    else:
+        prov = dem.prepare(lat, lon, radius_m if radius_m is not None else 2000.0, fetch)
+    return dem, dem.base_dem, prov
+
+
+def _grid_points(base: Any, lat: float, lon: float, half_m: float, n: int) -> list[tuple[float, float]]:
+    x0, y0 = base.latlon_to_xy(np.array([lat]), np.array([lon]))
+    sp_ = 0.0 if n == 1 else 2 * half_m / (n - 1)
+    out = []
+    for i in range(n):
+        for j in range(n):
+            la, lo = base.xy_to_latlon(np.array([x0[0] + (j - (n - 1) / 2) * sp_]), np.array([y0[0] - (i - (n - 1) / 2) * sp_]))
+            out.append((float(la[0]), float(lo[0])))
+    return out
+
+
+@app.get("/v1/terrain/coverage", dependencies=[Depends(require_token)])
+def terrain_coverage(
+    lat: float = Query(..., ge=-90, le=90), lon: float = Query(...), radius_m: float = Query(2000.0, ge=50, le=60_000)
+) -> dict[str, Any]:
+    """High-resolution tile availability around a point (no download): what is cached, what a run would fetch."""
+    lon = normalize_lon_east(lon)
+    dem = get_dem(MULTIRES_ID)
+    layers = [t.coverage(lat, lon, radius_m) for t in dem.tiled]
+    finest = next((x for x in layers if x["covered"] and x["cached"] > 0), None)
+    return {
+        "latitudeDeg": lat,
+        "longitudeEastDeg": lon,
+        "radiusM": radius_m,
+        "layers": layers,
+        "finestCachedResolutionM": finest["resolutionM"] if finest else (dem.base_dem.scale_m if dem.covers(lat) else None),
+        "finestAvailableResolutionM": next(
+            (x["resolutionM"] for x in layers if x["covered"]), dem.base_dem.scale_m if dem.covers(lat) else None
+        ),
+        "baseResolutionM": dem.base_dem.scale_m,
+        "covered": dem.covers(lat),
+    }
 
 
 class HazardRequest(BaseModel):
@@ -435,15 +475,17 @@ class HazardRequest(BaseModel):
     roughnessCautionM: float = Field(default=0.5, ge=0, le=50)
     roughnessMaxM: float = Field(default=1.5, ge=0, le=50)
     landingRadiusM: float = Field(default=100.0, ge=5, le=5000)
+    fetchHighRes: bool = True
 
 
 @app.post("/v1/terrain/hazards", dependencies=[Depends(require_token)])
 def terrain_hazards(req: HazardRequest) -> dict[str, Any]:
     lon = normalize_lon_east(req.longitudeEastDeg)
-    dem, _ = _terrain(req.latitudeDeg, lon)
+    dem, _, prov = _terrain(req.latitudeDeg, lon, req.halfSizeM * 1.42 + 200.0, req.fetchHighRes)
     th = HazardThresholds(req.slopeCautionDeg, req.slopeMaxDeg, req.roughnessCautionM, req.roughnessMaxM, req.landingRadiusM)
     out = hazard_screen(dem, req.latitudeDeg, lon, req.halfSizeM, th)
     out["productMetadata"] = {lyr.product_id: {"pixelSpacingM": lyr.scale_m} for lyr in dem.layers}
+    out["terrainData"] = prov
     return out
 
 
@@ -456,16 +498,20 @@ class SuitabilityRequest(BaseModel):
     gridSize: int = Field(default=7, ge=1, le=21)
     halfSizeM: float = Field(default=3000.0, ge=0, le=60_000)
     config: dict[str, Any] | None = None
+    fetchHighRes: bool = True
 
 
 @app.post("/v1/suitability/grid", dependencies=[Depends(require_token)])
 def suitability(req: SuitabilityRequest) -> dict[str, Any]:
     lon = normalize_lon_east(req.longitudeEastDeg)
-    dem, base = _terrain(req.latitudeDeg, lon)
+    base0 = get_dem("lola-ldem-75s-240m-v2")
+    dem, base, prov = _terrain(
+        req.latitudeDeg, lon, fetch=req.fetchHighRes, points=_grid_points(base0, req.latitudeDeg, lon, req.halfSizeM, req.gridSize)
+    )
     with SPICE_LOCK:
         kernels()
         try:
-            return suitability_grid(
+            out = suitability_grid(
                 dem,
                 base,
                 req.latitudeDeg,
@@ -479,6 +525,8 @@ def suitability(req: SuitabilityRequest) -> dict[str, Any]:
             )
         except ValueError as exc:
             raise AnalysisInputError(str(exc), "window") from exc
+    out["terrainData"] = prov
+    return out
 
 
 class MatrixSite(BaseModel):
@@ -493,6 +541,7 @@ class MatrixRequest(BaseModel):
     hours: float = Field(default=168.0, gt=0, le=24 * 31)
     stepSeconds: int = Field(default=3600, ge=600, le=86_400)
     config: dict[str, Any] | None = None
+    fetchHighRes: bool = True
 
 
 @app.post("/v1/suitability/matrix", dependencies=[Depends(require_token)])
@@ -501,14 +550,14 @@ def suitability_matrix(req: MatrixRequest) -> dict[str, Any]:
     rows = []
     for s in req.sites:
         lon = normalize_lon_east(s.longitudeEastDeg)
-        dem, base = _terrain(s.latitudeDeg, lon)
+        dem, base, prov = _terrain(s.latitudeDeg, lon, 300.0, req.fetchHighRes)
         with SPICE_LOCK:
             kernels()
             try:
                 res = date_series(dem, base, s.latitudeDeg, lon, req.startsUtc, req.hours, req.stepSeconds, cfg)
             except ValueError as exc:
                 raise AnalysisInputError(str(exc), "sites") from exc
-        rows.append({"key": s.key, "latitudeDeg": s.latitudeDeg, "longitudeEastDeg": lon, "cells": res})
+        rows.append({"key": s.key, "latitudeDeg": s.latitudeDeg, "longitudeEastDeg": lon, "cells": res, "terrainData": prov})
     return {
         "rows": rows,
         "startsUtc": req.startsUtc,
@@ -529,6 +578,7 @@ class SensitivityRequest(BaseModel):
     gridSize: int = Field(default=5, ge=3, le=9)
     dayShifts: list[float] | None = Field(default=None, max_length=15)
     config: dict[str, Any] | None = None
+    fetchHighRes: bool = True
 
 
 @app.post("/v1/sensitivity", dependencies=[Depends(require_token)])
@@ -536,11 +586,17 @@ def sensitivity_ep(req: SensitivityRequest) -> dict[str, Any]:
     if req.gridSize % 2 == 0:
         raise AnalysisInputError("gridSize must be odd so the original point is the centre", "gridSize")
     lon = normalize_lon_east(req.longitudeEastDeg)
-    dem, base = _terrain(req.latitudeDeg, lon)
+    base0 = get_dem("lola-ldem-75s-240m-v2")
+    dem, base, prov = _terrain(
+        req.latitudeDeg,
+        lon,
+        fetch=req.fetchHighRes,
+        points=_grid_points(base0, req.latitudeDeg, lon, req.spacingM * (req.gridSize - 1) / 2, req.gridSize),
+    )
     with SPICE_LOCK:
         kernels()
         try:
-            return sensitivity(
+            return {"terrainData": prov} | sensitivity(
                 dem,
                 base,
                 req.latitudeDeg,
@@ -555,3 +611,16 @@ def sensitivity_ep(req: SensitivityRequest) -> dict[str, Any]:
             )
         except ValueError as exc:
             raise AnalysisInputError(str(exc), "window") from exc
+
+
+# ----------------------------------------------------------------------------------------
+# LOLA polar illumination source products (PSR, long-term Sun/Earth visibility)
+# ----------------------------------------------------------------------------------------
+from .analysis import DATA_DIR  # noqa: E402
+from .illumination import point as illum_point  # noqa: E402
+
+
+@app.get("/v1/illumination/point", dependencies=[Depends(require_token)])
+def illumination_point(lat: float = Query(..., ge=-90, le=90), lon: float = Query(...)) -> dict[str, Any]:
+    """Permanent-shadow flag and 18.6-year average Sun/Earth visibility from the LOLA team's products."""
+    return illum_point(lat, normalize_lon_east(lon), DATA_DIR)

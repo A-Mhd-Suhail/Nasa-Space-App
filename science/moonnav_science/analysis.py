@@ -125,16 +125,66 @@ class MultiResTerrain(MultiResDem):
         return None if math.isnan(v) else v
 
     def prepare(self, lat: float, lon: float, radius_m: float = NEAR_FIELD_M + 1500.0, fetch: bool = True) -> list[dict[str, Any]]:
-        """Fetch (bounded) the high-resolution tiles needed around a site; failures degrade to coarser layers."""
+        """Fetch (bounded, parallel) the high-resolution tiles needed around a site.
+
+        fetch=False uses only tiles already cached. Failures never raise: the coarser layers serve
+        those samples and the returned record says so (status "fallback").
+        """
         out = []
         for t in self.tiled:
             if not t.covers(lat):
                 continue
+            if not fetch:
+                cov = t.coverage(lat, lon, radius_m)
+                out.append(
+                    {
+                        **cov,
+                        "status": "cached-only" if cov["missing"] == 0 else "fallback",
+                        "reason": None if cov["missing"] == 0 else "high-resolution download skipped (fast mode)",
+                    }
+                )
+                continue
             try:
-                out.append(t.ensure_region(lat, lon, radius_m) if fetch else {"productId": t.product_id, "fetched": 0})
+                r = t.ensure_region(lat, lon, radius_m)
+                out.append({**r, "status": "ok" if r["missing"] == 0 else "partial"})
+                # A finer product that fully covers the area makes coarser tiles unnecessary here.
+                margin_deg = math.degrees(radius_m / self.radius_ref_m)
+                if r["missing"] == 0 and lat + margin_deg <= -t.max_abs_lat_edge:
+                    break
             except (TileFetchError, OSError) as exc:
-                out.append({"productId": t.product_id, "error": str(exc)})
+                out.append(
+                    {
+                        "productId": t.product_id,
+                        "resolutionM": t.scale_m,
+                        "status": "fallback",
+                        "reason": f"NASA PDS tiles unavailable ({exc}); coarser LOLA product used",
+                    }
+                )
         return out
+
+    def prepare_points(self, points: list[tuple[float, float]], radius_m: float, fetch: bool = True) -> list[dict[str, Any]]:
+        """prepare() for many small areas (e.g. suitability-grid cell stencils), merged per product."""
+        merged: dict[str, dict[str, Any]] = {}
+        for la, lo in points:
+            for r in self.prepare(la, lo, radius_m, fetch):
+                m = merged.setdefault(
+                    r["productId"],
+                    {
+                        "productId": r["productId"],
+                        "resolutionM": r.get("resolutionM"),
+                        "fetched": 0,
+                        "missing": 0,
+                        "status": "ok",
+                        "reasons": [],
+                    },
+                )
+                m["fetched"] += int(r.get("fetched", 0) or 0)
+                m["missing"] += int(r.get("missing", 0) or 0)
+                if r.get("status") in ("fallback", "partial"):
+                    m["status"] = r["status"]
+                    if r.get("reason") and r["reason"] not in m["reasons"]:
+                        m["reasons"].append(r["reason"])
+        return list(merged.values())
 
     def near_scale(self, lat: float, lon: float) -> float:
         lyr = self.finest_at(lat, lon)

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { MAP_EXTENT, R_MOON_M, toLatLon } from "@/lib/lunar";
+import { setPerfScene } from "../shell/PerfPanel";
 import { Swatch } from "../ui";
 
 export type RegionalGrid = { grid: number; extentM: number; radiusM: number; heights: string; product: Record<string, unknown>; generatedAtUtc: string };
@@ -102,6 +103,9 @@ export function RegionalScene({
   height?: number;
 }) {
   const [exag, setExag] = useState(5);
+  useEffect(() => {
+    setPerfScene("regional-75S-terrain", { grid: data ? "loaded" : "loading", exaggeration: exag, sunLit: !!sun });
+  }, [data, exag, sun]);
   const controls = useRef<OrbitControlsImpl | null>(null);
   const [webgl] = useState<boolean>(() => {
     try {

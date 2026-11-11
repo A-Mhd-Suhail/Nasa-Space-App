@@ -170,6 +170,25 @@ def svs_dialamoon(epochs: list[str], fetch: Callable[[str], dict[str, Any]] | No
             "distanceKm": round(mn["distanceKm"] - ref["distanceKm"], 2),
         }
         ok = diff["subEarthDeg"] <= 0.01 and diff["subSolarDeg"] <= 0.01 and abs(diff["distanceKm"]) <= 2.0
+        # Optional SVS fields (present in the live API): geocentric J2000 RA/Dec, apparent diameter, illuminated %.
+        if all(k in d for k in ("j2000_ra", "j2000_dec", "diameter", "phase")):
+            vj = sp.spkpos("MOON", et, "J2000", "LT+S", "EARTH")[0]
+            _, ra, dec = sp.recrad(vj)
+            pa = sp.phaseq(et, "MOON", "SUN", "EARTH", "LT+S")
+            mn |= {
+                "raHours": round(math.degrees(ra) / 15.0, 5),
+                "decDeg": round(math.degrees(dec), 5),
+                "diameterArcsec": round(2.0 * math.degrees(math.asin(MOON_REFERENCE_RADIUS_M / 1000.0 / dist)) * 3600.0, 2),
+                "illuminatedPct": round((1.0 + math.cos(pa)) / 2.0 * 100.0, 3),
+            }
+            ref |= {"raHours": d["j2000_ra"], "decDeg": d["j2000_dec"], "diameterArcsec": d["diameter"], "illuminatedPct": d["phase"]}
+            dra = _wrap((mn["raHours"] - ref["raHours"]) * 15.0) * math.cos(dec)
+            diff |= {
+                "raDecDeg": round(math.hypot(dra, mn["decDeg"] - ref["decDeg"]), 5),
+                "diameterArcsec": round(mn["diameterArcsec"] - ref["diameterArcsec"], 2),
+                "illuminatedPct": round(mn["illuminatedPct"] - ref["illuminatedPct"], 3),
+            }
+            ok = ok and diff["raDecDeg"] <= 0.01 and abs(diff["diameterArcsec"]) <= 1.0 and abs(diff["illuminatedPct"]) <= 0.1
         out.append(
             rec(
                 f"svs-{t}",
@@ -178,11 +197,13 @@ def svs_dialamoon(epochs: list[str], fetch: Callable[[str], dict[str, Any]] | No
                 "Moon Phase and Libration",
                 t,
                 loc,
-                "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+                "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); "
+                "diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
                 mn,
                 ref,
                 diff,
-                "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+                "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; "
+                "apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
                 "pass" if ok else "fail",
             )
         )
@@ -593,6 +614,194 @@ def visibility_consistency() -> list[Record]:
     ]
 
 
+# ------------------------------------------------------------- LOLA illumination products
+ILLUM_WINDOW = ("2025-01-01T00:00:00Z", "2026-12-31T00:00:00Z", 21_600)  # 2 years, 6 h samples
+ILLUM_SITES = {
+    "shackleton-dg-ridge": (-89.45, 222.69),
+    "mons-malapert": (-85.98, 358.33),
+    "mons-mouton": (-84.6, 31.0),
+    "connecting-ridge-ext": (-89.0, 227.0),
+    "shackleton-floor": (-89.67, 129.78),
+    "south-pole": (-90.0, 0.0),
+}
+ILLUM_PRODUCT = "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)"
+
+
+def _mean_sun(lat: float, lon: float, terrain: str = "lola-ldem-75s-240m-v2") -> float:
+    t0, t1, step = ILLUM_WINDOW
+    sc = Scenario.from_dict(
+        {
+            "site": {"latitudeDeg": lat, "longitudeEastDeg": lon},
+            "timeRange": {"startUtc": t0, "endUtc": t1, "sampleStepSeconds": step},
+            "assumptions": {},
+            "products": {"terrainProductId": terrain},
+        }
+    )
+    fr = [row["sunVisibleFraction"] for row in run_analysis(sc)["timeseries"]]
+    return float(np.mean([f for f in fr if f is not None]))
+
+
+def _illum_xy_to_latlon(r: Any, row: int, col: int) -> tuple[float, float]:
+    x = (col - r.sample_offset) * r.scale_m
+    y = (r.line_offset - row) * r.scale_m
+    rho = math.hypot(x, y)
+    return -90.0 + math.degrees(2.0 * math.atan(rho / (2.0 * r.radius_ref_m))), math.degrees(math.atan2(x, y)) % 360.0
+
+
+def _window(r: Any, lat: float, lon: float, half: int = 1) -> np.ndarray:
+    x, y = r.latlon_to_xy(np.array([lat]), np.array([lon]))
+    row, col = r.xy_to_pixel(x, y)
+    i, j = int(math.floor(row[0] + 0.5)), int(math.floor(col[0] + 0.5))
+    return np.asarray(r.data[i - half : i + half + 1, j - half : j + half + 1], dtype=np.float64) * r.value_scale + r.value_offset
+
+
+def lola_illumination_checks(n: int = 15, seed: int = 11, fetch_tiles: bool = True) -> list[Record]:
+    """MoonNav's mean Sun visibility (SPICE + LOLA horizon, 2 years at 6 h) vs the LOLA team's 18.6-year
+    products. Different period, sampling, DEM version/resolution and observer height (MoonNav 2 m) mean
+    agreement is expected only to within a few percent; tolerances are fixed in advance below."""
+    from . import illumination
+
+    psr, sun = illumination.raster("psr", DATA_DIR), illumination.raster("sun", DATA_DIR)
+    epoch = f"{ILLUM_WINDOW[0][:10]}..{ILLUM_WINDOW[1][:10]} vs 18.6-yr product"
+    if psr is None or sun is None:
+        return [
+            rec(
+                "lola-illum",
+                "LOLA illumination",
+                "NASA GSFC PGDA 69",
+                ILLUM_PRODUCT,
+                epoch,
+                "south polar",
+                "-",
+                None,
+                None,
+                None,
+                "",
+                "unavailable",
+                "products not downloaded (npm run data:illum)",
+            )
+        ]
+    rng = np.random.default_rng(seed)
+
+    def sample(cond: Callable[[int, int], bool]) -> list[tuple[float, float]]:
+        pts: list[tuple[float, float]] = []
+        while len(pts) < n:
+            i, j = (int(v) for v in rng.integers(3, psr.lines - 3, 2))
+            la, lo = _illum_xy_to_latlon(psr, i, j)
+            if la <= -80.5 and cond(i, j):
+                pts.append((round(la, 5), round(lo, 5)))
+        return pts
+
+    out: list[Record] = []
+    # 1. Interior PSR points (5x5 = 600 m block all permanently shadowed) should get no sunlight.
+    inner = sample(lambda i, j: bool((psr.data[i - 2 : i + 3, j - 2 : j + 3] > 0).all()))
+    vals = [_mean_sun(*q) for q in inner]
+    dark = sum(v <= 0.01 for v in vals)
+    out.append(
+        rec(
+            "lola-psr-interior",
+            "LOLA illumination",
+            "NASA GSFC PGDA 69 (LPSR)",
+            ILLUM_PRODUCT,
+            epoch,
+            f"{n} random PSR-interior points, 80.5 S - pole (seed {seed})",
+            "MoonNav mean Sun visible fraction (LDEM_75S_240M horizon) at points the LOLA PSR map marks as permanently shadowed",
+            {"pointsWithSunlight<=1%": dark, "maxFraction": round(max(vals), 4)},
+            {"permanentShadow": True, "points": n},
+            {"darkShare": round(dark / n, 3)},
+            ">= 90% of points with mean Sun visibility <= 1%",
+            "pass" if dark >= 0.9 * n else "fail",
+        )
+    )
+    # 2. Random sunlit points (5x5 block > 30% average sunlight, no PSR pixel): value agreement + rank order.
+    lit = sample(
+        lambda i, j: bool(
+            ((sun.data[i - 2 : i + 3, j - 2 : j + 3] * sun.value_scale + sun.value_offset) > 0.3).all()
+            and (psr.data[i - 2 : i + 3, j - 2 : j + 3] < 0).all()
+        )
+    )
+    mine = np.array([_mean_sun(*q) for q in lit])
+    ref = np.array([sun.value_at(*q) for q in lit], dtype=np.float64)
+    d = mine - ref
+    rank = float(np.corrcoef(np.argsort(np.argsort(mine)), np.argsort(np.argsort(ref)))[0, 1])
+    ok = float(np.mean(np.abs(d))) <= 0.05 and float(np.max(np.abs(d))) <= 0.10
+    out.append(
+        rec(
+            "lola-avgsun-sample",
+            "LOLA illumination",
+            "NASA GSFC PGDA 69 (AVGVISIB)",
+            ILLUM_PRODUCT,
+            epoch,
+            f"{n} random sunlit points, 80.5 S - pole (seed {seed})",
+            "MoonNav mean Sun visible fraction (LDEM_75S_240M horizon) vs LOLA average solar visibility at the same pixel",
+            {"mean": round(float(mine.mean()), 4)},
+            {"mean": round(float(ref.mean()), 4)},
+            {
+                "meanAbs": round(float(np.mean(np.abs(d))), 4),
+                "maxAbs": round(float(np.max(np.abs(d))), 4),
+                "bias": round(float(d.mean()), 4),
+                "spearman": round(rank, 3),
+            },
+            "mean |diff| <= 0.05 and max |diff| <= 0.10 (fraction of time)",
+            "pass" if ok else "fail",
+        )
+    )
+    # 3. Named sites with MoonNav's multi-resolution terrain (5/20/40 m near field). High-gradient
+    # points (rims) can change by 0.5 between adjacent 120 m pixels, so the 3x3 neighbourhood range
+    # is reported and used alongside the centre-pixel difference.
+    mr = get_dem(MULTIRES_ID)
+    for name, (la, lo) in ILLUM_SITES.items():
+        try:
+            prep = mr.prepare(la, lo, fetch=fetch_tiles)
+            v = _mean_sun(la, lo, MULTIRES_ID)
+            v240 = _mean_sun(la, lo)
+        except Exception as exc:  # noqa: BLE001
+            out.append(
+                rec(
+                    f"lola-avgsun-{name}",
+                    "LOLA illumination",
+                    "NASA GSFC PGDA 69",
+                    ILLUM_PRODUCT,
+                    epoch,
+                    name,
+                    "-",
+                    None,
+                    None,
+                    None,
+                    "",
+                    "unavailable",
+                    f"{type(exc).__name__}: {exc}",
+                )
+            )
+            continue
+        w = _window(sun, la, lo)
+        centre = float(w[1, 1])
+        lo_, hi_ = float(w.min()), float(w.max())
+        inside = lo_ - 0.05 <= v <= hi_ + 0.05
+        out.append(
+            rec(
+                f"lola-avgsun-{name}",
+                "LOLA illumination",
+                "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+                ILLUM_PRODUCT,
+                epoch,
+                f"{name} ({la}, {lo} E)",
+                "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+                {"multires": round(v, 4), "ldem240m": round(v240, 4), "terrain": [p.get("status") for p in prep]},
+                {
+                    "centrePixel": round(centre, 4),
+                    "neighbourhood3x3": [round(lo_, 4), round(hi_, 4)],
+                    "permanentShadow": bool(round(_window(psr, la, lo, 0)[0, 0]) == 1),
+                },
+                {"vsCentre": round(v - centre, 4), "ldem240mVsCentre": round(v240 - centre, 4)},
+                "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+                "pass" if (abs(v - centre) <= 0.10 or inside) else "fail",
+                "high local gradient: single-pixel comparison not meaningful" if hi_ - lo_ > 0.3 else "",
+            )
+        )
+    return out
+
+
 def run_all(live: bool = True) -> dict[str, Any]:
     kernels()
     records: list[Record] = []
@@ -600,9 +809,23 @@ def run_all(live: bool = True) -> dict[str, Any]:
     records += lola_checks()
     records += horizon_bruteforce_check()
     records += visibility_consistency()
+    records += lola_illumination_checks(fetch_tiles=live)
     if live:
         records += svs_dialamoon(
-            ["2024-03-10T12:00", "2025-06-01T00:00", "2026-01-15T06:00", "2026-06-21T12:00", "2026-12-03T00:00", "2027-07-01T12:00"]
+            [
+                "2024-01-25T18:00",
+                "2024-03-10T12:00",
+                "2024-09-18T03:00",
+                "2025-03-14T06:00",
+                "2025-06-01T00:00",
+                "2025-11-05T13:00",
+                "2026-01-15T06:00",
+                "2026-04-02T00:00",
+                "2026-06-21T12:00",
+                "2026-08-28T04:00",
+                "2026-12-03T00:00",
+                "2027-07-01T12:00",
+            ]
         )
         records += horizons([("2026-12-01T00:00:00Z", "2026-12-08T00:00:00Z"), ("2027-06-15T00:00:00Z", "2027-06-22T00:00:00Z")])
     summary = {k: sum(1 for r in records if r["result"] == k) for k in ("pass", "fail", "unavailable")}

@@ -1,6 +1,6 @@
 # Deployment guide — Vercel + PostgreSQL + Cloudflare R2 + science worker
 
-Nothing here has been deployed yet: each step needs the owner's accounts. Keep **development, preview and production** credentials, databases and buckets separate.
+Nothing here has been deployed yet: each step needs the owner's accounts. Current status and blockers: `FINAL_8_WORKSTREAMS.md` (WS1–WS3). The database is already live on **Supabase** (`DATABASE_SETUP.md`); use it instead of step 1 below. Keep **development, preview and production** credentials, databases and buckets separate.
 
 ## 1. PostgreSQL (Neon recommended, via the Vercel Marketplace)
 1. Create a Neon project with branches `production` and `preview`.
@@ -17,7 +17,8 @@ Nothing here has been deployed yet: each step needs the owner's accounts. Keep *
 4. Presigned URLs expire in 5 min (downloads) / 10 min (uploads) and are never logged.
 
 ## 3. Email
-`MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM` with a verified sender domain. Production refuses the `outbox` driver.
+Either SMTP (`MAIL_DRIVER=smtp`, `SMTP_HOST`, `SMTP_PORT` 587 STARTTLS or 465 TLS, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`) or Resend (`MAIL_DRIVER=resend`, `RESEND_API_KEY`, `MAIL_FROM` with a verified sender domain). Production refuses the `outbox` driver.
+Check delivery before going live: `npm run mail:test -- you@example.org` (reads `.env.local`, sends one message, prints only the driver/host and the provider's message id, never credentials). For Gmail use an app password; for most providers the sender domain needs SPF/DKIM.
 
 Source products: `scripts/fetch_data.sh` downloads from NASA first and falls back to SHA-256-verified verbatim mirrors when NASA hosts are unreachable (e.g. locked-down CI networks); build the image on an open network to pin the preferred `moon_de440_250416.tf` release.
 
@@ -32,7 +33,7 @@ gcloud run deploy moonnav-science --image ...:0.1.0 --memory 2Gi --cpu 1 \
 gcloud run deploy moonnav-worker --image ...:0.1.0 --memory 2Gi --cpu 1 --min-instances 1 --no-cpu-throttling \
   --set-env-vars SERVICE_MODE=worker,MOONNAV_INTERNAL_API_URL=https://YOUR-APP --set-secrets SCIENCE_SERVICE_TOKEN=moonnav-science-token:latest
 ```
-The image downloads LOLA + SPICE products at build time and verifies their SHA-256 against the catalogue. Health: `GET /health` (kernels + terrain status).
+The science service cannot run on Vercel (Python, ~2 GB of NASA data, long CPU work); host it as a container. The image downloads LOLA + SPICE products at build time and verifies their SHA-256 against the catalogue. Health: `GET /health` (kernels + terrain status).
 
 ## 5. Vercel (web app + BFF)
 1. Import the repository; framework Next.js; Node 24.
@@ -44,3 +45,6 @@ The image downloads LOLA + SPICE products at build time and verifies their SHA-2
 - `GET /api/v1/health` → `status: ok`, `science.status: ok`, `worker.status: ok`.
 - Register → verify email → run the guided scenario → completed → export PDF → share link opens anonymously → revoke.
 - Run `E2E_BASE_URL=https://preview-url npx playwright test tests/e2e/public.spec.ts` against the preview.
+
+## 7. Optional data for the PSR / long-term sunlight layers
+`npm run data:illum` downloads the three LOLA illumination products (3 × 116 MB, SHA-256 checked) and rebuilds the map rasters. Without them the layers still show (the rasters are committed in `public/data/`), but point lookups and the Mission Report row say "unavailable".

@@ -120,3 +120,20 @@ Next sunset/sunrise, Earthset, next DTE window, time remaining and darkness/blac
 
 ## 21. Validation suite (`science/moonnav_science/validation.py`, `npm run science:validate`)
 See `docs/VALIDATION_REPORT.md` (latest: 38 pass, 0 fail, 1 reference unavailable).
+
+## 22. Long-term illumination and permanent shadow (source layers) — `science/moonnav_science/illumination.py`
+- **Products**: LOLA team `LPSR_75S_120M_201608` (binary permanent shadow) and `AVGVISIB_75S_120M_201608` / `_EARTH` (average fraction of the Sun's / Earth's disk visible), from Mazarico et al. (2011), NASA GSFC PGDA product 69. These cover 75°S to the pole at 120 m, south polar stereographic on a 1737.4 km sphere, and were computed from LOLA topography with hourly positions over an 18.6-year cycle.
+- **Reading**: the label-driven PDS3 reader uses the same projection maths as the DEM reader; values are `DN × SCALING_FACTOR + OFFSET`. Point lookups use the nearest pixel (the products are pixel-registered). Points outside the labelled latitude bound return `null` ("unknown"), never 0.
+- **Map layers**: `build_illumination_layers.py` resamples 2×2 to the 240 m map grid. A cell is PSR when ≥ 2 of its 4 source pixels are. Sunlight is an RGBA ramp. Both layers share the map's ±457,440 m extent.
+- **Use**: MoonNav shows these as *source data* and never derives PSR boundaries from its own short-window runs. A PSR flag is not evidence of ice and is not a hazard verdict.
+
+## 23. Validation against LOLA illumination products (rows `lola-*`)
+- MoonNav's mean Sun visible fraction over 2025-01-01 to 2026-12-31 (6 h samples, SPICE + LOLA horizon, observer 2 m) is compared with AVGVISIB. Solar geometry at the Moon repeats yearly, so a 2-year window represents the Sun; Earth is not compared (it needs the full 18.6-year cycle).
+- Checks, with tolerances fixed before the run:
+  - 15 random PSR-interior points (5×5 PSR block) need ≥ 90% at ≤ 1% sunlight. Result: 15/15 at 0.
+  - 15 random sunlit points need mean |Δ| ≤ 0.05 and max ≤ 0.10. Result: 0.011 / 0.022, Spearman 0.96.
+  - Six named sites with multi-resolution terrain need |Δ to the centre pixel| ≤ 0.10, or to fall within the 3×3 range ± 0.05.
+- **Resolution map used in analyses**: near-field horizon (≤ 6 km) and hazard/suitability stencils use the finest product available (5 / 20 / 40 m). The far-field horizon (to 300 km) and the suitability grid spacing use 240 m.
+
+## 24. SVS Dial-a-Moon comparison (extended)
+For each epoch: sub-Earth and sub-solar points (`subpnt`/`subslr`, LT+S, MOON_ME), Earth–Moon distance, geocentric J2000 RA/Dec (`spkpos` LT+S), apparent diameter 2·asin(1737.4 km / d), and illuminated fraction (1 + cos phase angle)/2 (`phaseq`). Tolerances follow SVS's published precision. Epochs the API clamps (after 2026-12-31) are recorded as *unavailable*, never pass.

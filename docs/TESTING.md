@@ -36,6 +36,7 @@
 | Sensitivity 5×5 + 7 date shifts | 0.29 s |
 | Site × date matrix 4 × 3 | 0.19 s |
 | Synchronous 24 h analysis | 0.25 s |
-| First use of a new 5 m area (tile download from PDS) | ~1–2 min (one-time) |
+| First use of a new 5 m area (tile download from PDS) | 8.0 s for 4 tiles (2026-11-12, parallel + deduplicated; was 112.5 s) |
 | Globe JS heap: default LOD / zoomed LOD | 24 MB / 102 MB |
-Frame rate was measured only under headless software GL (≈5 fps) and is not representative of GPU hardware; it was not verified on a real GPU in this pass.
+### Frame rate (2026-11-12)
+Measured with the built-in diagnostics (Advanced mode "Perf" button or `?perf=1`). Setup: Playwright Chromium new-headless with ANGLE Metal on an Apple M5, 1440×900 at DPR 2, dev server. Every scene held **60 FPS (p95 16.7–16.8 ms, 0 frames > 50 ms, 0 long tasks)**. The scenes were: home globe (low and high LOD), explore globe SPICE-lit, 10× relief, polar region 3D, site 3D patch, Sun view with timeline at 3600×, compare charts, and the planner during a hazard request. Raw data: `docs/perf/perf-baseline-chromium-m5.json`. These numbers are specific to this device and browser; use the panel's "Record 10 s → Export JSON" to measure other hardware.

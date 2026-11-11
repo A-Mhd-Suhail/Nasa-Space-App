@@ -181,3 +181,35 @@ test("polar sky plot draws the stored horizon and tracks, with a zoom/full-sky t
   await expect(page.getByRole("heading", { name: "Horizon panorama" }).first()).toBeVisible();
   await expect(plot).toHaveCount(0);
 });
+
+test("PSR source layer: toggles with legend; point lookup reports PSR and unknown outside coverage", async ({ page }) => {
+  await page.goto("/explore?site=shackleton");
+  await page.getByLabel("Permanent shadow (PSR)").check();
+  await expect(page.getByTestId("illum-legend")).toContainText("Permanently shadowed");
+  await expect(page.getByTestId("illum-legend")).toContainText("LOLA");
+  await page.locator("#go-lat").fill("-89.67");
+  await page.locator("#go-lon").fill("129.78");
+  await page.locator("#go-lon").press("Enter");
+  await expect(page.getByTestId("point-psr")).toHaveText("yes (PSR)", { timeout: 15_000 });
+  await page.locator("#go-lat").fill("-85.99");
+  await page.locator("#go-lon").fill("2.93");
+  await page.locator("#go-lon").press("Enter");
+  await expect(page.getByTestId("point-psr")).toHaveText("no", { timeout: 15_000 });
+  const eq = await page.request.get("/api/v1/illumination/point?lat=10&lon=10");
+  expect(eq.ok()).toBeTruthy();
+  const j = await eq.json();
+  expect(j.permanentShadow).toBeNull();
+  expect(j.permanentShadowStatus).toContain("outside");
+});
+
+test("rendering diagnostics: ?perf=1 shows live frame stats and records a sample", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto("/explore?site=mons-malapert&perf=1");
+  const panel = page.getByTestId("perf-panel");
+  await expect(panel).toBeVisible();
+  await expect(page.getByTestId("perf-live")).toContainText("FPS", { timeout: 5_000 });
+  await page.getByTestId("perf-record").click();
+  await expect(page.getByTestId("perf-result")).toContainText("fps avg", { timeout: 15_000 });
+  await panel.getByRole("button", { name: "Close diagnostics" }).click();
+  await expect(panel).toBeHidden();
+});

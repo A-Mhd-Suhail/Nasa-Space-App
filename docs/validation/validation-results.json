@@ -1,9 +1,9 @@
 {
  "kind": "moonnav.validation-report",
- "generatedAtUtc": "2026-11-11T02:14:02Z",
+ "generatedAtUtc": "2026-11-11T21:08:52Z",
  "live": true,
  "summary": {
-  "pass": 38,
+  "pass": 52,
   "fail": 0,
   "unavailable": 1
  },
@@ -169,17 +169,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-875s-5m-v2 (5 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "520 points in 404 cached tiles",
+   "location": "520 points in 478 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.78
+    "medianAbsDiffM": 1.74
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.78,
-    "p95AbsDiffM": 6.98
+    "medianAbsDiffM": 1.74,
+    "p95AbsDiffM": 6.19
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",
@@ -191,17 +191,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-85s-20m-v2 (20 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "560 points in 82 cached tiles",
+   "location": "520 points in 87 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.73
+    "medianAbsDiffM": 1.94
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.73,
-    "p95AbsDiffM": 7.41
+    "medianAbsDiffM": 1.94,
+    "p95AbsDiffM": 7.1
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",
@@ -213,17 +213,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-80s-40m-v2 (40 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "640 points in 47 cached tiles",
+   "location": "520 points in 49 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.76
+    "medianAbsDiffM": 1.71
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.76,
-    "p95AbsDiffM": 6.19
+    "medianAbsDiffM": 1.71,
+    "p95AbsDiffM": 6.97
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",
@@ -294,33 +294,403 @@
    "note": ""
   },
   {
+   "id": "lola-psr-interior",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "15 random PSR-interior points, 80.5 S - pole (seed 11)",
+   "method": "MoonNav mean Sun visible fraction (LDEM_75S_240M horizon) at points the LOLA PSR map marks as permanently shadowed",
+   "moonnav": {
+    "pointsWithSunlight<=1%": 15,
+    "maxFraction": 0.0
+   },
+   "reference": {
+    "permanentShadow": true,
+    "points": 15
+   },
+   "difference": {
+    "darkShare": 1.0
+   },
+   "tolerance": ">= 90% of points with mean Sun visibility <= 1%",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-sample",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "15 random sunlit points, 80.5 S - pole (seed 11)",
+   "method": "MoonNav mean Sun visible fraction (LDEM_75S_240M horizon) vs LOLA average solar visibility at the same pixel",
+   "moonnav": {
+    "mean": 0.4106
+   },
+   "reference": {
+    "mean": 0.4157
+   },
+   "difference": {
+    "meanAbs": 0.011,
+    "maxAbs": 0.0217,
+    "bias": -0.0051,
+    "spearman": 0.957
+   },
+   "tolerance": "mean |diff| <= 0.05 and max |diff| <= 0.10 (fraction of time)",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-shackleton-dg-ridge",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "shackleton-dg-ridge (-89.45, 222.69 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.6423,
+    "ldem240m": 0.8306,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.677,
+    "neighbourhood3x3": [
+     0.5105,
+     0.8473
+    ],
+    "permanentShadow": false
+   },
+   "difference": {
+    "vsCentre": -0.0347,
+    "ldem240mVsCentre": 0.1536
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": "high local gradient: single-pixel comparison not meaningful"
+  },
+  {
+   "id": "lola-avgsun-mons-malapert",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "mons-malapert (-85.98, 358.33 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.3459,
+    "ldem240m": 0.4384,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.4284,
+    "neighbourhood3x3": [
+     0.391,
+     0.534
+    ],
+    "permanentShadow": false
+   },
+   "difference": {
+    "vsCentre": -0.0825,
+    "ldem240mVsCentre": 0.0099
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-mons-mouton",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "mons-mouton (-84.6, 31.0 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.3104,
+    "ldem240m": 0.3118,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.3393,
+    "neighbourhood3x3": [
+     0.2735,
+     0.3563
+    ],
+    "permanentShadow": false
+   },
+   "difference": {
+    "vsCentre": -0.029,
+    "ldem240mVsCentre": -0.0275
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-connecting-ridge-ext",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "connecting-ridge-ext (-89.0, 227.0 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.1731,
+    "ldem240m": 0.1768,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.1984,
+    "neighbourhood3x3": [
+     0.1951,
+     0.2084
+    ],
+    "permanentShadow": false
+   },
+   "difference": {
+    "vsCentre": -0.0252,
+    "ldem240mVsCentre": -0.0215
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-shackleton-floor",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "shackleton-floor (-89.67, 129.78 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.0,
+    "ldem240m": 0.0,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.0,
+    "neighbourhood3x3": [
+     0.0,
+     0.0
+    ],
+    "permanentShadow": true
+   },
+   "difference": {
+    "vsCentre": 0.0,
+    "ldem240mVsCentre": 0.0
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "lola-avgsun-south-pole",
+   "category": "LOLA illumination",
+   "source": "NASA GSFC PGDA 69 (AVGVISIB, LPSR)",
+   "product": "LOLA LPSR / AVGVISIB_75S_120M_201608 (Mazarico et al. 2011)",
+   "epochUtc": "2025-01-01..2026-12-31 vs 18.6-yr product",
+   "location": "south-pole (-90.0, 0.0 E)",
+   "method": "MoonNav mean Sun visible fraction with lola-multires-v1 terrain; 240 m-only value reported for comparison",
+   "moonnav": {
+    "multires": 0.2576,
+    "ldem240m": 0.4708,
+    "terrain": [
+     "ok"
+    ]
+   },
+   "reference": {
+    "centrePixel": 0.0,
+    "neighbourhood3x3": [
+     0.0,
+     0.5792
+    ],
+    "permanentShadow": true
+   },
+   "difference": {
+    "vsCentre": 0.2576,
+    "ldem240mVsCentre": 0.4708
+   },
+   "tolerance": "|diff to centre pixel| <= 0.10, or within the 3x3 (360 m) neighbourhood range +/- 0.05",
+   "result": "pass",
+   "note": "high local gradient: single-pixel comparison not meaningful"
+  },
+  {
+   "id": "svs-2024-01-25T18:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2024-01-25T18:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": -6.3134,
+    "subEarthLonDeg": 3.1844,
+    "subSolarLatDeg": -1.5262,
+    "subSolarLonDeg": 3.1012,
+    "distanceKm": 401004.1,
+    "raHours": 8.57147,
+    "decDeg": 23.67797,
+    "diameterArcsec": 1787.34,
+    "illuminatedPct": 99.826
+   },
+   "reference": {
+    "subEarthLatDeg": -6.313,
+    "subEarthLonDeg": 3.184,
+    "subSolarLatDeg": -1.526,
+    "subSolarLonDeg": 3.101,
+    "distanceKm": 401004.0,
+    "raHours": 8.5715,
+    "decDeg": 23.678,
+    "diameterArcsec": 1787.3,
+    "illuminatedPct": 99.83
+   },
+   "difference": {
+    "subEarthDeg": 0.00056,
+    "subSolarDeg": 0.00028,
+    "distanceKm": 0.1,
+    "raDecDeg": 0.00041,
+    "diameterArcsec": 0.04,
+    "illuminatedPct": -0.004
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
    "id": "svs-2024-03-10T12:00",
    "category": "SVS",
    "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
    "product": "Moon Phase and Libration",
    "epochUtc": "2024-03-10T12:00",
    "location": "Moon (MOON_ME planetocentric), observer Earth centre",
-   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
    "moonnav": {
     "subEarthLatDeg": 2.7352,
     "subEarthLonDeg": 0.4251,
     "subSolarLatDeg": -0.676,
     "subSolarLonDeg": 178.5931,
-    "distanceKm": 356939.0
+    "distanceKm": 356939.0,
+    "raHours": 23.55603,
+    "decDeg": -5.16138,
+    "diameterArcsec": 2008.0,
+    "illuminatedPct": 0.058
    },
    "reference": {
     "subEarthLatDeg": 2.735,
     "subEarthLonDeg": 0.425,
     "subSolarLatDeg": -0.676,
     "subSolarLonDeg": 178.593,
-    "distanceKm": 356939.0
+    "distanceKm": 356939.0,
+    "raHours": 23.556,
+    "decDeg": -5.1614,
+    "diameterArcsec": 2008.0,
+    "illuminatedPct": 0.06
    },
    "difference": {
     "subEarthDeg": 0.00022,
     "subSolarDeg": 0.0001,
-    "distanceKm": 0.0
+    "distanceKm": 0.0,
+    "raDecDeg": 0.00045,
+    "diameterArcsec": 0.0,
+    "illuminatedPct": -0.002
    },
-   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "svs-2024-09-18T03:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2024-09-18T03:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": 1.2806,
+    "subEarthLonDeg": -0.7143,
+    "subSolarLatDeg": 0.3086,
+    "subSolarLonDeg": -0.9913,
+    "distanceKm": 357469.8,
+    "raHours": 23.757,
+    "decDeg": -2.64798,
+    "diameterArcsec": 2005.01,
+    "illuminatedPct": 99.992
+   },
+   "reference": {
+    "subEarthLatDeg": 1.281,
+    "subEarthLonDeg": -0.714,
+    "subSolarLatDeg": 0.309,
+    "subSolarLonDeg": -0.991,
+    "distanceKm": 357470.0,
+    "raHours": 23.757,
+    "decDeg": -2.648,
+    "diameterArcsec": 2005.0,
+    "illuminatedPct": 99.99
+   },
+   "difference": {
+    "subEarthDeg": 0.0005,
+    "subSolarDeg": 0.0005,
+    "distanceKm": -0.2,
+    "raDecDeg": 2e-05,
+    "diameterArcsec": 0.01,
+    "illuminatedPct": 0.002
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "svs-2025-03-14T06:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2025-03-14T06:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": -0.4591,
+    "subEarthLonDeg": 2.8924,
+    "subSolarLatDeg": -0.0878,
+    "subSolarLonDeg": 3.3019,
+    "distanceKm": 401414.1,
+    "raHours": 11.58909,
+    "decDeg": 3.05827,
+    "diameterArcsec": 1785.52,
+    "illuminatedPct": 99.998
+   },
+   "reference": {
+    "subEarthLatDeg": -0.459,
+    "subEarthLonDeg": 2.892,
+    "subSolarLatDeg": -0.088,
+    "subSolarLonDeg": 3.302,
+    "distanceKm": 401414.0,
+    "raHours": 11.5891,
+    "decDeg": 3.0583,
+    "diameterArcsec": 1785.5,
+    "illuminatedPct": 100.0
+   },
+   "difference": {
+    "subEarthDeg": 0.00041,
+    "subSolarDeg": 0.00022,
+    "distanceKm": 0.1,
+    "raDecDeg": 0.00015,
+    "diameterArcsec": 0.02,
+    "illuminatedPct": -0.002
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
    "result": "pass",
    "note": ""
   },
@@ -331,27 +701,80 @@
    "product": "Moon Phase and Libration",
    "epochUtc": "2025-06-01T00:00",
    "location": "Moon (MOON_ME planetocentric), observer Earth centre",
-   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
    "moonnav": {
     "subEarthLatDeg": -4.076,
     "subEarthLonDeg": 7.3357,
     "subSolarLatDeg": 1.4967,
     "subSolarLonDeg": 122.4013,
-    "distanceKm": 383839.4
+    "distanceKm": 383839.4,
+    "raHours": 9.23864,
+    "decDeg": 19.29959,
+    "diameterArcsec": 1867.27,
+    "illuminatedPct": 28.785
    },
    "reference": {
     "subEarthLatDeg": -4.076,
     "subEarthLonDeg": 7.336,
     "subSolarLatDeg": 1.497,
     "subSolarLonDeg": 122.401,
-    "distanceKm": 383839.0
+    "distanceKm": 383839.0,
+    "raHours": 9.2386,
+    "decDeg": 19.2996,
+    "diameterArcsec": 1867.3,
+    "illuminatedPct": 28.79
    },
    "difference": {
     "subEarthDeg": 0.0003,
     "subSolarDeg": 0.00042,
-    "distanceKm": 0.4
+    "distanceKm": 0.4,
+    "raDecDeg": 0.00057,
+    "diameterArcsec": -0.03,
+    "illuminatedPct": -0.005
    },
-   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "svs-2025-11-05T13:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2025-11-05T13:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": -5.5131,
+    "subEarthLonDeg": -0.929,
+    "subSolarLatDeg": -1.2928,
+    "subSolarLonDeg": -0.6778,
+    "distanceKm": 356989.4,
+    "raHours": 2.6003,
+    "decDeg": 19.71198,
+    "diameterArcsec": 2007.71,
+    "illuminatedPct": 99.864
+   },
+   "reference": {
+    "subEarthLatDeg": -5.513,
+    "subEarthLonDeg": -0.929,
+    "subSolarLatDeg": -1.293,
+    "subSolarLonDeg": -0.678,
+    "distanceKm": 356989.0,
+    "raHours": 2.6003,
+    "decDeg": 19.712,
+    "diameterArcsec": 2007.7,
+    "illuminatedPct": 99.86
+   },
+   "difference": {
+    "subEarthDeg": 0.0001,
+    "subSolarDeg": 0.00028,
+    "distanceKm": 0.4,
+    "raDecDeg": 2e-05,
+    "diameterArcsec": 0.01,
+    "illuminatedPct": 0.004
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
    "result": "pass",
    "note": ""
   },
@@ -362,27 +785,80 @@
    "product": "Moon Phase and Libration",
    "epochUtc": "2026-01-15T06:00",
    "location": "Moon (MOON_ME planetocentric), observer Earth centre",
-   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
    "moonnav": {
     "subEarthLatDeg": 6.6821,
     "subEarthLonDeg": -0.6583,
     "subSolarLatDeg": -1.1325,
     "subSolarLonDeg": -140.5495,
-    "distanceKm": 404409.4
+    "distanceKm": 404409.4,
+    "raHours": 16.8507,
+    "decDeg": -27.63099,
+    "diameterArcsec": 1772.29,
+    "illuminatedPct": 11.911
    },
    "reference": {
     "subEarthLatDeg": 6.682,
     "subEarthLonDeg": -0.658,
     "subSolarLatDeg": -1.132,
     "subSolarLonDeg": -140.549,
-    "distanceKm": 404410.0
+    "distanceKm": 404410.0,
+    "raHours": 16.8507,
+    "decDeg": -27.631,
+    "diameterArcsec": 1772.3,
+    "illuminatedPct": 11.91
    },
    "difference": {
     "subEarthDeg": 0.00031,
     "subSolarDeg": 0.00071,
-    "distanceKm": -0.6
+    "distanceKm": -0.6,
+    "raDecDeg": 1e-05,
+    "diameterArcsec": -0.01,
+    "illuminatedPct": 0.001
    },
-   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "svs-2026-04-02T00:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2026-04-02T00:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": 3.6829,
+    "subEarthLonDeg": 4.0734,
+    "subSolarLatDeg": 0.9232,
+    "subSolarLonDeg": 5.1974,
+    "distanceKm": 393285.2,
+    "raHours": 12.59024,
+    "decDeg": -6.85221,
+    "diameterArcsec": 1822.42,
+    "illuminatedPct": 99.932
+   },
+   "reference": {
+    "subEarthLatDeg": 3.683,
+    "subEarthLonDeg": 4.073,
+    "subSolarLatDeg": 0.923,
+    "subSolarLonDeg": 5.197,
+    "distanceKm": 393285.0,
+    "raHours": 12.5902,
+    "decDeg": -6.8522,
+    "diameterArcsec": 1822.4,
+    "illuminatedPct": 99.93
+   },
+   "difference": {
+    "subEarthDeg": 0.00041,
+    "subSolarDeg": 0.00045,
+    "distanceKm": 0.2,
+    "raDecDeg": 0.0006,
+    "diameterArcsec": 0.02,
+    "illuminatedPct": 0.002
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
    "result": "pass",
    "note": ""
   },
@@ -393,27 +869,80 @@
    "product": "Moon Phase and Libration",
    "epochUtc": "2026-06-21T12:00",
    "location": "Moon (MOON_ME planetocentric), observer Earth centre",
-   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
    "moonnav": {
     "subEarthLatDeg": 2.627,
     "subEarthLonDeg": 7.4258,
     "subSolarLatDeg": 1.3662,
     "subSolarLonDeg": 102.2729,
-    "distanceKm": 386102.7
+    "distanceKm": 386102.7,
+    "raHours": 11.63128,
+    "decDeg": 0.19649,
+    "diameterArcsec": 1856.32,
+    "illuminatedPct": 45.835
    },
    "reference": {
     "subEarthLatDeg": 2.627,
     "subEarthLonDeg": 7.426,
     "subSolarLatDeg": 1.366,
     "subSolarLonDeg": 102.273,
-    "distanceKm": 386103.0
+    "distanceKm": 386103.0,
+    "raHours": 11.6313,
+    "decDeg": 0.1965,
+    "diameterArcsec": 1856.3,
+    "illuminatedPct": 45.84
    },
    "difference": {
     "subEarthDeg": 0.0002,
     "subSolarDeg": 0.00022,
-    "distanceKm": -0.3
+    "distanceKm": -0.3,
+    "raDecDeg": 0.0003,
+    "diameterArcsec": 0.02,
+    "illuminatedPct": -0.005
    },
-   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
+   "result": "pass",
+   "note": ""
+  },
+  {
+   "id": "svs-2026-08-28T04:00",
+   "category": "SVS",
+   "source": "NASA SVS Dial-a-Moon API (values stamped on SVS 4930 frames)",
+   "product": "Moon Phase and Libration",
+   "epochUtc": "2026-08-28T04:00",
+   "location": "Moon (MOON_ME planetocentric), observer Earth centre",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
+   "moonnav": {
+    "subEarthLatDeg": -0.5606,
+    "subEarthLonDeg": -4.5985,
+    "subSolarLatDeg": -0.1141,
+    "subSolarLonDeg": -4.4351,
+    "distanceKm": 390444.5,
+    "raHours": 22.40453,
+    "decDeg": -9.48843,
+    "diameterArcsec": 1835.68,
+    "illuminatedPct": 99.998
+   },
+   "reference": {
+    "subEarthLatDeg": -0.561,
+    "subEarthLonDeg": -4.598,
+    "subSolarLatDeg": -0.114,
+    "subSolarLonDeg": -4.435,
+    "distanceKm": 390444.0,
+    "raHours": 22.4045,
+    "decDeg": -9.4884,
+    "diameterArcsec": 1835.7,
+    "illuminatedPct": 100.0
+   },
+   "difference": {
+    "subEarthDeg": 0.00064,
+    "subSolarDeg": 0.00014,
+    "distanceKm": 0.5,
+    "raDecDeg": 0.00044,
+    "diameterArcsec": -0.02,
+    "illuminatedPct": -0.002
+   },
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
    "result": "pass",
    "note": ""
   },
@@ -424,27 +953,38 @@
    "product": "Moon Phase and Libration",
    "epochUtc": "2026-12-03T00:00",
    "location": "Moon (MOON_ME planetocentric), observer Earth centre",
-   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); Earth-Moon distance from spkpos",
+   "method": "SPICE subpnt/subslr (INTERCEPT/ELLIPSOID, LT+S, observer EARTH, MOON_ME); distance, J2000 RA/Dec from spkpos (LT+S); diameter 2*asin(1737.4 km/d); illuminated fraction (1+cos phase angle)/2 from phaseq",
    "moonnav": {
     "subEarthLatDeg": 4.0999,
     "subEarthLonDeg": 6.8234,
     "subSolarLatDeg": -1.4616,
     "subSolarLonDeg": -104.2672,
-    "distanceKm": 386203.9
+    "distanceKm": 386203.9,
+    "raHours": 12.02405,
+    "decDeg": -3.57159,
+    "diameterArcsec": 1855.84,
+    "illuminatedPct": 31.968
    },
    "reference": {
     "subEarthLatDeg": 4.1,
     "subEarthLonDeg": 6.823,
     "subSolarLatDeg": -1.462,
     "subSolarLonDeg": -104.267,
-    "distanceKm": 386204.0
+    "distanceKm": 386204.0,
+    "raHours": 12.0241,
+    "decDeg": -3.5716,
+    "diameterArcsec": 1855.8,
+    "illuminatedPct": 31.97
    },
    "difference": {
     "subEarthDeg": 0.00041,
     "subSolarDeg": 0.00045,
-    "distanceKm": -0.1
+    "distanceKm": -0.1,
+    "raDecDeg": 0.00075,
+    "diameterArcsec": 0.04,
+    "illuminatedPct": -0.002
    },
-   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (SVS publishes whole km)",
+   "tolerance": "sub-points <= 0.01 deg (SVS publishes 3 decimals); distance <= 2 km (whole km); RA/Dec <= 0.01 deg; apparent diameter <= 1 arcsec; illuminated fraction <= 0.1 percentage point",
    "result": "pass",
    "note": ""
   },

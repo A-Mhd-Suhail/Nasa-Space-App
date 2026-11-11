@@ -87,3 +87,21 @@ describe("relief mesh topology", () => {
     expect(Math.max(...Array.from(g.indices))).toBeLessThan(nVerts);
   });
 });
+
+import { frameStats } from "@/components/shell/PerfPanel";
+
+describe("rendering diagnostics statistics", () => {
+  it("computes mean fps and frame-time percentiles from intervals", () => {
+    const s = frameStats([...Array(90).fill(16.7), ...Array(10).fill(100)], { count: 2, ms: 180 });
+    expect(s.frames).toBe(100);
+    expect(s.fpsMean).toBeCloseTo((1000 * 100) / (90 * 16.7 + 10 * 100), 0);
+    expect(s.frameMs.p50).toBe(16.7);
+    expect(s.frameMs.p95).toBe(100);
+    expect(s.slowFrames).toBe(10);
+    expect(s.longTasks).toBe(2);
+  });
+  it("handles an empty or invalid sample safely", () => {
+    expect(frameStats([]).frames).toBe(0);
+    expect(frameStats([NaN, -1, Infinity]).fpsMean).toBe(0);
+  });
+});

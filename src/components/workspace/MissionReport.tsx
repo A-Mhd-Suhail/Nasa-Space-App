@@ -38,6 +38,13 @@ function Row({ k, v, kind, info }: { k: string; v: React.ReactNode; kind?: DataK
 /** Complete mission report for one stored analysis. Every value is read from the stored result. */
 export function MissionReport({ analysisId, result: r, scenario, validation, resultSha256, completedAt, generatedAtUtc, appVersion }: Props) {
   const [slope, setSlope] = useState<number | null | undefined>(undefined);
+  const [illum, setIllum] = useState<{ permanentShadow: boolean | null; averageSunVisibility: number | null; averageEarthVisibility: number | null; permanentShadowProduct?: { product: string; productVersion: string; reference: string } } | null | undefined>(undefined);
+  useEffect(() => {
+    fetch(`/api/v1/illumination/point?lat=${r.site.latitudeDeg}&lon=${r.site.longitudeEastDeg}`)
+      .then((x) => (x.ok ? x.json() : null))
+      .then((d) => setIllum(d ?? null))
+      .catch(() => setIllum(null));
+  }, [r.site.latitudeDeg, r.site.longitudeEastDeg]);
   useEffect(() => {
     fetch(`/api/v1/terrain/point?lat=${r.site.latitudeDeg}&lon=${r.site.longitudeEastDeg}`)
       .then((x) => (x.ok ? x.json() : null))
@@ -85,6 +92,8 @@ export function MissionReport({ analysisId, result: r, scenario, validation, res
           <Row k="Latitude / longitude" v={`${r.site.latitudeDeg.toFixed(5)}° (planetocentric), ${r.site.longitudeEastDeg.toFixed(5)}° E`} kind="measured" />
           <Row k="Terrain elevation" v={`${r.site.heightM.toFixed(1)} m (${r.site.datum}); observer +${r.site.observerHeightM} m`} kind="measured" info={EXPLAIN.terrainElevation} />
           <Row k="Local slope" v={slope == null ? (slope === undefined ? "loading…" : "unavailable") : `${slope.toFixed(2)}° (480 m baseline)`} kind={slope == null ? "unavailable" : "calculated"} info={EXPLAIN.slope} />
+          <Row k="Permanent shadow (PSR)" v={illum === undefined ? "loading…" : illum?.permanentShadow == null ? "unknown (product unavailable or outside coverage)" : illum.permanentShadow ? "yes — inside a permanently shadowed region" : "no"} kind={illum?.permanentShadow == null ? "unavailable" : "measured"} info={EXPLAIN.psr} />
+          <Row k="Long-term sunlight / Earth (18.6 yr)" v={illum?.averageSunVisibility == null ? "unknown" : `${(illum.averageSunVisibility * 100).toFixed(1)}% Sun · ${illum.averageEarthVisibility == null ? "?" : (illum.averageEarthVisibility * 100).toFixed(1)}% Earth (LOLA team average; context for the analysed window below)`} kind={illum?.averageSunVisibility == null ? "unavailable" : "measured"} />
           <Row k="Mission time (UTC)" v={fmtUtc(r.timeRange.startUtc)} />
           <Row k="Analysis interval (UTC)" v={`${fmtUtc(r.timeRange.startUtc)} → ${fmtUtc(r.timeRange.endUtc)} (${(durS / 86400).toFixed(2)} days; a lunar solar day is ≈29.53 days)`} />
           <Row k="Sampling" v={`${r.timeRange.sampleStepSeconds} s · ${r.timeRange.sampleCount} samples · transitions refined to ${r.timeRange.refineToleranceSeconds} s · ${r.timeRange.timeScale}`} />
@@ -168,6 +177,7 @@ export function MissionReport({ analysisId, result: r, scenario, validation, res
           {r.provenance.kernelFiles.map((k) => <Row key={k.fileName} k={`  ${k.fileName}`} v={<span className="font-mono text-xs">{k.sha256.slice(0, 32)}…</span>} />)}
           <Row k="Terrain product" v={`${String(r.provenance.terrainProduct.fileName)} · ${String(r.provenance.terrainProduct.dataSetId)} ${String(r.provenance.terrainProduct.productVersion)} · ${String(r.provenance.terrainProduct.pixelSpacingM)} m`} />
           <Row k="Body-fixed frame" v={r.provenance.bodyFixedFrame} />
+          <Row k="PSR / long-term illumination" v={illum?.permanentShadowProduct ? `${illum.permanentShadowProduct.product} ${illum.permanentShadowProduct.productVersion} · ${illum.permanentShadowProduct.reference}` : "not available"} />
           <Row k="Algorithm / software" v={`${r.provenance.methodVersion} / ${r.provenance.softwareVersion}`} />
           <Row k="Result SHA-256" v={<span className="font-mono text-xs">{resultSha256 ?? "—"}</span>} />
         </dl>

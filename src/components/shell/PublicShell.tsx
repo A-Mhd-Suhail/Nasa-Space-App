@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/dal";
 import { LinkButton } from "../ui";
 import { MoonNavGlyph, MoonNavMark } from "./Mark";
 import { ModeToggle } from "./ModeToggle";
+import { PerfPanel, PerfToggle } from "./PerfPanel";
 import { ServiceBanner } from "./ServiceBanner";
 import { PublicMobileNav, PublicNavLinks } from "./PublicMobileNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -29,6 +30,7 @@ export async function PublicShell({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle signedIn={!!user} compact className="hidden lg:flex" />
+            <div className="hidden lg:block"><PerfToggle /></div>
             <div className="hidden lg:block"><ThemeToggle /></div>
             {user ? (
               <LinkButton href="/app" variant="primary" s="sm">Open workspace</LinkButton>
@@ -42,6 +44,7 @@ export async function PublicShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+      <PerfPanel />
       <ServiceBanner />
       <main id="main" className="flex-1">{children}</main>
       <footer className="border-t border-line bg-bg-2">

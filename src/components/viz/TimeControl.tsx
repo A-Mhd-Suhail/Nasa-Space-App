@@ -2,6 +2,7 @@
 import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TimeRow } from "@/lib/analysis-types";
+import { setPerfScene } from "../shell/PerfPanel";
 import { fmtUtc } from "../ui";
 
 /** Playback speeds as multiples of real time (1× = one simulated second per wall-clock second). */
@@ -52,6 +53,9 @@ export function TimeControl({ rows, t }: { rows: TimeRow[]; t: Timeline }) {
     idxRef.current = t.index;
   }, [t.index]);
 
+  useEffect(() => {
+    if (playing) setPerfScene("timeline-playback", { samples: n, speed, path: typeof window !== "undefined" ? window.location.pathname : "" });
+  }, [playing, speed, n]);
   // Simulated clock driven by requestAnimationFrame; loops within the playback range.
   useEffect(() => {
     if (!playing || n < 2) {

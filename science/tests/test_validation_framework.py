@@ -54,3 +54,37 @@ def test_svs_reference_compared_and_clamped_epochs_are_unavailable():
     assert out[1]["result"] == "unavailable"
     wrong = {**real, "subearth_lat": 5.1}
     assert svs_dialamoon(["2026-12-03T00:00"], fetch=lambda t: wrong)[0]["result"] == "fail"
+
+
+def test_svs_extended_fields_compared():
+    from moonnav_science.analysis import kernels
+    from moonnav_science.validation import svs_dialamoon
+
+    kernels()
+    # Values published by the SVS Dial-a-Moon API for 2025-06-01T00:00 (retrieved 2026-11-12).
+    real = {
+        "time": "2025-06-01T00:00",
+        "phase": 28.79,
+        "diameter": 1867.3,
+        "distance": 383839.0,
+        "j2000_ra": 9.2386,
+        "j2000_dec": 19.2996,
+        "subsolar_lon": 122.401,
+        "subsolar_lat": 1.497,
+        "subearth_lon": 7.336,
+        "subearth_lat": -4.076,
+    }
+    r = svs_dialamoon(["2025-06-01T00:00"], fetch=lambda t: real)[0]
+    assert r["result"] == "pass"
+    assert r["difference"]["raDecDeg"] <= 0.01 and abs(r["difference"]["illuminatedPct"]) <= 0.1
+    bad = {**real, "phase": 30.0}
+    assert svs_dialamoon(["2025-06-01T00:00"], fetch=lambda t: bad)[0]["result"] == "fail"
+
+
+def test_lola_illumination_check_unavailable_without_products(monkeypatch, tmp_path):
+    from moonnav_science import illumination, validation
+
+    monkeypatch.setattr(illumination, "_CACHE", {})
+    monkeypatch.setattr(validation, "DATA_DIR", tmp_path)
+    out = validation.lola_illumination_checks(n=2)
+    assert len(out) == 1 and out[0]["result"] == "unavailable"
