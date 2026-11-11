@@ -32,7 +32,7 @@ Not set on purpose: `SCIENCE_API_URL` (injected by the binding), `APP_URL` (deri
 - E2E needs the outbox: start the web server with `MAIL_DRIVER=outbox` in its environment (process env overrides `.env.local`). Never run the registering E2E suites against production, because they would send real email to `example.test` addresses.
 - Read-only production check: `E2E_BASE_URL=https://moonnav.vercel.app npx playwright test tests/e2e/public.spec.ts --project=chromium`.
 - If the illumination products change, run `npm run data:illum`, then `science/scripts/pack_illumination.py`, then upload the AVGVISIB parts to `moonnav-build-assets` and update `science/assets/illum/packed-manifest.json`.
-- Production and Preview share one Supabase database (no separate preview branch).
+- Local dev, Preview and Production share one Supabase database **and** the Supabase storage bucket `moonnav-objects`. Local `.env.local` uses `STORAGE_DRIVER=supabase`, so a job processed by any side (local poller or the Vercel drain) stays readable everywhere. The 502 earlier local objects were copied into the bucket on 2026-11-12. Don't switch local storage back to `local` while sharing the database.
 - Never put the PAT in a remote URL or git config. Never commit `.env.local`. Never print secret values.
 - Supabase is live. Do not reset, truncate or re-run its setup.
 

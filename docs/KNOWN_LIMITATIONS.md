@@ -20,7 +20,7 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
   - The cron backstop runs only daily on the Hobby plan; submissions and status polls trigger jobs immediately.
   - Science cold starts take several seconds (Python packages are installed at runtime).
   - On Vercel, long-term Sun/Earth visibility values come from copies rounded to 0.001 (max error 0.0005); PSR is exact.
-  - Production and Preview share one Supabase database.
+  - Local development, Preview and Production share one Supabase database and storage bucket. A local worker can therefore process production jobs; results stay readable because storage is shared.
 - **Previously:** Vercel, managed PostgreSQL (e.g. Neon), Cloudflare R2, Cloud Run and an email provider need the owner's accounts and credentials (see `docs/DEPLOYMENT.md`). Locally, storage uses the filesystem driver and email is written to `data/outbox/`.
 - **R2 driver and presigned uploads are implemented but not exercised against a real bucket** (no credentials). Status: BLOCKED.
 - **Docker image** (`science/Dockerfile`) was written but not built here (Docker is not installed on the development machine).
