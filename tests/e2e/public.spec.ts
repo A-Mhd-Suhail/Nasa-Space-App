@@ -87,7 +87,7 @@ test("health endpoint distinguishes web, database, science and worker", async ({
   expect(d.web.status).toBe("ok");
   expect(d.database.status).toBe("ok");
   expect(d.science.status).toBe("ok");
-  expect(["ok", "no_live_worker"]).toContain(d.worker.status);
+  expect(["ok", "no_live_worker", "on_demand"]).toContain(d.worker.status); // on_demand: serverless job drain (Vercel)
 });
 
 test("API errors use the consistent contract without stack traces", async ({ request }) => {

@@ -86,5 +86,6 @@ def test_lola_illumination_check_unavailable_without_products(monkeypatch, tmp_p
 
     monkeypatch.setattr(illumination, "_CACHE", {})
     monkeypatch.setattr(validation, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(illumination, "ASSETS_DIR", tmp_path / "none")
     out = validation.lola_illumination_checks(n=2)
     assert len(out) == 1 and out[0]["result"] == "unavailable"

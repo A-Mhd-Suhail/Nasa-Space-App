@@ -68,6 +68,7 @@ def test_rejects_size_mismatch_and_wrong_projection(tmp_path: Path) -> None:
 
 def test_point_reports_unavailable_without_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(illumination, "_CACHE", {})
+    monkeypatch.setattr(illumination, "ASSETS_DIR", tmp_path / "none")
     out = illumination.point(-89.5, 0.0, tmp_path)
     assert out["permanentShadow"] is None and out["averageSunVisibility"] is None
     assert out["permanentShadowStatus"].startswith("unavailable")
@@ -92,3 +93,22 @@ def test_real_products_known_sites(monkeypatch: pytest.MonkeyPatch) -> None:
     # outside 75 S coverage -> unknown
     eq = illumination.point(0.0, 0.0, DATA_DIR)
     assert eq["permanentShadow"] is None and "outside" in eq["permanentShadowStatus"]
+
+
+@needs_real
+def test_packed_copies_match_the_original_products(monkeypatch: pytest.MonkeyPatch) -> None:
+    packed_sun = DATA_DIR / "illum-packed" / "AVGVISIB_75S_120M_201608.npz"
+    psr_o = IllumRaster.open(DATA_DIR / "raw/illum/LPSR_75S_120M_201608.IMG", DATA_DIR / "raw/illum/LPSR_75S_120M_201608.LBL")
+    psr_p = IllumRaster.open_packed(
+        illumination.ASSETS_DIR / "LPSR_75S_120M_201608.npz", illumination.ASSETS_DIR / "LPSR_75S_120M_201608.LBL"
+    )
+    assert np.array_equal(psr_p.data.astype(bool), np.asarray(psr_o.data) > 0)  # lossless
+    if packed_sun.exists():
+        o = IllumRaster.open(DATA_DIR / "raw/illum/AVGVISIB_75S_120M_201608.IMG", DATA_DIR / "raw/illum/AVGVISIB_75S_120M_201608.LBL")
+        p = IllumRaster.open_packed(packed_sun, illumination.ASSETS_DIR / "AVGVISIB_75S_120M_201608.LBL")
+        rng = np.random.default_rng(3)
+        for la, lo in zip(rng.uniform(-89.9, -75.5, 200), rng.uniform(0, 360, 200), strict=True):
+            a, b = o.value_at(float(la), float(lo)), p.value_at(float(la), float(lo))
+            assert (a is None) == (b is None)
+            if a is not None and b is not None:
+                assert abs(a - b) <= 0.0005 + 1e-9

@@ -50,9 +50,41 @@ class IllumRaster:
     value_scale: float
     value_offset: float
     max_abs_lat_edge: float
-    data: NDArray[np.int16] = field(repr=False)
+    data: NDArray[Any] = field(repr=False)
     sha256: str = ""
+    packing: str = "original PDS IMG"
     pole = -1
+
+    @classmethod
+    def open_packed(cls, pack: Path, lbl: Path) -> IllumRaster:
+        """Serverless copy made by scripts/pack_illumination.py: LPSR bit-packed (lossless), AVGVISIB
+        rounded to 0.001 (max error 0.0005). Projection metadata comes from the original PDS label."""
+        label = parse_pds3_label(lbl.read_text(encoding="latin-1"))
+        lines, samples = int(_num(label, "LINES")), int(_num(label, "LINE_SAMPLES"))
+        with np.load(pack) as z:
+            if "bits" in z:
+                data: NDArray[Any] = np.unpackbits(z["bits"])[: lines * samples].reshape(lines, samples)
+                scale, offset, packing = 1.0, 0.0, "bit-packed copy (lossless)"
+            else:
+                data = z["q"]
+                scale, offset, packing = 0.001, 0.0, "copy rounded to 0.001 (max error 0.0005)"
+        if data.shape != (lines, samples):
+            raise DemValidationError(f"{pack.name}: shape does not match label")
+        return cls(
+            name=label.get("FILE_NAME", pack.name).replace(".IMG", ""),
+            label=label,
+            lines=lines,
+            samples=samples,
+            scale_m=_num(label, "MAP_SCALE"),
+            line_offset=_num(label, "LINE_PROJECTION_OFFSET"),
+            sample_offset=_num(label, "SAMPLE_PROJECTION_OFFSET"),
+            radius_ref_m=_num(label, "A_AXIS_RADIUS") * 1000.0,
+            value_scale=scale,
+            value_offset=offset,
+            max_abs_lat_edge=abs(_num(label, "MAXIMUM_LATITUDE")),
+            data=data,
+            packing=packing,
+        )
 
     @classmethod
     def open(cls, img: Path, lbl: Path, checksum: bool = False) -> IllumRaster:
@@ -108,11 +140,14 @@ class IllumRaster:
             "coverage": f"{self.max_abs_lat_edge} S to pole",
             "projection": "south polar stereographic (spherical, R = 1737.4 km)",
             "inputTopographyPeriod": f"{self.label.get('START_TIME', '?')[:10]} .. {self.label.get('STOP_TIME', '?')[:10]}",
+            "storage": self.packing,
             **SOURCE,
         }
 
 
 _CACHE: dict[str, IllumRaster] = {}
+# Committed labels + lossless PSR pack (science/assets/illum); AVGVISIB packs are fetched at build time.
+ASSETS_DIR = Path(__file__).resolve().parents[1] / "assets" / "illum"
 
 
 def raster(kind: str, data_dir: Path) -> IllumRaster | None:
@@ -121,9 +156,13 @@ def raster(kind: str, data_dir: Path) -> IllumRaster | None:
         return _CACHE[kind]
     name = PRODUCTS[kind]
     img, lbl = data_dir / "raw/illum" / f"{name}.IMG", data_dir / "raw/illum" / f"{name}.LBL"
-    if not img.exists() or not lbl.exists():
-        return None
-    r = IllumRaster.open(img, lbl)
+    if img.exists() and lbl.exists():
+        r = IllumRaster.open(img, lbl)
+    else:
+        pack = next((p for p in (ASSETS_DIR / f"{name}.npz", data_dir / "illum-packed" / f"{name}.npz") if p.exists()), None)
+        if pack is None or not (ASSETS_DIR / f"{name}.LBL").exists():
+            return None
+        r = IllumRaster.open_packed(pack, ASSETS_DIR / f"{name}.LBL")
     _CACHE[kind] = r
     return r
 

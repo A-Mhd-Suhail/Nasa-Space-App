@@ -1,0 +1,23 @@
+{
+ "bucket": "moonnav-build-assets",
+ "note": "AVGVISIB packs rounded to 0.001 for the Vercel science build; produced by scripts/pack_illumination.py",
+ "files": {
+  "AVGVISIB_75S_120M_201608": {
+   "parts": [
+    "illum/AVGVISIB_75S_120M_201608.npz.part0",
+    "illum/AVGVISIB_75S_120M_201608.npz.part1",
+    "illum/AVGVISIB_75S_120M_201608.npz.part2"
+   ],
+   "sha256": "d5f0cb2d005667ba68b78691e859d602ce545b63640dc6f0d7db83d727de7ceb",
+   "bytes": 59663432
+  },
+  "AVGVISIB_75S_120M_201608_EARTH": {
+   "parts": [
+    "illum/AVGVISIB_75S_120M_201608_EARTH.npz.part0",
+    "illum/AVGVISIB_75S_120M_201608_EARTH.npz.part1"
+   ],
+   "sha256": "9ec1fc345bfdfd6e2f3e5bc3b4e4b5321d1ef4326ae7d5703bb2cc249314f315",
+   "bytes": 32563565
+  }
+ }
+}

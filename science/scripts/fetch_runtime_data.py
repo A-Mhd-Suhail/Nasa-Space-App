@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 import urllib.request
 from pathlib import Path
@@ -62,6 +63,43 @@ def main() -> None:
             ok &= got
     if not (ok and fk_ok):
         raise SystemExit("runtime data download failed (see messages above)")
+    fetch_illumination_packs()
+
+
+def fetch_illumination_packs() -> None:
+    """LOLA long-term Sun/Earth visibility packs (0.001-rounded) from the private build bucket.
+
+    Optional: without them the API reports these values as "unavailable" (never 0). The PSR pack and
+    the PDS labels are committed in science/assets/illum.
+    """
+    url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    man = json.loads((SCI / "assets/illum/packed-manifest.json").read_text())
+    if not (url and key):
+        print("WARNING: no Supabase credentials in the build environment; long-term Sun/Earth lookups will be unavailable")
+        return
+    headers = {**UA, "apikey": key} if key.startswith("sb_") else {**UA, "apikey": key, "Authorization": f"Bearer {key}"}
+    for name, f in man["files"].items():
+        dest = SCI / "data/illum-packed" / f"{name}.npz"
+        if dest.exists() and sha(dest) == f["sha256"]:
+            continue
+        try:
+            blob = b"".join(
+                urllib.request.urlopen(
+                    urllib.request.Request(f"{url.rstrip('/')}/storage/v1/object/authenticated/{man['bucket']}/{p}", headers=headers),
+                    timeout=300,
+                ).read()
+                for p in f["parts"]
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARNING: {name} pack not downloaded ({type(exc).__name__}); lookups will be unavailable")
+            continue
+        if hashlib.sha256(blob).hexdigest() != f["sha256"]:
+            print(f"WARNING: {name} pack checksum mismatch; discarded")
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(blob)
+        print(f"OK   {dest.relative_to(SCI)} ({len(blob) / 1e6:.1f} MB)")
 
 
 if __name__ == "__main__":
