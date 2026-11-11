@@ -49,14 +49,14 @@ The science service cannot run on Vercel (Python, ~2 GB of NASA data, long CPU w
 ## 7. Optional data for the PSR / long-term sunlight layers
 `npm run data:illum` downloads the three LOLA illumination products (3 × 116 MB, SHA-256 checked) and rebuilds the map rasters. Without them the layers still show (the rasters are committed in `public/data/`), but point lookups and the Mission Report row say "unavailable".
 
-## 8. Vercel services layout (`vercel.json`, confirmed by the owner 2026-11-12)
-- **`app`** (Next.js, repo root) is public on `/(.*)`. Its binding to `science` injects `SCIENCE_API_URL` at runtime; don't set that variable in Vercel. `src/lib/science.ts#scienceUrl` joins it safely.
-- **`science`** (FastAPI, root `science/`, entrypoint `moonnav_science/api.py`) is **internal only**: no public rewrite, and every route still needs `SCIENCE_SERVICE_TOKEN`. The build command `python3 scripts/fetch_runtime_data.py` downloads LOLA 240 m + SPICE (~71 MB, SHA-256 checked) into `science/data`. Set `MOONNAV_TILE_CACHE=/tmp/moonnav-tiles`. The LOLA illumination rasters (333 MB) are not bundled, so on Vercel the PSR point lookups say "unavailable"; the map layers still work from `public/data`.
-- **Jobs (no polling worker on Vercel):** after a job is submitted, `after()` calls the science `POST /v1/worker/drain`. That runs queued jobs with the same lease protocol as the worker, through the `science → app` binding (`MOONNAV_INTERNAL_API_URL`). Two backstops cover jobs that stay queued: the job-status poll re-triggers a drain after 20 s, and a daily Vercel Cron calls `/api/internal/cron/drain`, protected by `CRON_SECRET`. Routes that trigger a drain set `maxDuration = 300`. On-demand mode turns on automatically on Vercel (`VERCEL` env), or locally with `JOB_MODE=on-demand`. Verified locally 2026-11-12: `workspace.spec.ts` 10/10 with no worker process running.
-- **Production env** (Vercel → Project → Settings → Environment Variables, Production and Preview):
-  - Auth and app: `APP_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`.
-  - Database: `DATABASE_URL`, `DATABASE_URL_DIRECT` (Supabase).
-  - Services: `SCIENCE_SERVICE_TOKEN` (both services), `CRON_SECRET`, `MOONNAV_TILE_CACHE`.
-  - Mail: `MAIL_DRIVER=smtp`, `SMTP_HOST`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`.
-  - Storage: `STORAGE_DRIVER` (+ `R2_*`, `STORAGE_SIGNING_SECRET`; the filesystem driver is not persistent on Vercel).
+## 8. Vercel deployment (live since 2026-11-12)
+- **Project**: `hack-zz/moonnav`, linked to the GitHub repo, so pushes to `main` deploy production. **Production URL: https://moonnav.vercel.app**.
+- **Services** (`vercel.json`):
+  - `app` (Next.js, repo root) is public on `/(.*)`. Its binding to `science` injects `SCIENCE_API_URL` at runtime; don't set that variable yourself.
+  - `science` (FastAPI, root `science/`, entrypoint `moonnav_science/api.py`) is internal only: no public rewrite, and every route still needs `SCIENCE_SERVICE_TOKEN`. Its build, `python3 scripts/fetch_runtime_data.py`, downloads LOLA 240 m + SPICE (~71 MB) and the long-term sunlight packs (~92 MB, from the private Supabase bucket `moonnav-build-assets`), all SHA-256 checked. The PSR pack is committed in `science/assets/illum`. High-res tiles are cached in `/tmp` (`MOONNAV_TILE_CACHE`).
+- **Analysis jobs** (no polling worker on Vercel): `src/lib/jobs.ts#drainJobs` leases queued jobs, calls science `POST /v1/jobs/compute` and stores the result and the real stage log. It is triggered by `after()` on submission, by the job-status poll for jobs queued > 20 s, and by a daily cron (`/api/internal/cron/drain`, `CRON_SECRET`). Routes that trigger a drain set `maxDuration = 300`. A circular `science → app` binding is rejected by Vercel, so science never calls the app.
+- **Storage**: `STORAGE_DRIVER=supabase`, a private bucket `moonnav-objects`, accessed through the Storage REST API with the server-side service key. Signed download URLs expire in 5 min.
+- **APP_URL**: if unset, it is derived from `VERCEL_PROJECT_PRODUCTION_URL` (production) or `VERCEL_URL` (previews). Set it if you add a custom domain.
+- **Env vars** (Production + Preview): see `CLAUDE_HANDOFF.md`. To change one: `npx vercel env add NAME --environment production --force`, then redeploy.
+- **Redeploy**: push to `main`, or run `npx vercel deploy --prod`. Preview: `npx vercel deploy`. Previews are behind Vercel login; test them with `npx vercel curl <path> --deployment <url>`.
 - `.vercelignore` keeps local data, virtualenvs, `.env*` and screenshots out of CLI uploads.

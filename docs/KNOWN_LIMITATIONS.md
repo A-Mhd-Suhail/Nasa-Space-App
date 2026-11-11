@@ -15,7 +15,12 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
 - **Horizons** is a validation reference (fixtures), not a live runtime provider.
 
 ## Platform and operations
-- **Not deployed (2026-11-12).** The Vercel CLI is not logged in; the `vercel.json` services layout is drafted and awaiting confirmation. The background worker cannot run on Vercel as a poller.
+- **Deployment (2026-11-12): live on Vercel** (https://moonnav.vercel.app).
+  - Serverless limits: each analysis job must finish within one function run (≤ 300 s on Hobby). A longer job's lease expires and it is retried.
+  - The cron backstop runs only daily on the Hobby plan; submissions and status polls trigger jobs immediately.
+  - Science cold starts take several seconds (Python packages are installed at runtime).
+  - On Vercel, long-term Sun/Earth visibility values come from copies rounded to 0.001 (max error 0.0005); PSR is exact.
+  - Production and Preview share one Supabase database.
 - **Previously:** Vercel, managed PostgreSQL (e.g. Neon), Cloudflare R2, Cloud Run and an email provider need the owner's accounts and credentials (see `docs/DEPLOYMENT.md`). Locally, storage uses the filesystem driver and email is written to `data/outbox/`.
 - **R2 driver and presigned uploads are implemented but not exercised against a real bucket** (no credentials). Status: BLOCKED.
 - **Docker image** (`science/Dockerfile`) was written but not built here (Docker is not installed on the development machine).

@@ -53,3 +53,14 @@ Measured with the built-in diagnostics (Advanced mode "Perf" button or `?perf=1`
 | GitHub push | remote `main` = local `1a759aa`; repository private |
 
 E2E suites read verification links from the local outbox. Start the web server with `MAIL_DRIVER=outbox` (process env overrides `.env.local`) before running them.
+
+## Deployment verification (2026-11-12, https://moonnav.vercel.app)
+| Check | Result |
+|---|---|
+| Preview (`moonnav-1yyv8jryl-hack-zz.vercel.app`) | health ok (web, DB, science, worker `on_demand`); SPICE Sun ephemeris, 24 h timeline, LOLA elevation/slope OK |
+| Production public E2E (`public.spec.ts`, Chromium) | **21/21 passed** (after adding the `on_demand` health status and serving the PSR packs) |
+| Production authenticated flow (verified test account) | sign-in 200 → project/scenario 201 → analysis job completed by the serverless drain (`vercel-iad1`, all 8 real stages) in ~6 s → PDF export via Supabase signed URL (`%PDF-`, 22.8 KB) → 5 m hazard screen 200 (2 tiles fetched in 1.5 s) |
+| Science internal-only | `/health`, `/v1/*` on the public domain → 404 |
+| Secrets | none in 5 pages + 16 JS chunks or the build log |
+| Local before deploy | on-demand jobs + Supabase storage: `workspace.spec.ts` 10/10 (no worker process); pytest 84; Vitest 61; lint/typecheck clean |
+| Production email | password-reset request 200, no errors logged; inbox arrival not yet confirmed by the owner |

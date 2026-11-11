@@ -47,7 +47,7 @@ export async function science<T>(path: string, init?: { method?: string; body?: 
 
 export async function scienceHealth(): Promise<{ status: string; [k: string]: unknown }> {
   try {
-    const r = await fetch(scienceUrl("/health"), { cache: "no-store", signal: AbortSignal.timeout(4000) });
+    const r = await fetch(scienceUrl("/health"), { cache: "no-store", signal: AbortSignal.timeout(12_000) }); // serverless cold starts can take several seconds
     return (await r.json()) as { status: string };
   } catch {
     return { status: "unavailable" };
