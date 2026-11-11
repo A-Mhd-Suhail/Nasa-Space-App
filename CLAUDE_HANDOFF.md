@@ -14,7 +14,7 @@ Last updated: 2026-11-12. Detail: `docs/DEPLOYMENT.md` §8, `docs/TESTING.md` (i
 | Science API | DONE | Runs as the internal `science` service. The build (`science/scripts/fetch_runtime_data.py`) downloads LOLA 240 m + SPICE from NASA/mirrors and the AVGVISIB packs from the private Supabase bucket `moonnav-build-assets`, all SHA-256 checked. The PSR pack and labels are committed in `science/assets/illum`. Cold starts install Python packages at runtime (several seconds). |
 | Worker | DONE (serverless) | No polling worker on Vercel. `src/lib/jobs.ts#drainJobs` leases queued jobs and calls science `POST /v1/jobs/compute`, which returns real stage timestamps. It is triggered by `after()` on submission, by the job-status poll when a job stays queued > 20 s, and by the daily cron. Locally the poller (`npm run dev`) still works. |
 | Storage | DONE | `STORAGE_DRIVER=supabase`: private bucket `moonnav-objects`, accessed through the Storage REST API with the server-side service key (`src/lib/storage.ts`). |
-| Gmail SMTP | DONE locally / PARTIAL in production | Variables: `MAIL_DRIVER=smtp`, `SMTP_HOST`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`; set in `.env.local` and in Vercel (Production + Preview). Locally verified end to end: sign-up → Gmail → link clicked → sign-in with `emailVerified: true`. In production a password-reset request returned 200 with no errors logged; inbox arrival is not yet confirmed by the owner. |
+| Gmail SMTP | DONE | Variables: `MAIL_DRIVER=smtp`, `SMTP_HOST`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`; set in `.env.local` and in Vercel (Production + Preview). Locally verified end to end: sign-up → Gmail → link clicked → sign-in with `emailVerified: true`. In production a password-reset email was sent and the owner confirmed it arrived in Gmail (2026-11-12). |
 | Secrets | DONE | No secret values in git history, staged diffs, the production JS bundles (5 pages, 16 chunks) or the build log (scanned 2026-11-12). |
 
 ## Environment variables in Vercel (names only; Production + Preview)
@@ -37,6 +37,6 @@ Not set on purpose: `SCIENCE_API_URL` (injected by the binding), `APP_URL` (deri
 - Supabase is live. Do not reset, truncate or re-run its setup.
 
 ## Exact user actions remaining
-1. Confirm that the production "reset password" email (sent 2026-11-12 to `amhdsuhail2026+moonnav@gmail.com`) arrived. Its link should point to https://moonnav.vercel.app. You don't need to use it.
-2. Rotate the Google App Password and the GitHub PAT (both were pasted into chat). Update `SMTP_PASSWORD` in `.env.local` and in Vercel → moonnav → Settings → Environment Variables, then redeploy.
+1. Rotate the Google App Password and the GitHub PAT (both were pasted into chat). Update `SMTP_PASSWORD` in `.env.local` and in Vercel → moonnav → Settings → Environment Variables, then redeploy.
+2. Push the pending local docs commits with the new token (`git push origin main`).
 3. Optional: give the PAT **Actions: Read** permission so CI results can be checked.

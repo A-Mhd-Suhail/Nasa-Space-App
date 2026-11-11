@@ -63,4 +63,4 @@ E2E suites read verification links from the local outbox. Start the web server w
 | Science internal-only | `/health`, `/v1/*` on the public domain → 404 |
 | Secrets | none in 5 pages + 16 JS chunks or the build log |
 | Local before deploy | on-demand jobs + Supabase storage: `workspace.spec.ts` 10/10 (no worker process); pytest 84; Vitest 61; lint/typecheck clean |
-| Production email | password-reset request 200, no errors logged; inbox arrival not yet confirmed by the owner |
+| Production email | password-reset email sent through Gmail SMTP; arrival confirmed by the owner |

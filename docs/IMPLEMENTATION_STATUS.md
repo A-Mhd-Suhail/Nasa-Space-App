@@ -93,7 +93,7 @@ Full checklist with evidence and blockers: **`FINAL_8_WORKSTREAMS.md`**.
 |---|---|
 | 1. GitHub push incl. CI | Pushed 2026-11-12 (`1a759aa`, private). Actions status not readable with this PAT. |
 | 2. Vercel deployment | **Live** at https://moonnav.vercel.app (app public, science internal, serverless job drain, Supabase storage). Verified 2026-11-12. |
-| 3. Real SMTP email | Gmail SMTP: verified end to end locally; set in Vercel; production inbox arrival awaiting the owner's confirmation. |
+| 3. Real SMTP email | Gmail SMTP: verified end to end locally; set in Vercel; production delivery confirmed by the owner (2026-11-12). |
 | 4. SVS 4930 validation | Verified Complete (numeric). Pixel comparison is not data-feasible. 52 pass / 0 fail / 1 unavailable. |
 | 5. PSR map layer | Verified Complete: LOLA LPSR/AVGVISIB layers, point lookup, report row, tests. |
 | 6. FPS instrumentation | Verified Complete on Apple M5 / Chromium: perf panel, baseline JSON, tests. |
