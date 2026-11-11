@@ -13,13 +13,43 @@ export const LEASE_SECONDS = 60;
 /** On Vercel there is no polling worker: jobs run on demand in the science function. */
 export const ON_DEMAND_JOBS = !!process.env.VERCEL || process.env.JOB_MODE === "on-demand";
 
-/** After the response is sent, ask the science service to process queued jobs (serverless mode only). */
+/** After the response is sent, process queued jobs in this function (serverless mode only). */
 export function kickJobDrain() {
   if (!ON_DEMAND_JOBS) return;
-  after(async () => {
-    const { science } = await import("./science");
-    await science("/v1/worker/drain?budget_s=240", { method: "POST", timeoutMs: 270_000 }).catch(() => undefined);
-  });
+  after(() => drainJobs().catch(() => undefined));
+}
+
+/**
+ * Serverless replacement for the polling worker: lease queued jobs with the same protocol, have the
+ * science service compute them, store the results. A job that outlives the function keeps no lease
+ * refresh, so its lease expires and the next drain retries it.
+ */
+export async function drainJobs(budgetMs = 240_000): Promise<{ processed: number; seconds: number }> {
+  const { science } = await import("./science");
+  const workerId = `vercel-${process.env.VERCEL_REGION ?? "local"}-${process.pid}`;
+  const t0 = Date.now();
+  let processed = 0;
+  while (Date.now() - t0 < budgetMs) {
+    const job = await claimJob(workerId);
+    if (!job) break;
+    const hb = setInterval(() => heartbeat(job.jobId, job.leaseToken).catch(() => undefined), 10_000); // keeps the lease alive
+    try {
+      const { result, stages } = await science<{ result: AnalysisResult & Record<string, unknown>; stages: { stage: string; progress: number; atUtc: string }[] }>("/v1/jobs/compute", { method: "POST", body: { scenario: job.scenario }, timeoutMs: 280_000 });
+      clearInterval(hb);
+      await recordStages(job.jobId, stages);
+      await heartbeat(job.jobId, job.leaseToken, 0.95, "uploading_result").catch(() => undefined);
+      await completeJob(job.jobId, job.leaseToken, { ...result, workerId } as AnalysisResult);
+    } catch (err) {
+      const bad = err instanceof ApiError && err.status === 422;
+      await failJob(job.jobId, job.leaseToken, bad
+        ? { retryable: false, code: err.code, message: err.message, field: err.fieldErrors?.[0]?.field ?? null }
+        : { retryable: true, code: "compute_error", message: "The science service could not complete this analysis" }).catch(() => undefined);
+    } finally {
+      clearInterval(hb);
+    }
+    processed++;
+  }
+  return { processed, seconds: Math.round((Date.now() - t0) / 100) / 10 };
 }
 const QUEUE_VERSION = "queue-v1";
 
@@ -105,6 +135,17 @@ async function leasedJob(jobId: string, leaseToken: string) {
     .limit(1);
   if (!j) throw new ApiError(409, "lease_lost", "Job is not leased with this token (cancelled, expired or completed)");
   return j;
+}
+
+/** Append stage transitions reported by the science service, with the times they actually happened. */
+async function recordStages(jobId: string, stages: { stage: string; progress: number; atUtc: string }[]) {
+  if (!stages.length) return;
+  const entries = stages.map((s) => ({ at: s.atUtc, msg: `stage ${s.stage}`, progress: s.progress }));
+  const last = stages[stages.length - 1];
+  await db()
+    .update(schema.analysisJobs)
+    .set({ log: sql`${schema.analysisJobs.log} || ${JSON.stringify(entries)}::jsonb`, stage: last.stage, progress: last.progress, updatedAt: new Date() })
+    .where(eq(schema.analysisJobs.id, jobId));
 }
 
 export async function heartbeat(jobId: string, leaseToken: string, progress?: number | null, stage?: string | null) {

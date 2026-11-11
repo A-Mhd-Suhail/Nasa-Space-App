@@ -111,24 +111,6 @@ def process_one(c: httpx.Client) -> bool:
     return True
 
 
-def drain(budget_s: float = 240.0) -> dict[str, object]:
-    """Process queued jobs until none is left or the time budget is used (serverless mode, no polling).
-
-    Jobs are leased exactly as the long-running worker does, so a drain and a poller can run side by side.
-    A job that outlives the function is recovered by its expired lease and retried.
-    """
-    t0, n = time.time(), 0
-    error: str | None = None
-    with _client() as c:
-        try:
-            while time.time() - t0 < budget_s and process_one(c):
-                n += 1
-        except httpx.HTTPError as exc:  # web backend unreachable or refused the worker token
-            error = f"job backend: {type(exc).__name__}"
-            log.warning("drain stopped: %s", exc)
-    return {"processed": n, "seconds": round(time.time() - t0, 1), "error": error}
-
-
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     if not TOKEN:

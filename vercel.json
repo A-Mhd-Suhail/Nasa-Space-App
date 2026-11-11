@@ -12,10 +12,7 @@
       "root": "science",
       "framework": "fastapi",
       "entrypoint": "moonnav_science/api.py",
-      "buildCommand": "python3 scripts/fetch_runtime_data.py",
-      "bindings": [
-        { "type": "service", "service": "app", "format": "url", "env": "MOONNAV_INTERNAL_API_URL" }
-      ]
+      "buildCommand": "python3 scripts/fetch_runtime_data.py"
     }
   },
   "rewrites": [

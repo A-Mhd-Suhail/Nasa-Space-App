@@ -179,7 +179,11 @@ test("user exports PDF, CSV and JSON with provenance; creates and revokes a shar
   expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
   // Tampered signed URL is rejected
   const { url } = await (await page.request.post("/api/v1/storage/presign-download", { data: { reportId: ids.json } })).json();
-  expect((await page.request.get(url.replace(/sig=[a-f0-9]{4}/, "sig=0000"))).status()).toBe(403);
+  // A tampered signature is refused by whichever storage driver signed the URL (local HMAC or Supabase token).
+  const tampered = /[?&]token=/.test(url) ? url.replace(/token=[^&]{8}/, "token=AAAAAAAA") : url.replace(/sig=[a-f0-9]{4}/, "sig=0000");
+  expect(tampered).not.toBe(url);
+  const bad = (await page.request.get(tampered)).status();
+  expect(/[?&]token=/.test(url) ? bad >= 400 && bad < 500 : bad === 403).toBeTruthy();
 
   await page.goto("/app/reports");
   await expect(page.getByRole("heading", { name: "Generated reports" })).toBeVisible();

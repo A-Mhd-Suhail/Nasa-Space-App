@@ -7,7 +7,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
 
 /**
- * Object storage. Production: Cloudflare R2 via the S3 API (server-side only).
+ * Object storage. Production: Cloudflare R2 via the S3 API, or a private Supabase Storage bucket via its
+ * REST API with the service key (both server-side only; the key never reaches the browser).
  * Development/test: a local filesystem driver with HMAC-signed, short-lived URLs.
  * Keys are always built server-side from typed parts - clients never supply raw keys.
  */
@@ -37,6 +38,28 @@ function r2(): S3Client {
   return s3;
 }
 
+// ---- Supabase Storage (private bucket) ------------------------------------------------------
+function sb() {
+  const e = env();
+  const base = `${(e.SUPABASE_URL ?? e.NEXT_PUBLIC_SUPABASE_URL)!.replace(/\/+$/, "")}/storage/v1`;
+  const k = e.SUPABASE_SERVICE_ROLE_KEY!;
+  // New-style secret keys (sb_secret_…) go in `apikey` only; legacy service_role JWTs also as Bearer.
+  const headers: Record<string, string> = k.startsWith("sb_") ? { apikey: k } : { apikey: k, Authorization: `Bearer ${k}` };
+  return { base, headers, bucket: e.SUPABASE_STORAGE_BUCKET };
+}
+const objPath = (key: string) => key.split("/").map(encodeURIComponent).join("/");
+let bucketReady = false;
+async function ensureBucket() {
+  if (bucketReady) return;
+  const { base, headers, bucket } = sb();
+  const r = await fetch(`${base}/bucket/${bucket}`, { headers, cache: "no-store" });
+  if (!r.ok) {
+    const c = await fetch(`${base}/bucket`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ id: bucket, name: bucket, public: false }) });
+    if (!c.ok && c.status !== 409) throw new Error(`storage bucket unavailable (HTTP ${c.status})`);
+  }
+  bucketReady = true;
+}
+
 function localPath(key: string) {
   // Local driver is development/test only; exclude from output tracing so data/ is never bundled.
   return path.join(/*turbopackIgnore: true*/ process.cwd(), env().LOCAL_STORAGE_DIR, key);
@@ -46,7 +69,12 @@ export async function putObject(key: string, body: Buffer | string, contentType:
   assertKey(key);
   const buf = typeof body === "string" ? Buffer.from(body) : body;
   const sha256 = createHash("sha256").update(buf).digest("hex");
-  if (env().STORAGE_DRIVER === "r2") {
+  if (env().STORAGE_DRIVER === "supabase") {
+    await ensureBucket();
+    const { base, headers, bucket } = sb();
+    const r = await fetch(`${base}/object/${bucket}/${objPath(key)}`, { method: "POST", headers: { ...headers, "Content-Type": contentType, "x-upsert": "true" }, body: new Uint8Array(buf) });
+    if (!r.ok) throw new Error(`storage upload failed (HTTP ${r.status})`);
+  } else if (env().STORAGE_DRIVER === "r2") {
     await r2().send(new PutObjectCommand({ Bucket: env().R2_BUCKET!, Key: key, Body: buf, ContentType: contentType, Metadata: { sha256 }, ChecksumSHA256: Buffer.from(sha256, "hex").toString("base64") }));
   } else {
     const p = localPath(key);
@@ -58,6 +86,12 @@ export async function putObject(key: string, body: Buffer | string, contentType:
 
 export async function getObject(key: string): Promise<Buffer> {
   assertKey(key);
+  if (env().STORAGE_DRIVER === "supabase") {
+    const { base, headers, bucket } = sb();
+    const r = await fetch(`${base}/object/authenticated/${bucket}/${objPath(key)}`, { headers, cache: "no-store" });
+    if (!r.ok) throw new Error(`storage read failed (HTTP ${r.status})`);
+    return Buffer.from(await r.arrayBuffer());
+  }
   if (env().STORAGE_DRIVER === "r2") {
     const r = await r2().send(new GetObjectCommand({ Bucket: env().R2_BUCKET!, Key: key }));
     return Buffer.from(await r.Body!.transformToByteArray());
@@ -69,6 +103,13 @@ export async function getObject(key: string): Promise<Buffer> {
 export async function presignDownload(key: string, filename: string, ttlSeconds = 300): Promise<string> {
   assertKey(key);
   const e = env();
+  if (e.STORAGE_DRIVER === "supabase") {
+    const { base, headers, bucket } = sb();
+    const r = await fetch(`${base}/object/sign/${bucket}/${objPath(key)}`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: ttlSeconds }), cache: "no-store" });
+    if (!r.ok) throw new Error(`storage signing failed (HTTP ${r.status})`);
+    const { signedURL } = (await r.json()) as { signedURL: string };
+    return `${base}${signedURL}&download=${encodeURIComponent(filename)}`;
+  }
   if (e.STORAGE_DRIVER === "r2") {
     return getSignedUrl(r2(), new GetObjectCommand({ Bucket: e.R2_BUCKET!, Key: key, ResponseContentDisposition: `attachment; filename="${filename}"` }), { expiresIn: ttlSeconds });
   }

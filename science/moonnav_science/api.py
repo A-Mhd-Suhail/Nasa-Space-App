@@ -12,6 +12,7 @@ import os
 import threading
 import time
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
@@ -82,14 +83,6 @@ def health() -> dict[str, Any]:
         out["terrain"] = {"status": "error", "message": str(exc)}
     out["status"] = "ok" if out["kernels"]["status"] == "ok" and out["terrain"]["status"] == "ok" else "degraded"
     return out
-
-
-@app.post("/v1/worker/drain", dependencies=[Depends(require_token)])
-def worker_drain(budget_s: float = Query(240.0, ge=1, le=280)) -> dict[str, Any]:
-    """Serverless replacement for the polling worker: run queued analysis jobs now (on Vercel)."""
-    from .worker import drain
-
-    return drain(budget_s)
 
 
 @app.get("/v1/products", dependencies=[Depends(require_token)])
@@ -289,6 +282,23 @@ def analyze(req: AnalyzeRequest) -> dict[str, Any]:
         result = run_analysis(sc)
     result["computeSeconds"] = round(time.time() - t0, 3)
     return result
+
+
+@app.post("/v1/jobs/compute", dependencies=[Depends(require_token)])
+def compute_job(req: AnalyzeRequest) -> dict[str, Any]:
+    """Compute a queued job's analysis (serverless mode: the web app holds the lease and stores the result).
+    Same bounds as the worker (run_analysis enforces the sample limit); no synchronous-size cap."""
+    stages: list[dict[str, Any]] = []
+
+    def progress(stage: str, fraction: float) -> None:  # real stage transitions with their UTC times
+        if not stages or stages[-1]["stage"] != stage:
+            stages.append({"stage": stage, "progress": round(fraction, 3), "atUtc": datetime.now(UTC).isoformat()})
+
+    t0 = time.time()
+    with SPICE_LOCK:
+        result = run_analysis(Scenario.from_dict(req.scenario), progress=progress)
+    result["computeSeconds"] = round(time.time() - t0, 3)
+    return {"result": result, "stages": stages}
 
 
 class HorizonsCheckRequest(BaseModel):

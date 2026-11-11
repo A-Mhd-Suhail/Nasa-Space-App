@@ -12,7 +12,11 @@ const schema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
   SCIENCE_API_URL: z.url().default("http://127.0.0.1:8001"),
   SCIENCE_SERVICE_TOKEN: z.string().min(24, "SCIENCE_SERVICE_TOKEN must be at least 24 characters"),
-  STORAGE_DRIVER: z.enum(["local", "r2"]).default("local"),
+  STORAGE_DRIVER: z.enum(["local", "r2", "supabase"]).default("local"),
+  SUPABASE_URL: z.url().optional(),
+  NEXT_PUBLIC_SUPABASE_URL: z.url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{2,62}$/).default("moonnav-objects"),
   LOCAL_STORAGE_DIR: z.string().default("data/objects"),
   STORAGE_SIGNING_SECRET: z.string().min(32).optional(),
   R2_ACCOUNT_ID: z.string().optional(),
@@ -42,7 +46,9 @@ export function isLocalOrigin(appUrl: string): boolean {
 
 export function env(): Env {
   if (cached) return cached;
-  const parsed = schema.safeParse(process.env);
+  // On Vercel, previews get a new URL per deployment: use the injected one unless APP_URL is set.
+  const vercelUrl = process.env.VERCEL_ENV === "production" ? process.env.VERCEL_PROJECT_PRODUCTION_URL : process.env.VERCEL_URL;
+  const parsed = schema.safeParse({ ...process.env, APP_URL: process.env.APP_URL || (vercelUrl ? `https://${vercelUrl}` : undefined) });
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     throw new Error(`Invalid server configuration: ${issues}`);
@@ -55,6 +61,9 @@ export function env(): Env {
   if (e.NODE_ENV === "production") {
     if (e.STORAGE_DRIVER === "r2" && !(e.R2_ACCESS_KEY_ID && e.R2_SECRET_ACCESS_KEY && e.R2_BUCKET && (e.R2_ENDPOINT || e.R2_ACCOUNT_ID))) {
       throw new Error("Invalid server configuration: R2 storage selected but R2_* variables are incomplete");
+    }
+    if (e.STORAGE_DRIVER === "supabase" && !((e.SUPABASE_URL || e.NEXT_PUBLIC_SUPABASE_URL) && e.SUPABASE_SERVICE_ROLE_KEY)) {
+      throw new Error("Invalid server configuration: STORAGE_DRIVER=supabase requires SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY");
     }
     if (e.MAIL_DRIVER === "smtp" && !e.SMTP_HOST) {
       throw new Error("Invalid server configuration: MAIL_DRIVER=smtp requires SMTP_HOST (and usually SMTP_USER / SMTP_PASSWORD)");
