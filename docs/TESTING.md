@@ -1,0 +1,41 @@
+# Testing
+
+| Suite | Command | Count (2026-11-11) | Covers |
+|---|---|---|---|
+| Science (pytest) | `npm run science:test` | **71 passed** (with data downloaded) | coordinate conversion, longitude wrap, polar ENU, az/el, DEM reader + checksums, curvature-aware horizon, terrain obstruction, disk visibility, interval refinement, SPICE vs stored JPL Horizons tables (< 0.01°), full analysis, power, Horizons live adapter (mocked: params, User-Agent, cache, backoff, give-up, no substitution), ephemeris endpoint incl. out-of-coverage and auth |
+| Unit (Vitest) | `npm test` | **59 passed** | contracts, longitude normalisation, polar projection, report builders (mission + comparison PDF/JSON/CSV), comparison engine (0–100 score breakdown, ties, Pareto, trade-off text, hour gates, unknown ≠ pass, site×date matrix, zero weights), feasibility grid, planner, staleness, globe direction maths |
+| E2E (Playwright) | `npx playwright test --project=chromium` (stack running on :3100) | **Chromium 53/53**, **WebKit 53/53** (single full runs, 2026-11-11); Firefox blocked (see below) | public pages + axe audits, auth/MFA/reset, IDOR/CSRF/roles, worker leases, scenario → job → analysis, Sun/Earth pages, compare, exports, share links, responsive visual sweep; **`features.spec.ts`**: Simple/Advanced mode (no reload, persisted), checklist endpoints, 2 sites × 2 dates comparison with trade-offs/Pareto/matrix/PDF export/preference persistence, time controls, mission report sections, live Horizons check, scenario immutability |
+| Static | `npm run lint` · `npm run typecheck` · `npm run build` | 0 errors | ESLint, TypeScript (with `next typegen`), production build |
+
+## Prerequisites
+`npm run setup` once (or `npm ci`, `cd science && uv sync`, `npm run data:fetch`, `npm run db:up && npm run db:migrate`). Start the stack with `npm run dev:all`, then `npm run db:seed-dev` for demo accounts. E2E suites register their own throw-away users.
+
+## Notes
+- WebKit/Firefox projects exist in `playwright.config.ts`; they need `npx playwright install` and were not run in this pass.
+- The live Horizons E2E accepts an honest "could not be reached" outcome when the network is offline; when Horizons answers it asserts `pass` (< 0.01°).
+- Mocks are used only for external-service tests (Horizons transport); they are never production data.
+
+## Core-feature pass additions (2026-11-11)
+- **Science**: `test_screening_and_tiles.py` (exact plane slope / zero roughness, hazard verdicts incl. missing data, suitability missing-data ≠ pass, multi-resolution sampling and horizon, multipart byte-range parsing, PDS retry/give-up/404, fallback to coarser terrain, 5 m vs 240 m agreement, endpoint auth/coverage), `test_validation_framework.py` (offline validation checks pass; SVS clamped epochs → unavailable; perturbed reference → fail).
+- **Unit**: operational windows (`operations.test.ts`), global relief sampler and mesh topology, terrain-aware comparison gates and trade-off text.
+- **E2E** `planner.spec.ts`: one-click demo (seeded, restricted, isolated between sessions), operational windows, Mission Planner suitability / matrix / hazards / sensitivity, global LOLA relief (true scale by default, labelled exaggeration), `/validation`, high-resolution terrain reporting.
+- **Validation suite**: `npm run science:validate` → `docs/VALIDATION_REPORT.md` (38 pass, 0 fail, 1 reference unavailable).
+
+## Cross-browser status
+| Engine | Result |
+|---|---|
+| Chromium | 53/53 |
+| WebKit (Safari engine) | 53/53 — found and fixed a real WebKit-only bug: after a correct password on an MFA account the login form raced the two-factor redirect and bounced the user to /login |
+| Firefox | **Blocked**: Playwright's patched Firefox 159 (`firefox-1572`) exits with "Could not find profile folder" on this macOS 27.2 host, also after a forced reinstall and outside the command sandbox (its code signature reports missing resources). Stock Firefox cannot replace Playwright's build. Re-run `npx playwright test --project=firefox` on another host or after a Playwright update. |
+
+## Performance (local dev server, cached tiles)
+| Operation | Time |
+|---|---|
+| Hazard screen, 5 m, 201×201 cells | 0.07 s |
+| Suitability 7×7 cells × 169 epochs | 0.40 s |
+| Sensitivity 5×5 + 7 date shifts | 0.29 s |
+| Site × date matrix 4 × 3 | 0.19 s |
+| Synchronous 24 h analysis | 0.25 s |
+| First use of a new 5 m area (tile download from PDS) | ~1–2 min (one-time) |
+| Globe JS heap: default LOD / zoomed LOD | 24 MB / 102 MB |
+Frame rate was measured only under headless software GL (≈5 fps) and is not representative of GPU hardware; it was not verified on a real GPU in this pass.

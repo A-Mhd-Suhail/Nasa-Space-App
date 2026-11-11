@@ -1,0 +1,38 @@
+{
+  "window": [
+    "2026-11-15T00:00:00Z",
+    "2026-12-15T00:00:00Z",
+    1800
+  ],
+  "generatedAtUtc": "2026-11-10T15:10:48+00:00",
+  "items": [
+    {
+      "siteKey": "shackleton",
+      "name": "Shackleton",
+      "sunFraction": 0.0,
+      "earthFraction": 0.0,
+      "quality": "medium"
+    },
+    {
+      "siteKey": "de-gerlache",
+      "name": "de Gerlache",
+      "sunFraction": 0.0,
+      "earthFraction": 0.0,
+      "quality": "medium"
+    },
+    {
+      "siteKey": "mons-malapert",
+      "name": "Mons Malapert",
+      "sunFraction": 0.58499,
+      "earthFraction": 1.0,
+      "quality": "medium"
+    },
+    {
+      "siteKey": "mons-mouton",
+      "name": "Mons Mouton",
+      "sunFraction": 0.41577,
+      "earthFraction": 0.60769,
+      "quality": "low"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "projection": {
+    "name": "LOLA south polar stereographic (spherical)",
+    "code": "MOONNAV:LOLA-SPS",
+    "radiusM": 1737400.0,
+    "centerLatitude": -90,
+    "centerLongitude": 0,
+    "formula": "x = 2R tan(pi/4 + lat/2) sin(lon); y = 2R tan(pi/4 + lat/2) cos(lon)"
+  },
+  "extentM": [
+    -457440.0,
+    -457440.0,
+    457440.0,
+    457440.0
+  ],
+  "approxHalfWidthM": 457440.0,
+  "pixelSpacingM": 480.0,
+  "layers": {
+    "hillshade": {
+      "file": "/data/lola_75s_240m_hillshade.webp",
+      "sha256": "7d5d64ec098fb7a28fdb91a60a2a198c976492cfded8675921932642a7647ad7",
+      "label": "LOLA hillshade (derived visual)",
+      "kind": "derived-visual"
+    },
+    "elevation": {
+      "file": "/data/lola_75s_240m_elevation.webp",
+      "sha256": "e3c451163b1615b77186a44107bbb56fc13056d8987cd3cc415ce09fa97636cf",
+      "label": "LOLA elevation colour (-6 km to +6 km)",
+      "kind": "derived-visual",
+      "rangeM": [
+        -6000.0,
+        6000.0
+      ]
+    },
+    "slope": {
+      "file": "/data/lola_75s_240m_slope.webp",
+      "sha256": "0c932fd1f7255573e2dbb172e2f69d4a7f4628975432561fe2f994ba28e0366b",
+      "label": "LOLA slope (0-30 deg, 480 m baseline)",
+      "kind": "derived-visual",
+      "rangeDeg": [
+        0,
+        30
+      ]
+    }
+  },
+  "sourceProduct": {
+    "productId": "lola-ldem-75s-240m-v2",
+    "dataSetId": "LRO-L-LOLA-4-GDR-V1.0",
+    "productVersion": "V2.0",
+    "fileName": "LDEM_75S_240M.IMG",
+    "projection": "POLAR STEREOGRAPHIC (spherical)",
+    "frame": "MEAN EARTH/POLAR AXIS OF DE421",
+    "referenceRadiusM": 1737400.0,
+    "pixelSpacingM": 240.0,
+    "scalingFactor": 0.5,
+    "lines": 3812,
+    "samples": 3812,
+    "latitudeType": "planetocentric",
+    "longitudeConvention": "east-positive",
+    "coverage": "south of 75.0 deg S",
+    "noDataPolicy": "outside labelled coverage -> null (never zero)",
+    "sha256": "d031efe2611b17dfbf3c158f5e15dc04cd5719349dcbf6384bb21fd97697c490"
+  },
+  "processing": "2x2 block mean of source heights; gradient hillshade (sun az 315 deg image-space, alt 45 deg). Visual only: analyses always use the full-resolution source.",
+  "generatedAtUtc": "2026-11-10T15:10:43+00:00",
+  "generator": "science/scripts/build_assets.py"
+}

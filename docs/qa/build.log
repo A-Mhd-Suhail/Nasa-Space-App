@@ -1,0 +1,95 @@
+▲ Next.js 16.4.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 12ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 647ms
+  Running TypeScript ...
+  Finished TypeScript in 1823ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/31) ...
+  Generating static pages using 9 workers (7/31) 
+  Generating static pages using 9 workers (15/31) 
+  Generating static pages using 9 workers (23/31) 
+✓ Generating static pages using 9 workers (31/31) in 118ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/audit
+├ ƒ /admin/data
+├ ƒ /admin/jobs
+├ ƒ /admin/users
+├ ƒ /api/auth/[...all]
+├ ƒ /api/internal/jobs/[jobId]/complete
+├ ƒ /api/internal/jobs/[jobId]/fail
+├ ƒ /api/internal/jobs/[jobId]/heartbeat
+├ ƒ /api/internal/jobs/claim
+├ ƒ /api/v1/admin/jobs/[jobId]/retry
+├ ƒ /api/v1/admin/products/[productId]/status
+├ ƒ /api/v1/admin/users/[userId]/role
+├ ƒ /api/v1/analyses
+├ ƒ /api/v1/analyses/[analysisId]
+├ ƒ /api/v1/analyses/[analysisId]/timeseries
+├ ƒ /api/v1/comparisons
+├ ƒ /api/v1/data-products
+├ ƒ /api/v1/health
+├ ƒ /api/v1/jobs/[jobId]
+├ ƒ /api/v1/me
+├ ƒ /api/v1/me/export
+├ ƒ /api/v1/projects
+├ ƒ /api/v1/projects/[projectId]
+├ ƒ /api/v1/projects/[projectId]/duplicate
+├ ƒ /api/v1/reports
+├ ƒ /api/v1/reports/[reportId]
+├ ƒ /api/v1/reports/[reportId]/share-links
+├ ƒ /api/v1/scenarios
+├ ƒ /api/v1/scenarios/[scenarioId]
+├ ƒ /api/v1/share-links/[shareId]
+├ ƒ /api/v1/sites
+├ ƒ /api/v1/sites/[siteId]
+├ ƒ /api/v1/storage/local
+├ ƒ /api/v1/storage/presign-download
+├ ƒ /api/v1/storage/presign-upload
+├ ƒ /api/v1/terrain/horizon
+├ ƒ /api/v1/terrain/patch
+├ ƒ /api/v1/terrain/point
+├ ƒ /api/v1/terrain/profile
+├ ƒ /app
+├ ƒ /app/analyses/[analysisId]
+├ ƒ /app/analysis/earth
+├ ƒ /app/analysis/sun
+├ ƒ /app/compare
+├ ƒ /app/explorer
+├ ƒ /app/onboarding
+├ ƒ /app/projects
+├ ƒ /app/projects/[projectId]
+├ ƒ /app/reports
+├ ƒ /app/scenarios/new
+├ ƒ /app/settings
+├ ƒ /app/sites/[siteId]
+├ ƒ /explore
+├ ƒ /forgot-password
+├ ƒ /learn
+├ ƒ /limitations
+├ ƒ /login
+├ ƒ /login/two-factor
+├ ƒ /methodology
+├ ƒ /privacy
+├ ƒ /register
+├ ƒ /reset-password
+├ ƒ /settings/profile
+├ ƒ /settings/security
+├ ƒ /share/[token]
+├ ƒ /sources
+├ ƒ /terms
+└ ƒ /verify-email
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

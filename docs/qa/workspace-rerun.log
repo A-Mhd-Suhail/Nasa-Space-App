@@ -1,0 +1,13 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/workspace.spec.ts:23:1 › user registers, verifies email and completes onboarding (1.2s)
+  ✓  2 [chromium] › tests/e2e/workspace.spec.ts:58:1 › user creates a project + guided scenario and the job runs queued -> completed (2.6s)
+  ✓  3 [chromium] › tests/e2e/workspace.spec.ts:74:1 › custom-coordinate scenario validates coverage, then runs (2.6s)
+  ✓  4 [chromium] › tests/e2e/workspace.spec.ts:92:1 › Sun & Power and Earth & DTE pages show computed geometry, intervals and RF limitation (3.0s)
+  ✓  5 [chromium] › tests/e2e/workspace.spec.ts:108:1 › user compares two analyses and sees compatibility warnings and trade-offs (409ms)
+  ✓  6 [chromium] › tests/e2e/workspace.spec.ts:117:1 › user exports PDF, CSV and JSON with provenance; creates and revokes a share link (876ms)
+  ✓  7 [chromium] › tests/e2e/workspace.spec.ts:159:1 › scenarios are immutable at the database level and analysis submission is idempotent (81ms)
+  ✓  8 [chromium] › tests/e2e/workspace.spec.ts:167:1 › forgot password: non-enumerating request, emailed link, reset, old sessions revoked, sign in with new password (1.9s)
+
+  8 passed (13.3s)

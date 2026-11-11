@@ -1,0 +1,8 @@
+node_modules
+.next
+data
+science/.venv
+playwright-report
+test-results
+docs/screenshots
+.git

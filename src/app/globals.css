@@ -1,0 +1,283 @@
+@import "tailwindcss";
+@import "ol/ol.css";
+
+/*
+ * MoonNav — "Traverse Field Book" design system (docs/DESIGN_SYSTEM.md, DESIGN.md).
+ * Light: parchment field book with basalt ink. Dark: basalt night with chalk ink.
+ * Semantic roles keep their names across themes:
+ *   accent  = copper  (selection, primary action, the traverse line)
+ *   sun     = champagne ochre (Sun, illumination)
+ *   earth   = lunar violet   (Earth, line of sight)
+ *   ok/bad/warn/unknown = verified pass / blocked / partial / unknown
+ * Every text token is ≥ 4.5:1 on paper, sheet and band surfaces (contrast table in DESIGN_SYSTEM.md).
+ */
+:root,
+[data-theme="light"] {
+  --bg: #f4f0e7; /* paper */
+  --bg-2: #ece6d9; /* band */
+  --panel: #fffcf5; /* sheet */
+  --panel-2: #f8f3e8; /* inset sheet */
+  --panel-3: #efe8da; /* pressed / hover */
+  --line: #ddd6c9; /* rule */
+  --line-2: #cbc2b1; /* strong rule */
+  --text: #292722; /* basalt ink */
+  --text-2: #4a463e;
+  --muted: #68635a;
+  --accent: #9a543c; /* copper */
+  --accent-ink: #fffcf5;
+  --accent-soft: rgb(154 84 60 / 0.1);
+  --sun: #82601f;
+  --sun-soft: rgb(197 164 109 / 0.22);
+  --sun-mark: #c5a46d; /* champagne, graphics only */
+  --earth: #5f5589;
+  --earth-soft: rgb(95 85 137 / 0.11);
+  --earth-mark: #8a7fb8;
+  --ok: #3f6446;
+  --ok-soft: rgb(126 136 118 / 0.2);
+  --bad: #a8402f;
+  --bad-soft: rgb(168 64 47 / 0.1);
+  --warn: #7e5312;
+  --unknown: #5f5a50;
+  --unknown-soft: rgb(106 101 91 / 0.12);
+  --grid-dot: rgb(41 39 34 / 0.07);
+  --shadow-color: 41 39 34;
+  --viewport: #1c1a17; /* instrument viewports (map frame, 3D) stay night-lit in both themes */
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #1c1a17;
+  --bg-2: #211f1b;
+  --panel: #25221e;
+  --panel-2: #2b2823;
+  --panel-3: #34302a;
+  --line: #3a362f;
+  --line-2: #4a453c;
+  --text: #efe9dd;
+  --text-2: #cfc7b8;
+  --muted: #a69f91;
+  --accent: #d99577;
+  --accent-ink: #1c1a17;
+  --accent-soft: rgb(217 149 119 / 0.14);
+  --sun: #e2be7a;
+  --sun-soft: rgb(226 190 122 / 0.14);
+  --sun-mark: #e2be7a;
+  --earth: #afa4d6;
+  --earth-soft: rgb(175 164 214 / 0.14);
+  --earth-mark: #afa4d6;
+  --ok: #94be99;
+  --ok-soft: rgb(148 190 153 / 0.14);
+  --bad: #e8907f;
+  --bad-soft: rgb(232 144 127 / 0.14);
+  --warn: #e0b36a;
+  --unknown: #a9a396;
+  --unknown-soft: rgb(169 163 150 / 0.14);
+  --grid-dot: rgb(239 233 221 / 0.05);
+  --shadow-color: 0 0 0;
+  --viewport: #141210;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-panel-3: var(--panel-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-sun-mark: var(--sun-mark);
+  --color-earth: var(--earth);
+  --color-earth-soft: var(--earth-soft);
+  --color-earth-mark: var(--earth-mark);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-warn: var(--warn);
+  --color-unknown: var(--unknown);
+  --color-unknown-soft: var(--unknown-soft);
+  --color-viewport: var(--viewport);
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+  --shadow-sheet: 0 1px 2px rgb(var(--shadow-color) / 0.06), 0 8px 24px -12px rgb(var(--shadow-color) / 0.18);
+  --shadow-float: 0 2px 6px rgb(var(--shadow-color) / 0.08), 0 24px 48px -20px rgb(var(--shadow-color) / 0.35);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  /* faint survey grid: the field book's page */
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  /* long identifiers (hashes, IDs, URLs) wrap instead of widening the page */
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+.font-display {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+}
+
+.num,
+td,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::selection {
+  background: var(--sun-soft);
+  color: var(--text);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--accent);
+  accent-color: var(--accent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+
+/* Links inside running text are underlined, not colour-only (WCAG 1.4.1). */
+p a,
+label a,
+dd a,
+li > a.inline-link,
+[role="status"] a,
+[role="alert"] a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* The traverse: a copper dashed route, the system's signature line. */
+.traverse-line {
+  stroke: var(--accent);
+  stroke-width: 1.75;
+  stroke-dasharray: 6 5;
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes draw-traverse {
+  from {
+    stroke-dashoffset: 400;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* OpenLayers controls in the field-book palette */
+.ol-control button {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line-2);
+  border-radius: 4px !important;
+}
+.ol-control button:hover,
+.ol-control button:focus {
+  background: var(--panel-3) !important;
+}
+.ol-control {
+  background: transparent !important;
+}
+.ol-scale-line {
+  background: rgb(28 26 23 / 0.7);
+  border-radius: 3px;
+}
+.ol-scale-line-inner {
+  color: #efe9dd;
+  border-color: #efe9dd;
+}
+.ol-attribution {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scroll containers are positioning contexts, so absolutely positioned descendants
+   (e.g. screen-reader-only labels inside wide tables) cannot widen the page. */
+.overflow-auto,
+.overflow-x-auto,
+.overflow-y-auto {
+  position: relative;
+}
+
+/* Placeholders keep AA contrast (they are hints people read). */
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+/* OpenLayers scale bar meets the 11px floor */
+.ol-scale-line-inner {
+  font-size: 11.5px;
+  font-family: var(--font-plex-mono), monospace;
+}
+
+/* Simple / Advanced display mode (see components/shell/ModeToggle.tsx). */
+html[data-mode="simple"] .adv-only, html[data-mode="simple"] .adv-only-cell { display: none !important; }
+html[data-mode="advanced"] .simple-only { display: none !important; }
+
+/* Info tips: visible on hover and keyboard focus; the tooltip spans its nearest positioned
+   container (e.g. the metric card), so it never extends past the card or the viewport. */
+.infotip > [role="tooltip"] { display: none; }
+.infotip:hover > [role="tooltip"], .infotip:focus-within > [role="tooltip"] { display: block; }
+
+/* Print: reports and comparison briefs print as clean documents. */
+@media print {
+  header, nav, aside, footer, .no-print, [data-testid="mode-toggle"] { display: none !important; }
+  html[data-mode] .adv-only, html[data-mode] .simple-only { display: block !important; }
+  main { padding: 0 !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .print-break { break-before: page; }
+  section, table, .avoid-break { break-inside: avoid; }
+}

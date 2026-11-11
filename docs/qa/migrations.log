@@ -1,0 +1,12 @@
+== fresh
+migrations applied
+sites seeded: 17
+data products seeded: 3
+== rerun
+migrations applied
+sites seeded: 17
+data products seeded: 3
+== existing dev db
+migrations applied
+sites seeded: 17
+data products seeded: 3

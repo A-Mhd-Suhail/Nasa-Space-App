@@ -1,0 +1,40 @@
+{
+ "kind": "moonnav.global-relief",
+ "source": {
+  "product": "LDEM_16",
+  "dataSetId": "LRO-L-LOLA-4-GDR-V1.0",
+  "productVersion": "V3.1",
+  "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img",
+  "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+  "labelSha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+  "resolution": "16 px/deg (~1.9 km at the equator)"
+ },
+ "layout": "int16 LE metres above 1737.4 km sphere; row 0 = 90N, col 0 = 0E (cell centres); simple cylindrical",
+ "processing": "exact block mean of LDEM_16 heights (DN*SCALING_FACTOR), rounded to 1 m",
+ "frame": "MEAN EARTH/POLAR AXIS OF DE421",
+ "referenceRadiusM": 1737400.0,
+ "levels": [
+  {
+   "file": "global_relief_4ppd.i16",
+   "width": 1440,
+   "height": 720,
+   "pixelsPerDegree": 4,
+   "equatorialSpacingKm": 7.58,
+   "sha256": "a8515a5121369846c06ff008ac9102321613ccf06af771b9154ff7b91a48a44e",
+   "minM": -8613,
+   "maxM": 10428
+  },
+  {
+   "file": "global_relief_8ppd.i16",
+   "width": 2880,
+   "height": 1440,
+   "pixelsPerDegree": 8,
+   "equatorialSpacingKm": 3.79,
+   "sha256": "06beff58d8a42d445cb08602df9ab9cb5625a46174d12baa0680afb9202cc067",
+   "minM": -8729,
+   "maxM": 10552
+  }
+ ],
+ "use": "display only (3D globe relief); scientific calculations use the PDS products directly",
+ "generatedAtUtc": "2026-11-11T01:20:28Z"
+}

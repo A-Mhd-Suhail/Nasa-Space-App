@@ -1,0 +1,157 @@
+== lint
+exit=0
+== typecheck
+Generating route types...
+✓ Types generated successfully
+exit=0
+== vitest
+
+ RUN  v5.1.0 /Users/suhail/Desktop/MoonNav
+
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  20:06:04
+   Duration  269ms (import 52%, tests 32%, transform 16%, worker 1%)
+
+exit=0
+== pytest
+All checks passed!
+15 files already formatted
+Success: no issues found in 11 source files
+============================= test session starts ==============================
+platform darwin -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /Users/suhail/Desktop/MoonNav/science/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/suhail/Desktop/MoonNav/science
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0
+collecting ... collected 48 items
+
+tests/test_ephemeris_and_analysis.py::test_utc_et_roundtrip_and_known_offset PASSED [  2%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[SUN-south_pole] PASSED [  4%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[SUN-mons_mouton] PASSED [  6%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[SUN-shackleton_rim_like] PASSED [  8%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[EARTH-south_pole] PASSED [ 10%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[EARTH-mons_mouton] PASSED [ 12%]
+tests/test_ephemeris_and_analysis.py::test_spice_matches_horizons[EARTH-shackleton_rim_like] PASSED [ 14%]
+tests/test_ephemeris_and_analysis.py::test_analysis_without_panel_reports_no_energy PASSED [ 16%]
+tests/test_ephemeris_and_analysis.py::test_analysis_is_deterministic PASSED [ 18%]
+tests/test_ephemeris_and_analysis.py::test_sampling_sensitivity_intervals_converge PASSED [ 20%]
+tests/test_ephemeris_and_analysis.py::test_dte_mask_reduces_windows_and_is_separate_from_rf PASSED [ 22%]
+tests/test_ephemeris_and_analysis.py::test_panel_energy_present_only_with_assumptions PASSED [ 25%]
+tests/test_ephemeris_and_analysis.py::test_invalid_inputs_raise_typed_errors[bad0-site] PASSED [ 27%]
+tests/test_ephemeris_and_analysis.py::test_invalid_inputs_raise_typed_errors[bad1-timeRange.endUtc] PASSED [ 29%]
+tests/test_ephemeris_and_analysis.py::test_invalid_inputs_raise_typed_errors[bad2-timeRange] PASSED [ 31%]
+tests/test_ephemeris_and_analysis.py::test_invalid_inputs_raise_typed_errors[bad3-timeRange] PASSED [ 33%]
+tests/test_geometry_and_terrain.py::test_longitude_normalisation_and_west_conversion PASSED [ 35%]
+tests/test_geometry_and_terrain.py::test_cardinal_azimuths[0-1-0] PASSED [ 37%]
+tests/test_geometry_and_terrain.py::test_cardinal_azimuths[1-0-90] PASSED [ 39%]
+tests/test_geometry_and_terrain.py::test_cardinal_azimuths[0--1-180] PASSED [ 41%]
+tests/test_geometry_and_terrain.py::test_cardinal_azimuths[-1-0-270] PASSED [ 43%]
+tests/test_geometry_and_terrain.py::test_azimuth_wraps_near_360 PASSED   [ 45%]
+tests/test_geometry_and_terrain.py::test_known_vector_elevation[1-45.0] PASSED [ 47%]
+tests/test_geometry_and_terrain.py::test_known_vector_elevation[-1--45.0] PASSED [ 50%]
+tests/test_geometry_and_terrain.py::test_known_vector_elevation[0-0.0] PASSED [ 52%]
+tests/test_geometry_and_terrain.py::test_enu_is_orthonormal_including_pole PASSED [ 54%]
+tests/test_geometry_and_terrain.py::test_zenith_target_has_90_deg_elevation PASSED [ 56%]
+tests/test_geometry_and_terrain.py::test_north_at_south_pole_points_along_meridian PASSED [ 58%]
+tests/test_geometry_and_terrain.py::test_open_flat_sphere_horizon_is_curvature_dip PASSED [ 60%]
+tests/test_geometry_and_terrain.py::test_single_ridge_blocks_low_target_but_not_high PASSED [ 62%]
+tests/test_geometry_and_terrain.py::test_curvature_lowers_distant_mountain PASSED [ 64%]
+tests/test_geometry_and_terrain.py::test_crater_rim_from_floor PASSED    [ 66%]
+tests/test_geometry_and_terrain.py::test_no_data_gap_makes_result_unknown_not_clear PASSED [ 68%]
+tests/test_geometry_and_terrain.py::test_azimuth_interpolation_wraps PASSED [ 70%]
+tests/test_geometry_and_terrain.py::test_disk_fraction_and_tangency PASSED [ 72%]
+tests/test_geometry_and_terrain.py::test_below_geometric_horizon_vs_terrain_blocked PASSED [ 75%]
+tests/test_geometry_and_terrain.py::test_interval_refinement_finds_true_boundaries PASSED [ 77%]
+tests/test_geometry_and_terrain.py::test_interval_open_at_edges_and_unknown PASSED [ 79%]
+tests/test_geometry_and_terrain.py::test_panel_incidence_max_when_aligned_zero_when_facing_away PASSED [ 81%]
+tests/test_geometry_and_terrain.py::test_energy_integration_constant_power PASSED [ 83%]
+tests/test_geometry_and_terrain.py::test_power_formula_and_cap PASSED    [ 85%]
+tests/test_geometry_and_terrain.py::test_panel_validation_requires_orientation PASSED [ 87%]
+tests/test_geometry_and_terrain.py::TestRealLola::test_label_keywords_and_scale PASSED [ 89%]
+tests/test_geometry_and_terrain.py::TestRealLola::test_projection_roundtrip PASSED [ 91%]
+tests/test_geometry_and_terrain.py::TestRealLola::test_known_features PASSED [ 93%]
+tests/test_geometry_and_terrain.py::TestRealLola::test_outside_coverage_is_null_not_zero PASSED [ 95%]
+tests/test_geometry_and_terrain.py::TestRealLola::test_scale_applied PASSED [ 97%]
+tests/test_geometry_and_terrain.py::test_label_parser_rejects_bad_projection PASSED [100%]
+
+============================== 48 passed in 0.63s ==============================
+exit=0
+== e2e
+
+Running 28 tests using 1 worker
+
+  ✓   1 [chromium] › tests/e2e/public.spec.ts:4:1 › anonymous visitor opens home, clicks Explore and uses the public map (5.4s)
+  ✓   2 [chromium] › tests/e2e/public.spec.ts:37:1 › visitor completes the Learn guided example; technical details show the same numbers (334ms)
+  ✓   3 [chromium] › tests/e2e/public.spec.ts:47:1 › saving a scenario from the public explorer requires sign-in and preserves a safe return URL (1.3s)
+  ✓   4 [chromium] › tests/e2e/public.spec.ts:57:1 › methodology, sources and limitations contain substantive content (437ms)
+  ✓   5 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit / (1.0s)
+  ✓   6 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /explore (1.6s)
+  ✓   7 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /learn (975ms)
+  ✓   8 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /methodology (939ms)
+  ✓   9 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /sources (1.0s)
+  ✓  10 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /login (916ms)
+  ✓  11 [chromium] › tests/e2e/public.spec.ts:69:3 › accessibility audit /register (949ms)
+  ✓  12 [chromium] › tests/e2e/public.spec.ts:78:1 › health endpoint distinguishes web, database, science and worker (25ms)
+  ✓  13 [chromium] › tests/e2e/public.spec.ts:87:1 › API errors use the consistent contract without stack traces (31ms)
+  ✓  14 [chromium] › tests/e2e/security.spec.ts:14:1 › IDOR: another user cannot read, run or export someone else's objects (3.0s)
+  ✓  15 [chromium] › tests/e2e/security.spec.ts:39:1 › regular user cannot open admin routes or invoke admin APIs (656ms)
+  ✓  16 [chromium] › tests/e2e/security.spec.ts:52:1 › data curator needs MFA, can validate a new dataset version, but cannot grant roles (917ms)
+  ✓  17 [chromium] › tests/e2e/security.spec.ts:76:1 › admin with MFA manages roles; changes and approvals are audited and the audit log is immutable (906ms)
+  ✓  18 [chromium] › tests/e2e/security.spec.ts:96:1 › worker lease protocol: wrong lease token is rejected (10ms)
+  ✓  19 [chromium] › tests/e2e/security.spec.ts:106:1 › cross-origin state-changing requests are rejected (CSRF) (3ms)
+  ✓  20 [chromium] › tests/e2e/visual.spec.ts:9:1 › public pages at desktop, tablet and mobile (24.3s)
+  ✓  21 [chromium] › tests/e2e/visual.spec.ts:23:1 › workspace pages at desktop, tablet and mobile (27.1s)
+  ✘  22 [chromium] › tests/e2e/workspace.spec.ts:23:1 › user registers, verifies email and completes onboarding (15.4s)
+  -  23 [chromium] › tests/e2e/workspace.spec.ts:52:1 › user creates a project + guided scenario and the job runs queued -> completed
+  -  24 [chromium] › tests/e2e/workspace.spec.ts:68:1 › custom-coordinate scenario validates coverage, then runs
+  -  25 [chromium] › tests/e2e/workspace.spec.ts:86:1 › Sun & Power and Earth & DTE pages show computed geometry, intervals and RF limitation
+  -  26 [chromium] › tests/e2e/workspace.spec.ts:102:1 › user compares two analyses and sees compatibility warnings and trade-offs
+  -  27 [chromium] › tests/e2e/workspace.spec.ts:111:1 › user exports PDF, CSV and JSON with provenance; creates and revokes a share link
+  -  28 [chromium] › tests/e2e/workspace.spec.ts:153:1 › scenarios are immutable at the database level and analysis submission is idempotent
+
+
+  1) [chromium] › tests/e2e/workspace.spec.ts:23:1 › user registers, verifies email and completes onboarding 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Check your inbox')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Check your inbox') with timeout 15000ms
+      - waiting for getByText('Check your inbox')
+
+
+      34 |   await page.getByRole("checkbox").check();
+      35 |   await page.getByRole("button", { name: "Create account" }).click();
+    > 36 |   await expect(page.getByText("Check your inbox")).toBeVisible();
+         |                                                    ^
+      37 |   // Unverified users cannot sign in
+      38 |   await page.goto("/login");
+      39 |   await page.getByLabel("Email").fill(email);
+        at /Users/suhail/Desktop/MoonNav/tests/e2e/workspace.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/workspace-user-registers-v-5f7f1-il-and-completes-onboarding-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/workspace-user-registers-v-5f7f1-il-and-completes-onboarding-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/workspace-user-registers-v-5f7f1-il-and-completes-onboarding-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/workspace-user-registers-v-5f7f1-il-and-completes-onboarding-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/workspace.spec.ts:23:1 › user registers, verifies email and completes onboarding 
+  6 did not run
+  21 passed (1.5m)
+exit=1

@@ -1,0 +1,20 @@
+# Data sources
+
+What is actually integrated, how, and with which limits. Product checksums and licences: `DATA_CATALOG.md`; kernel manifest: `science/catalog/kernels.json`.
+
+| Source | Use in MoonNav | Integration | Status |
+|---|---|---|---|
+| **NASA PDS — LRO LOLA GDR `LDEM_75S_240M` (V2.0)** | Terrain heights, slope, curvature-aware horizon, terrain blocking | Downloaded by `scripts/fetch_data.sh` from PDS Geosciences (MIT mirror fallback), SHA-256 verified against the catalogue, read by the label-driven PDS3 reader `science/moonnav_science/dem.py` (polar stereographic → planetocentric lat/lon) | **In use** (75°S–90°S). Outside coverage values are `null`/`unknown`, never zero |
+| **LOLA `LDEM_875S_5M` (5 m, 87.5°S–pole, 1.84 GB)**, **`LDEM_85S_20M` (20 m, 85°S–pole)**, **`LDEM_80S_40M` (40 m, 80°S–pole)** — all PRODUCT_VERSION V2.0 | Near-field terrain horizon, hazard screening, slope/roughness, suitability | Read directly from the PDS files as 512×512 tiles via multipart HTTP byte ranges; labels validated against file sizes; tiles cached with SHA-256 + provenance sidecars (`science/moonnav_science/tiles.py`); `npm run data:hires` pre-fetches ±7.5 km around every catalogued site (271 MB) | **In use** (`lola-multires-v1`). Finest resolution per site: 5 m at south-pole, Shackleton, de Gerlache, Spudis, Shoemaker, Slater, Henson, Sverdrup; 20 m at Mons Malapert, Mons Kocher, Faustini, Haworth, Nobile, Cabeus; 40 m at Mons Mouton, Malapert, Amundsen |
+| **LOLA `LDEM_16` (16 px/deg ≈ 1.9 km, global, V3.1)** | Whole-Moon 3D relief; cross-projection validation | Downloaded + SHA-256 in catalogue; block-averaged display maps in `public/data/terrain/global_relief_*` | **In use (display + validation)** |
+| PGDA product 78 (5 m site GeoTIFFs) | — | Not needed: the equivalent-resolution PDS `LDEM_875S_5M` covers the polar cap and is integrated | Not integrated |
+| **NASA/JPL NAIF SPICE** (`naif0012.tls`, `pck00011.tpc`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf`, `de440s.bsp`) | Runtime Sun/Earth positions, lunar orientation (with libration), UTC→TDB | SpiceyPy `spkcpo` in MOON_ME; kernels checksum-verified and coverage-checked at load | **In use** (coverage 1849–2150) |
+| **JPL Horizons API** (`ssd.jpl.nasa.gov/api/horizons.api`, v1.2) | Independent validation of Sun/Earth az/el | Server-side only: offline fixtures in the pytest suite + live per-analysis cross-check (`horizons_live.py`) with retries, caching, bounded rows and a MoonNav User-Agent | **In use for validation** (never a silent runtime substitute) |
+| **NASA Moon Trek WMTS** (`trek.nasa.gov/tiles`) | LRO WAC global and south-pole mosaics: 2D map imagery layer and 3D globe texture | Browser loads tiles (CSP allows only this host); layer IDs verified from WMTSCapabilities; failures fall back to LOLA layers with a visible notice | **In use** (imagery only — never used as elevation) |
+| IAU / USGS Gazetteer | Feature names and centre coordinates | Versioned catalogue `src/data/sites.json`, seeded into `sites` | **In use** |
+| **NASA SVS Dial-a-Moon API** (`svs.gsfc.nasa.gov/api/dialamoon/<UTC>`) — the values stamped on every SVS 4930 south-pole illumination frame | Validation of sub-solar point, sub-Earth point, Earth–Moon distance | `validation.svs_dialamoon` (refuses epochs the API clamps; published tables currently end 2026-12-31) | **In use for validation** — max 0.0007°, 0.6 km |
+| NASA SVS 4930 frame images | Visual reference | Frame TIFFs located (`frames/1920x1080_16x9_30p/<year>/sp_illum.NNNN.tif`); no machine-readable projection/extent → no pixel comparison | Identified, not pixel-compared |
+| NASA Open APIs portal | — | Not used: it does not provide the required lunar products | n/a |
+
+## Fallback policy
+No external failure is ever replaced by sample data. Precomputed demonstrations (`public/data/demo`) are produced by the same engine, labelled **Precomputed** with their generation time. Unknown terrain coverage produces `unknown` states and is excluded from "visible" totals.
