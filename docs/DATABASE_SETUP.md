@@ -1,6 +1,6 @@
 # Database setup (PostgreSQL today, Supabase-ready)
 
-MoonNav stores data in PostgreSQL through Drizzle ORM. Locally it runs on a project-local PostgreSQL 17 cluster (`npm run db:up`, port 54329). **Supabase is prepared but not connected**: no Supabase project, credentials or remote migrations were used in this pass.
+MoonNav stores data in PostgreSQL through Drizzle ORM. Locally it runs on a project-local PostgreSQL 17 cluster (`npm run db:up`, port 54329). **Connected to Supabase (2026-11-12).** The app's PostgreSQL database is the Supabase project `xhvklxnyzgmoegaffpxq` (PostgreSQL 17), reached through the Supabase session pooler (`aws-0-ap-northeast-1.pooler.supabase.com:5432`, TLS). Credentials live only in the git-ignored `.env.local`.
 
 ## Layers
 - `src/db/schema.ts` — typed schema (source of truth); `drizzle/0000…0008*.sql` — versioned migrations applied by `npm run db:migrate` (also seeds the site catalogue and data-product registry).
@@ -32,3 +32,11 @@ Core planning tables: `sites`, `saved_locations`, `projects`, `scenarios` (immut
 
 ## Local commands
 `npm run db:up` (start cluster) · `npm run db:migrate` · `npm run db:generate -- --name <x>` (new migration from schema changes) · `npm run db:seed-dev` (demo accounts; passwords only in `.env.local`).
+
+## Current Supabase state (verified 2026-11-12)
+- Migrations `0000`–`0008` applied with `npm run db:migrate` to an empty project (no existing tables or users were touched); 17 catalogue sites and 9 data products seeded.
+- 25 tables in `public`, RLS enabled on all 25; 14 policies (public read of verified sites / approved data products, member-scoped reads, self-only preferences); secrets tables (sessions, accounts, MFA, rate limits, audit, tokens, jobs) are not reachable through the Data API.
+- Verified with the publishable key: 17 sites readable, `session` denied (42501), `user` rows hidden; the secret key works server-side only (`src/lib/supabase/server.ts`, `server-only`).
+- `DATA_BACKEND=postgres`: the app talks to Supabase Postgres through Drizzle (`DATABASE_URL`); `npm run dev` skips the local Postgres cluster when `DATABASE_URL` is remote (`LOCAL_DATABASE_URL` keeps the local fallback).
+- Connection string format (placeholders): `postgresql://postgres.<project-ref>:<url-encoded-password>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require&uselibpqcompat=true`. For serverless hosting use the transaction pooler (port 6543) for `DATABASE_URL` and keep the session pooler for `DATABASE_URL_DIRECT` (migrations).
+- Browser suite (57 tests) passes against Supabase. E2E runs create throw-away accounts (`@example.test`, `@demo.moonnav.invalid`); demo accounts expire after 24 h.
