@@ -2,6 +2,15 @@ import "server-only";
 import { env } from "./env";
 import { ApiError } from "./http";
 
+/**
+ * URL of a science-API path. On Vercel the base URL is injected at runtime by the `science`
+ * service binding (SCIENCE_API_URL); locally it comes from .env.local. Keeps any base path.
+ */
+export function scienceUrl(path: string): string {
+  const base = env().SCIENCE_API_URL.replace(/\/+$/, "");
+  return `${base}/${path.replace(/^\/+/, "")}`;
+}
+
 /** Server-side client for the internal Python science API. */
 export async function science<T>(path: string, init?: { method?: string; body?: unknown; timeoutMs?: number; requestId?: string }): Promise<T> {
   const e = env();
@@ -9,7 +18,7 @@ export async function science<T>(path: string, init?: { method?: string; body?: 
   const t = setTimeout(() => ctrl.abort(), init?.timeoutMs ?? 20_000);
   let r: Response;
   try {
-    r = await fetch(`${e.SCIENCE_API_URL}${path}`, {
+    r = await fetch(scienceUrl(path), {
       method: init?.method ?? "GET",
       headers: {
         Authorization: `Bearer ${e.SCIENCE_SERVICE_TOKEN}`,
@@ -38,7 +47,7 @@ export async function science<T>(path: string, init?: { method?: string; body?: 
 
 export async function scienceHealth(): Promise<{ status: string; [k: string]: unknown }> {
   try {
-    const r = await fetch(`${env().SCIENCE_API_URL}/health`, { cache: "no-store", signal: AbortSignal.timeout(4000) });
+    const r = await fetch(scienceUrl("/health"), { cache: "no-store", signal: AbortSignal.timeout(4000) });
     return (await r.json()) as { status: string };
   } catch {
     return { status: "unavailable" };

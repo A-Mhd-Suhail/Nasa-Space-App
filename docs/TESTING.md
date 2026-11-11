@@ -40,3 +40,16 @@
 | Globe JS heap: default LOD / zoomed LOD | 24 MB / 102 MB |
 ### Frame rate (2026-11-12)
 Measured with the built-in diagnostics (Advanced mode "Perf" button or `?perf=1`). Setup: Playwright Chromium new-headless with ANGLE Metal on an Apple M5, 1440×900 at DPR 2, dev server. Every scene held **60 FPS (p95 16.7–16.8 ms, 0 frames > 50 ms, 0 long tasks)**. The scenes were: home globe (low and high LOD), explore globe SPICE-lit, 10× relief, polar region 3D, site 3D patch, Sun view with timeline at 3600×, compare charts, and the planner during a hazard request. Raw data: `docs/perf/perf-baseline-chromium-m5.json`. These numbers are specific to this device and browser; use the panel's "Record 10 s → Export JSON" to measure other hardware.
+
+## Infrastructure pass (2026-11-12)
+| Check | Result |
+|---|---|
+| Lint · typecheck · production build | 0 errors · OK · OK |
+| Vitest | 61 passed |
+| Science: ruff, ruff format, mypy, pytest | clean · clean · clean · 83 passed |
+| Validation suite | 52 pass · 0 fail · 1 unavailable (SVS tables end 2026-12-31) |
+| E2E Chromium + WebKit (Supabase) | 116 passed, 1 failed, 1 not run. The failure (`workspace features`, WebKit) happened because `.env.local` was switched to SMTP mid-run, so its verification email skipped the outbox. Re-run of the whole `workspace.spec.ts` on WebKit with `MAIL_DRIVER=outbox`: 10/10 passed. |
+| Gmail SMTP | `npm run mail:test` accepted by Gmail (1 accepted, 0 rejected). App sign-up sent the verification mail through SMTP (nothing in the outbox). The user still has to click the link to confirm end to end. |
+| GitHub push | remote `main` = local `1a759aa`; repository private |
+
+E2E suites read verification links from the local outbox. Start the web server with `MAIL_DRIVER=outbox` (process env overrides `.env.local`) before running them.

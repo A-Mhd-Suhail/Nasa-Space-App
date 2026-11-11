@@ -99,7 +99,8 @@ class Scenario:
 # ---------------------------------------------------------------------------
 _DEMS: dict[str, Any] = {}
 MULTIRES_ID = "lola-multires-v1"
-TILE_CACHE = DATA_DIR / "tiles"
+# Writable cache for downloaded high-res tiles (on Vercel only /tmp is writable: MOONNAV_TILE_CACHE=/tmp/moonnav-tiles).
+TILE_CACHE = Path(os.environ.get("MOONNAV_TILE_CACHE", DATA_DIR / "tiles"))
 NEAR_FIELD_M = 6000.0
 
 

@@ -91,9 +91,9 @@ Full checklist with evidence and blockers: **`FINAL_8_WORKSTREAMS.md`**.
 
 | Workstream | Status |
 |---|---|
-| 1. GitHub push incl. CI | Blocked: the PAT lacks Contents write (HTTP 403). The CI job fixes are committed locally. |
-| 2. Vercel deployment | Blocked: no Vercel login/token or science host account. |
-| 3. Real SMTP email | Blocked: no SMTP/Resend credentials. `npm run mail:test` is ready. |
+| 1. GitHub push incl. CI | Pushed 2026-11-12 (`1a759aa`, private). Actions status not readable with this PAT. |
+| 2. Vercel deployment | `vercel.json` services drafted; blocked on `vercel login` and the owner's confirmation of the services/worker layout. |
+| 3. Real SMTP email | Gmail SMTP configured locally; delivery accepted by Gmail. Production env and link click pending. |
 | 4. SVS 4930 validation | Verified Complete (numeric). Pixel comparison is not data-feasible. 52 pass / 0 fail / 1 unavailable. |
 | 5. PSR map layer | Verified Complete: LOLA LPSR/AVGVISIB layers, point lookup, report row, tests. |
 | 6. FPS instrumentation | Verified Complete on Apple M5 / Chromium: perf panel, baseline JSON, tests. |

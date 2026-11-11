@@ -15,7 +15,8 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
 - **Horizons** is a validation reference (fixtures), not a live runtime provider.
 
 ## Platform and operations
-- **Not deployed.** Vercel, managed PostgreSQL (e.g. Neon), Cloudflare R2, Cloud Run and an email provider need the owner's accounts and credentials (see `docs/DEPLOYMENT.md`). Locally, storage uses the filesystem driver and email is written to `data/outbox/`.
+- **Not deployed (2026-11-12).** The Vercel CLI is not logged in; the `vercel.json` services layout is drafted and awaiting confirmation. The background worker cannot run on Vercel as a poller.
+- **Previously:** Vercel, managed PostgreSQL (e.g. Neon), Cloudflare R2, Cloud Run and an email provider need the owner's accounts and credentials (see `docs/DEPLOYMENT.md`). Locally, storage uses the filesystem driver and email is written to `data/outbox/`.
 - **R2 driver and presigned uploads are implemented but not exercised against a real bucket** (no credentials). Status: BLOCKED.
 - **Docker image** (`science/Dockerfile`) was written but not built here (Docker is not installed on the development machine).
 - **Data ingestion** is script-driven (`scripts/fetch_data.sh`, catalogue JSON) plus the curator status workflow in `/admin/data`; there is no automated web-triggered download/validation pipeline for new products yet.

@@ -48,3 +48,9 @@ The science service cannot run on Vercel (Python, ~2 GB of NASA data, long CPU w
 
 ## 7. Optional data for the PSR / long-term sunlight layers
 `npm run data:illum` downloads the three LOLA illumination products (3 × 116 MB, SHA-256 checked) and rebuilds the map rasters. Without them the layers still show (the rasters are committed in `public/data/`), but point lookups and the Mission Report row say "unavailable".
+
+## 8. Vercel services layout (draft `vercel.json`, awaiting owner confirmation)
+- `app` (Next.js, repo root) is public on `/(.*)`. Its binding to `science` injects `SCIENCE_API_URL` at runtime; don't set that variable in Vercel.
+- `science` (FastAPI, `science/`, entrypoint `moonnav_science/api.py`) is internal only: no public rewrite, and every route still needs `SCIENCE_SERVICE_TOKEN`. Set `MOONNAV_TILE_CACHE=/tmp/moonnav-tiles`. The NASA data (LOLA 240 m + SPICE, ~73 MB) must be downloaded during the service build, because `/data` is git-ignored.
+- Worker: Vercel cannot run the always-on poller. Either host it separately (`science/Dockerfile`, `SERVICE_MODE=worker`), or run jobs on demand in the science function (binding `science → app` = `MOONNAV_INTERNAL_API_URL`). This choice is pending the owner's decision.
+- Production env (Vercel → Settings → Environment Variables): `APP_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `DATABASE_URL`, `DATABASE_URL_DIRECT`, `SCIENCE_SERVICE_TOKEN`, `MAIL_DRIVER=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `STORAGE_DRIVER` (+ `R2_*`, `STORAGE_SIGNING_SECRET`).
