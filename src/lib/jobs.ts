@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { after } from "next/server";
 import { db, schema } from "@/db";
 import { type AnalysisResult, summarize } from "./analysis-types";
 import { ApiError, notFound } from "./http";
@@ -8,6 +9,18 @@ import { keys, putObject } from "./storage";
 import { assertWorkspaceAccess, audit, type SessionUser } from "./dal";
 
 export const LEASE_SECONDS = 60;
+
+/** On Vercel there is no polling worker: jobs run on demand in the science function. */
+export const ON_DEMAND_JOBS = !!process.env.VERCEL || process.env.JOB_MODE === "on-demand";
+
+/** After the response is sent, ask the science service to process queued jobs (serverless mode only). */
+export function kickJobDrain() {
+  if (!ON_DEMAND_JOBS) return;
+  after(async () => {
+    const { science } = await import("./science");
+    await science("/v1/worker/drain?budget_s=240", { method: "POST", timeoutMs: 270_000 }).catch(() => undefined);
+  });
+}
 const QUEUE_VERSION = "queue-v1";
 
 /** Validate + enqueue an analysis for an immutable scenario. Idempotent per scenario definition. */
@@ -44,6 +57,7 @@ export async function submitAnalysis(u: SessionUser, scenarioId: string, request
     });
   });
   await audit({ actorUserId: u.id, action: opts?.rerunKey ? "analysis.rerun" : "analysis.submit", objectType: "analysis", objectId: analysisId, metadata: { scenarioId, jobId, ...(opts?.supersedes ? { supersedes: opts.supersedes } : {}) }, requestId });
+  kickJobDrain();
   return { jobId, analysisId, status: "queued", reused: false };
 }
 
@@ -185,5 +199,5 @@ export async function workerStatus() {
     .select({ n: sql<number>`count(*)::int` })
     .from(schema.analysisJobs)
     .where(inArray(schema.analysisJobs.status, ["queued", "running"]));
-  return { liveWorkers: live.length, lastSeenAt: last?.toISOString() ?? null, activeJobs: q?.n ?? 0 };
+  return { liveWorkers: live.length, onDemand: ON_DEMAND_JOBS, lastSeenAt: last?.toISOString() ?? null, activeJobs: q?.n ?? 0 };
 }

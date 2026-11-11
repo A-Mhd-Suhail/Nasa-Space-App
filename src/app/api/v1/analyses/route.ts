@@ -3,6 +3,9 @@ import { rateLimit, requireApiUser } from "@/lib/dal";
 import { json, readJson, route } from "@/lib/http";
 import { submitAnalysis } from "@/lib/jobs";
 
+// On Vercel a queued job is processed in after(); give it the route's full duration.
+export const maxDuration = 300;
+
 const body = z.object({ scenarioId: z.string().min(1) });
 
 /** Validate and enqueue. Returns 202 with job and analysis references. */

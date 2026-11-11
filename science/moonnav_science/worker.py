@@ -35,7 +35,9 @@ HEARTBEAT_S = 10.0
 
 
 def _client() -> httpx.Client:
-    return httpx.Client(base_url=BASE, headers={"Authorization": f"Bearer {TOKEN}", "x-worker-id": WORKER_ID}, timeout=30)
+    # Read at call time: on Vercel the `science -> app` binding injects MOONNAV_INTERNAL_API_URL at runtime.
+    base = os.environ.get("MOONNAV_INTERNAL_API_URL", BASE).rstrip("/")
+    return httpx.Client(base_url=base, headers={"Authorization": f"Bearer {TOKEN}", "x-worker-id": WORKER_ID}, timeout=30)
 
 
 def _beat(c: httpx.Client, job_id: str, lease: str, progress: float | None, stage: str | None) -> bool:
@@ -107,6 +109,24 @@ def process_one(c: httpx.Client) -> bool:
     finally:
         stop.set()
     return True
+
+
+def drain(budget_s: float = 240.0) -> dict[str, object]:
+    """Process queued jobs until none is left or the time budget is used (serverless mode, no polling).
+
+    Jobs are leased exactly as the long-running worker does, so a drain and a poller can run side by side.
+    A job that outlives the function is recovered by its expired lease and retried.
+    """
+    t0, n = time.time(), 0
+    error: str | None = None
+    with _client() as c:
+        try:
+            while time.time() - t0 < budget_s and process_one(c):
+                n += 1
+        except httpx.HTTPError as exc:  # web backend unreachable or refused the worker token
+            error = f"job backend: {type(exc).__name__}"
+            log.warning("drain stopped: %s", exc)
+    return {"processed": n, "seconds": round(time.time() - t0, 1), "error": error}
 
 
 def main() -> None:

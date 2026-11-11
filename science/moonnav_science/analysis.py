@@ -24,7 +24,11 @@ from .tiles import MultiResDem, TiledPolarDem, TileFetchError, available_tiled
 from .visibility import VisibilityRule, VisibilitySample, classify, extract_intervals
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = Path(os.environ.get("MOONNAV_DATA_DIR", ROOT / "data"))
+# Repo checkout: <repo>/data. Vercel `science` service (root science/): science/data, filled at build time.
+_SCI_DATA = Path(__file__).resolve().parents[1] / "data"
+DATA_DIR = Path(
+    os.environ.get("MOONNAV_DATA_DIR") or (ROOT / "data" if (ROOT / "data" / "raw").exists() or not _SCI_DATA.exists() else _SCI_DATA)
+)
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "catalog" / "products.json"
 KERNEL_MANIFEST = Path(__file__).resolve().parents[1] / "catalog" / "kernels.json"
 MAX_SAMPLES = 20_000

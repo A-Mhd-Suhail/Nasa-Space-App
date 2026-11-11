@@ -1,0 +1,12 @@
+# Never upload local data, secrets or build caches (the science build downloads its own data)
+.env*
+!.env.example
+/data/
+science/data/
+science/.venv/
+**/__pycache__/
+node_modules/
+.next/
+test-results/
+playwright-report/
+docs/screenshots/

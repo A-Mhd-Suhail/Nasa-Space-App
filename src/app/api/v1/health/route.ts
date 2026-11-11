@@ -20,7 +20,7 @@ export const GET = route(async () => {
   out.datasets = sci.status === "unavailable" ? { status: "unknown" } : { kernels: sci.kernels, terrain: sci.terrain };
   try {
     const w = await workerStatus();
-    out.worker = { status: w.liveWorkers > 0 ? "ok" : "no_live_worker", ...w };
+    out.worker = { status: w.liveWorkers > 0 ? "ok" : w.onDemand ? "on_demand" : "no_live_worker", ...w };
   } catch {
     out.worker = { status: "unknown" };
   }

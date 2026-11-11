@@ -84,6 +84,14 @@ def health() -> dict[str, Any]:
     return out
 
 
+@app.post("/v1/worker/drain", dependencies=[Depends(require_token)])
+def worker_drain(budget_s: float = Query(240.0, ge=1, le=280)) -> dict[str, Any]:
+    """Serverless replacement for the polling worker: run queued analysis jobs now (on Vercel)."""
+    from .worker import drain
+
+    return drain(budget_s)
+
+
 @app.get("/v1/products", dependencies=[Depends(require_token)])
 def products() -> dict[str, Any]:
     return load_catalog()

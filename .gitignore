@@ -71,3 +71,6 @@ __pycache__/
 *.key
 *.p12
 service-account*.json
+
+# Vercel science build output (runtime NASA data)
+/science/data/

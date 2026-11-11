@@ -26,7 +26,7 @@ export default async function AdminHome() {
       <PageHeader title="System and data overview" />
       <div className="grid gap-4 md:grid-cols-3">
         <Card><CardHeader title="Science service" actions={<StatusBadge status={String(sci.status)} />} /><ul className="space-y-1 px-4 py-3 text-sm text-text-2"><li>Kernels: {k?.status ?? "unknown"} {k?.manifestId}</li><li>Coverage: {k?.coverageUtc?.join(" → ") ?? "—"}</li><li>Terrain: {t?.status ?? "unknown"} {t?.products?.join(", ")}</li></ul></Card>
-        <Card><CardHeader title="Workers & jobs" actions={<StatusBadge status={worker.liveWorkers > 0 ? "ok" : "unavailable"} />} /><ul className="space-y-1 px-4 py-3 text-sm text-text-2"><li>Live workers: {worker.liveWorkers}</li><li>Last seen: {worker.lastSeenAt?.replace("T", " ").slice(0, 19) ?? "never"}</li>{jobs.map((j) => <li key={j.status} className="capitalize">{j.status}: {j.n}</li>)}</ul></Card>
+        <Card><CardHeader title="Workers & jobs" actions={<StatusBadge status={worker.liveWorkers > 0 || worker.onDemand ? "ok" : "unavailable"} />} /><ul className="space-y-1 px-4 py-3 text-sm text-text-2"><li>Live workers: {worker.liveWorkers}{worker.onDemand ? " (on-demand mode: jobs run in the science function)" : ""}</li><li>Last seen: {worker.lastSeenAt?.replace("T", " ").slice(0, 19) ?? "never"}</li>{jobs.map((j) => <li key={j.status} className="capitalize">{j.status}: {j.n}</li>)}</ul></Card>
         <Card><CardHeader title="Registry" /><ul className="space-y-1 px-4 py-3 text-sm text-text-2">{products.map((p) => <li key={p.status} className="capitalize">{p.status} products: {p.n}</li>)}<li>Users: {users[0]?.n ?? 0}</li></ul></Card>
       </div>
       <Card>

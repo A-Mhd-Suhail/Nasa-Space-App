@@ -8,7 +8,7 @@ import { StaleBanner } from "./StaleBanner";
 import { AnnotationsPanel } from "./AnnotationsPanel";
 import { type HorizonsCheck, HorizonsValidationCard } from "./HorizonsValidation";
 
-type JobResp = { job: { id: string; status: string; attempts: number; maxAttempts: number; progress: number | null; stage: string | null; error: { code: string; message: string } | null; createdAt: string; startedAt: string | null; finishedAt: string | null; runAfter: string; log: { at: string; msg: string }[] }; worker: { liveWorkers: number; lastSeenAt: string | null } };
+type JobResp = { job: { id: string; status: string; attempts: number; maxAttempts: number; progress: number | null; stage: string | null; error: { code: string; message: string } | null; createdAt: string; startedAt: string | null; finishedAt: string | null; runAfter: string; log: { at: string; msg: string }[] }; worker: { liveWorkers: number; onDemand?: boolean; lastSeenAt: string | null } };
 type AnaResp = { analysis: { id: string; status: string; quality: string | null; summary: AnalysisSummary | null; completedAt: string | null; resultSha256: string | null; validation: HorizonsCheck | null } };
 
 export function AnalysisStatusClient({ analysisId, jobId, scenario, canAnnotate, me }: { analysisId: string; jobId: string | null; scenario: { id: string; name: string; version: number; projectId: string; siteId: string | null }; canAnnotate?: boolean; me?: string }) {
@@ -34,7 +34,7 @@ export function AnalysisStatusClient({ analysisId, jobId, scenario, canAnnotate,
           <CardHeader title="Job progress" subtitle={`Attempt ${j.attempts}/${j.maxAttempts}${j.stage ? ` · ${j.stage}` : ""}`} />
           <div className="space-y-3 p-4">
             <JobProgress status={status} stage={j.stage} progress={j.progress} log={j.log} />
-            {status === "queued" && job.data!.worker.liveWorkers === 0 && <Notice tone="warn" title="Waiting for a worker">No analysis worker has polled in the last 30 seconds (last seen {job.data!.worker.lastSeenAt ? fmtUtc(job.data!.worker.lastSeenAt) : "never"}). The job stays queued and will run as soon as a worker starts.</Notice>}
+            {status === "queued" && job.data!.worker.liveWorkers === 0 && !job.data!.worker.onDemand && <Notice tone="warn" title="Waiting for a worker">No analysis worker has polled in the last 30 seconds (last seen {job.data!.worker.lastSeenAt ? fmtUtc(job.data!.worker.lastSeenAt) : "never"}). The job stays queued and will run as soon as a worker starts.</Notice>}
             {status === "queued" && j.attempts > 0 && <Notice>Retrying: next attempt not before {fmtUtc(j.runAfter)}.</Notice>}
             {status === "failed" && <Notice tone="bad" title="Analysis failed">{j.error?.message ?? "Unknown error"} ({j.error?.code}). {j.error?.code === "invalid_input" ? "Create a new scenario version with corrected inputs." : "An administrator can retry it from Admin → Jobs."}</Notice>}
             {status === "cancelled" && <Notice>This analysis was cancelled.</Notice>}

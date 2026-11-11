@@ -5,6 +5,9 @@ import { getAnalysis } from "@/lib/services";
 import { currentVersions, stalenessFor } from "@/lib/staleness";
 import { rerunKey } from "@/lib/staleness-core";
 
+// On Vercel a queued job is processed in after(); give it the route's full duration.
+export const maxDuration = 300;
+
 /** Re-run a stale analysis under the current method/kernel/DEM versions. The original result is kept. */
 export const POST = route<{ params: Promise<{ analysisId: string }> }>(async (req, { params }) => {
   const u = await requireApiUser();

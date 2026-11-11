@@ -97,14 +97,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <dl className="divide-y divide-line text-sm">
               {[
                 ["Science engine", <StatusBadge key="s" status={sciOk ? "ok" : String(sci.status)} />],
-                ["Analysis worker", worker.liveWorkers > 0 ? <StatusBadge key="w" status="ok" /> : <StatusBadge key="w" status="unavailable" />],
+                ["Analysis worker", worker.liveWorkers > 0 || worker.onDemand ? <StatusBadge key="w" status="ok" /> : <StatusBadge key="w" status="unavailable" />],
                 ["Jobs in progress", <span key="j" className="num">{worker.activeJobs}</span>],
                 ["Worker last seen", <span key="l" className="num text-[12px]">{worker.lastSeenAt ? worker.lastSeenAt.replace("T", " ").slice(0, 19) : "never"}</span>],
               ].map(([k, v]) => (
                 <div key={String(k)} className="flex items-center justify-between px-5 py-2.5"><dt className="text-muted">{k}</dt><dd>{v}</dd></div>
               ))}
             </dl>
-            {worker.liveWorkers === 0 && <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-warn">No worker is polling. Submitted analyses wait in the queue until one starts (<code className="font-mono">npm run worker:dev</code>).</p>}
+            {worker.liveWorkers === 0 && !worker.onDemand && <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-warn">No worker is polling. Submitted analyses wait in the queue until one starts (<code className="font-mono">npm run worker:dev</code>).</p>}
           </Card>
           <Card>
             <CardHeader title="Projects" actions={<Link href="/app/projects" className="text-[13px] text-accent hover:underline hover:underline-offset-4">All</Link>} />
