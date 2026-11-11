@@ -28,11 +28,20 @@ Not set on purpose: `SCIENCE_API_URL` (injected by the binding), `APP_URL` (deri
 - `science/scripts/fetch_runtime_data.py`, `science/scripts/pack_illumination.py`, `science/assets/illum/*`
 - Tests: `tests/e2e/public.spec.ts` (health accepts `on_demand`), `tests/e2e/workspace.spec.ts` (tamper check for both signers), `science/tests/test_illumination.py` (pack equivalence)
 
+## Email architecture (don't configure Supabase Auth SMTP)
+- MoonNav does **not** use Supabase Auth. Sign-up verification, password reset and invitations are sent by Better Auth (`src/lib/auth.ts`) through `src/lib/mail.ts` straight to Gmail SMTP. Supabase is only the Postgres database and the storage bucket. Supabase's Auth SMTP settings and its "email sending rate limit" (30/h) therefore have no effect on MoonNav. This was checked on 2026-11-12, and those settings were deliberately left unchanged.
+- The limits that do apply:
+  - Gmail's own sending limit (about 500 messages per day for a personal account).
+  - MoonNav's per-IP limits in `src/lib/auth.ts`: sign-up 5/min, password reset 3 per 5 min, sign-in 8/min.
+  - For higher volume, switch to a transactional provider (`MAIL_DRIVER=resend` or another SMTP service).
+- 2026-11-12 23:47 UTC: a second production password-reset email was sent to the test account (HTTP 200).
+
 ## Operating notes
 - E2E needs the outbox: start the web server with `MAIL_DRIVER=outbox` in its environment (process env overrides `.env.local`). Never run the registering E2E suites against production, because they would send real email to `example.test` addresses.
 - Read-only production check: `E2E_BASE_URL=https://moonnav.vercel.app npx playwright test tests/e2e/public.spec.ts --project=chromium`.
 - If the illumination products change, run `npm run data:illum`, then `science/scripts/pack_illumination.py`, then upload the AVGVISIB parts to `moonnav-build-assets` and update `science/assets/illum/packed-manifest.json`.
 - Local dev, Preview and Production share one Supabase database **and** the Supabase storage bucket `moonnav-objects`. Local `.env.local` uses `STORAGE_DRIVER=supabase`, so a job processed by any side (local poller or the Vercel drain) stays readable everywhere. The 502 earlier local objects were copied into the bucket on 2026-11-12. Don't switch local storage back to `local` while sharing the database.
+- Temporary credential files were all deleted on 2026-11-12: the scratchpad is empty; there is no PAT in the project, shell history, `~/.git-credentials` or the keychain. Secrets now live only in the git-ignored `.env.local` (app config, including the `VERCEL_OIDC_TOKEN` written by `vercel link`) and in Vercel's environment variables.
 - Never put the PAT in a remote URL or git config. Never commit `.env.local`. Never print secret values.
 - Supabase is live. Do not reset, truncate or re-run its setup.
 
