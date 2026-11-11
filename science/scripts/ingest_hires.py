@@ -26,11 +26,22 @@ for s in sites:
     t0 = time.time()
     res = dem.prepare(s["latitudeDeg"], s["longitudeEastDeg"], radius)
     finest = dem.near_scale(s["latitudeDeg"], s["longitudeEastDeg"])
-    report.append({"site": s["key"], "latitudeDeg": s["latitudeDeg"], "longitudeEastDeg": s["longitudeEastDeg"], "finestResolutionM": finest, "layers": res, "seconds": round(time.time() - t0, 1)})
+    report.append(
+        {
+            "site": s["key"],
+            "latitudeDeg": s["latitudeDeg"],
+            "longitudeEastDeg": s["longitudeEastDeg"],
+            "finestResolutionM": finest,
+            "layers": res,
+            "seconds": round(time.time() - t0, 1),
+        }
+    )
     print(f"{s['key']:<14} finest {finest:>5.0f} m  {res}", flush=True)
 manifest = {
-    "generatedAtUtc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "radiusM": radius,
-    "products": [lyr.metadata() for lyr in dem.tiled], "sites": report,
+    "generatedAtUtc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "radiusM": radius,
+    "products": [lyr.metadata() for lyr in dem.tiled],
+    "sites": report,
 }
 (TILE_CACHE / "manifest.json").write_text(json.dumps(manifest, indent=1))
 print("manifest written:", TILE_CACHE / "manifest.json")

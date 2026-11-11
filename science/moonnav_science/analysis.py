@@ -142,10 +142,17 @@ class MultiResTerrain(MultiResDem):
 
     def metadata(self) -> dict[str, object]:
         return {
-            "productId": MULTIRES_ID, "fileName": "LOLA multi-resolution composite", "dataSetId": "LRO-L-LOLA-4-GDR-V1.0", "productVersion": "V2.0",
-            "pixelSpacingM": self.base_dem.scale_m, "frame": self.frame_name, "referenceRadiusM": self.radius_ref_m,
-            "layers": [lyr.metadata() for lyr in self.layers], "rule": "finest product with a valid sample wins; never zero-filled",
-            "coverage": self.base_dem.metadata()["coverage"], "sha256": self.sha256,
+            "productId": MULTIRES_ID,
+            "fileName": "LOLA multi-resolution composite",
+            "dataSetId": "LRO-L-LOLA-4-GDR-V1.0",
+            "productVersion": "V2.0",
+            "pixelSpacingM": self.base_dem.scale_m,
+            "frame": self.frame_name,
+            "referenceRadiusM": self.radius_ref_m,
+            "layers": [lyr.metadata() for lyr in self.layers],
+            "rule": "finest product with a valid sample wins; never zero-filled",
+            "coverage": self.base_dem.metadata()["coverage"],
+            "sha256": self.sha256,
         }
 
 
@@ -425,7 +432,11 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
     unknown_fraction = sum(1 for s in sun_states + earth_states if s is None) / (2 * len(times))
     trunc = sum(1 for s in horizon.status if s == "truncated")
     res_m = dem.near_scale(sc.lat_deg, lon) if isinstance(dem, MultiResTerrain) else dem.scale_m
-    reasons = [f"DEM pixel spacing {res_m:.0f} m limits near-field horizon fidelity" if res_m > 20 else f"near-field terrain at {res_m:.0f} m (LOLA high-resolution tiles), far field at 240 m"]
+    reasons = [
+        f"DEM pixel spacing {res_m:.0f} m limits near-field horizon fidelity"
+        if res_m > 20
+        else f"near-field terrain at {res_m:.0f} m (LOLA high-resolution tiles), far field at 240 m"
+    ]
     if trunc:
         reasons.append(f"{trunc} horizon rays truncated by DEM coverage")
     if unknown_fraction > 0:

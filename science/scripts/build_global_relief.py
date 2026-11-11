@@ -41,14 +41,35 @@ for ppd, k in ((4, 4), (8, 2)):
     q = np.clip(np.round(m), -32768, 32767).astype("<i2")
     name = f"global_relief_{ppd}ppd.i16"
     (out_dir / name).write_bytes(q.tobytes())
-    levels.append({"file": name, "width": q.shape[1], "height": q.shape[0], "pixelsPerDegree": ppd, "equatorialSpacingKm": round(2 * np.pi * 1737.4 / (360 * ppd), 2), "sha256": hashlib.sha256(q.tobytes()).hexdigest(), "minM": int(q.min()), "maxM": int(q.max())})
+    levels.append(
+        {
+            "file": name,
+            "width": q.shape[1],
+            "height": q.shape[0],
+            "pixelsPerDegree": ppd,
+            "equatorialSpacingKm": round(2 * np.pi * 1737.4 / (360 * ppd), 2),
+            "sha256": hashlib.sha256(q.tobytes()).hexdigest(),
+            "minM": int(q.min()),
+            "maxM": int(q.max()),
+        }
+    )
 meta = {
     "kind": "moonnav.global-relief",
-    "source": {"product": "LDEM_16", "dataSetId": label.get("DATA_SET_ID"), "productVersion": label.get("PRODUCT_VERSION_ID"), "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img", "sha256": hashlib.sha256(img.read_bytes()).hexdigest(), "labelSha256": hashlib.sha256(lbl.read_bytes()).hexdigest(), "resolution": "16 px/deg (~1.9 km at the equator)"},
+    "source": {
+        "product": "LDEM_16",
+        "dataSetId": label.get("DATA_SET_ID"),
+        "productVersion": label.get("PRODUCT_VERSION_ID"),
+        "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img",
+        "sha256": hashlib.sha256(img.read_bytes()).hexdigest(),
+        "labelSha256": hashlib.sha256(lbl.read_bytes()).hexdigest(),
+        "resolution": "16 px/deg (~1.9 km at the equator)",
+    },
     "layout": "int16 LE metres above 1737.4 km sphere; row 0 = 90N, col 0 = 0E (cell centres); simple cylindrical",
     "processing": "exact block mean of LDEM_16 heights (DN*SCALING_FACTOR), rounded to 1 m",
-    "frame": label.get("COORDINATE_SYSTEM_NAME"), "referenceRadiusM": _num(label, "OFFSET") if "OFFSET" in label else 1737400.0,
-    "levels": levels, "use": "display only (3D globe relief); scientific calculations use the PDS products directly",
+    "frame": label.get("COORDINATE_SYSTEM_NAME"),
+    "referenceRadiusM": _num(label, "OFFSET") if "OFFSET" in label else 1737400.0,
+    "levels": levels,
+    "use": "display only (3D globe relief); scientific calculations use the PDS products directly",
     "generatedAtUtc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
 (out_dir / "global_relief.json").write_text(json.dumps(meta, indent=1))

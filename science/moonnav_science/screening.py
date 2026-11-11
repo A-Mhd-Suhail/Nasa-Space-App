@@ -43,19 +43,29 @@ class HazardThresholds:
     landing_radius_m: float = 100.0
 
     def as_dict(self) -> dict[str, float]:
-        return {"slopeCautionDeg": self.slope_caution_deg, "slopeMaxDeg": self.slope_max_deg, "roughnessCautionM": self.roughness_caution_m, "roughnessMaxM": self.roughness_max_m, "landingRadiusM": self.landing_radius_m}
+        return {
+            "slopeCautionDeg": self.slope_caution_deg,
+            "slopeMaxDeg": self.slope_max_deg,
+            "roughnessCautionM": self.roughness_caution_m,
+            "roughnessMaxM": self.roughness_max_m,
+            "landingRadiusM": self.landing_radius_m,
+        }
 
 
-def _grid_latlon(dem: Any, lat: float, lon: float, half_m: float, spacing_m: float) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+def _grid_latlon(
+    dem: Any, lat: float, lon: float, half_m: float, spacing_m: float
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     x0, y0 = dem.latlon_to_xy(np.array([lat]), np.array([lon]))
     n = int(round(half_m / spacing_m))
     off = np.arange(-n, n + 1) * spacing_m
     X, Y = np.meshgrid(x0[0] + off, y0[0] - off)  # row 0 = +y (grid north in the map)
     la, lo = dem.xy_to_latlon(X, Y)
-    return la, lo, off, off
+    return la, lo, off.astype(np.float64), off.astype(np.float64)
 
 
-def slope_roughness(h: NDArray[np.float64], spacing_m: float) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+def slope_roughness(
+    h: NDArray[np.float64], spacing_m: float
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """Slope (deg, central differences, baseline 2 x spacing), roughness (m, RMS of residuals from the
     3x3 best-fit plane), local relief (m, 3x3 max - min) and Laplacian curvature (1/m)."""
     gy, gx = np.gradient(h, spacing_m)
@@ -71,7 +81,9 @@ def slope_roughness(h: NDArray[np.float64], spacing_m: float) -> tuple[NDArray[n
     resid = stack - (mean[None] + b[None] * xs[:, None, None] + c[None] * ys[:, None, None])
     rough = np.sqrt(np.mean(resid**2, axis=0))
     relief = stack.max(axis=0) - stack.min(axis=0)
-    lap = (np.gradient(np.gradient(h, spacing_m, axis=0), spacing_m, axis=0) + np.gradient(np.gradient(h, spacing_m, axis=1), spacing_m, axis=1))
+    lap = np.gradient(np.gradient(h, spacing_m, axis=0), spacing_m, axis=0) + np.gradient(
+        np.gradient(h, spacing_m, axis=1), spacing_m, axis=1
+    )
     edge = np.zeros_like(h, dtype=bool)
     edge[0, :] = edge[-1, :] = edge[:, 0] = edge[:, -1] = True
     for a in (slope, rough, relief, lap):
@@ -84,7 +96,9 @@ def slope_roughness(h: NDArray[np.float64], spacing_m: float) -> tuple[NDArray[n
     return slope, rough, relief, lap
 
 
-def hazard_screen(dem: Any, lat: float, lon: float, half_m: float = 1000.0, th: HazardThresholds | None = None, max_cells: int = 201) -> dict[str, Any]:
+def hazard_screen(
+    dem: Any, lat: float, lon: float, half_m: float = 1000.0, th: HazardThresholds | None = None, max_cells: int = 201
+) -> dict[str, Any]:
     th = th or HazardThresholds()
     finest = dem.near_scale(lat, lon) if hasattr(dem, "near_scale") else dem.scale_m
     spacing = max(finest, 2 * half_m / (max_cells - 1))
@@ -107,18 +121,36 @@ def hazard_screen(dem: Any, lat: float, lon: float, half_m: float = 1000.0, th: 
     rr = np.hypot(*np.meshgrid(xs, ys))
     zone = rr <= th.landing_radius_m
     zk = zone & known
+
     def pct(mask: NDArray[np.bool_], base: NDArray[np.bool_]) -> float | None:
         return None if base.sum() == 0 else round(100.0 * float((mask & base).sum()) / float(base.sum()), 1)
+
     def fin(a: NDArray[np.float64], f: Any) -> float | None:
         v = a[zk]
         return None if v.size == 0 else round(float(f(v)), 3)
+
     used = {names[i]: int((src == i).sum()) for i in range(len(names)) if (src == i).any()}
     summary = {
-        "landingZoneRadiusM": th.landing_radius_m, "cellsInZone": int(zone.sum()), "unknownPctInZone": pct(~known, zone),
-        "maxSlopeDeg": fin(slope, np.max), "meanSlopeDeg": fin(slope, np.mean), "maxRoughnessM": fin(rough, np.max), "localReliefM": fin(relief, np.max),
-        "exceedsPctInZone": pct(cls == 2, zone), "cautionPctInZone": pct(cls == 1, zone), "rimRidgePctInZone": pct(rim, zone),
+        "landingZoneRadiusM": th.landing_radius_m,
+        "cellsInZone": int(zone.sum()),
+        "unknownPctInZone": pct(~known, zone),
+        "maxSlopeDeg": fin(slope, np.max),
+        "meanSlopeDeg": fin(slope, np.mean),
+        "maxRoughnessM": fin(rough, np.max),
+        "localReliefM": fin(relief, np.max),
+        "exceedsPctInZone": pct(cls == 2, zone),
+        "cautionPctInZone": pct(cls == 1, zone),
+        "rimRidgePctInZone": pct(rim, zone),
     }
-    verdict = "unknown" if (summary["unknownPctInZone"] or 0) > 0 or zk.sum() == 0 else "exceeds" if (summary["exceedsPctInZone"] or 0) > 0 else "caution" if (summary["cautionPctInZone"] or 0) > 0 else "within_thresholds"
+    verdict = (
+        "unknown"
+        if (summary["unknownPctInZone"] or 0) > 0 or zk.sum() == 0
+        else "exceeds"
+        if (summary["exceedsPctInZone"] or 0) > 0
+        else "caution"
+        if (summary["cautionPctInZone"] or 0) > 0
+        else "within_thresholds"
+    )
     reasons = []
     if verdict == "unknown":
         reasons.append("part of the landing zone has no valid elevation (missing data is never treated as safe)")
@@ -132,13 +164,30 @@ def hazard_screen(dem: Any, lat: float, lon: float, half_m: float = 1000.0, th: 
         reasons.append("crater rim / ridge signature (steep and convex) inside the zone")
     if spacing > 20:
         reasons.append(f"cell size {spacing:.0f} m cannot resolve boulders or small craters; hazards below this scale are not assessed")
+
     def q(a: NDArray[np.float64], nd: int) -> list[list[float | None]]:
         return [[None if not math.isfinite(v) else round(float(v), nd) for v in row] for row in a]
+
     return {
         "center": {"latitudeDeg": lat, "longitudeEastDeg": lon},
-        "grid": {"spacingM": spacing, "size": int(h.shape[0]), "halfSizeM": float(xs[-1]), "orientation": "south polar stereographic map plane; row 0 toward the 0 deg meridian (map +y)"},
-        "heightM": q(h, 1), "slopeDeg": q(slope, 2), "roughnessM": q(rough, 3), "reliefM": q(relief, 2), "hazardClass": cls.tolist(), "rimRidge": rim.astype(int).tolist(),
-        "summary": summary, "verdict": verdict, "reasons": reasons, "thresholds": th.as_dict(), "productsUsed": used, "finestResolutionM": finest,
+        "grid": {
+            "spacingM": spacing,
+            "size": int(h.shape[0]),
+            "halfSizeM": float(xs[-1]),
+            "orientation": "south polar stereographic map plane; row 0 toward the 0 deg meridian (map +y)",
+        },
+        "heightM": q(h, 1),
+        "slopeDeg": q(slope, 2),
+        "roughnessM": q(rough, 3),
+        "reliefM": q(relief, 2),
+        "hazardClass": cls.tolist(),
+        "rimRidge": rim.astype(int).tolist(),
+        "summary": summary,
+        "verdict": verdict,
+        "reasons": reasons,
+        "thresholds": th.as_dict(),
+        "productsUsed": used,
+        "finestResolutionM": finest,
         "method": "heights: finest LOLA product with a valid sample (bilinear); slope: central differences (baseline 2 x cell); roughness: RMS residual from a 3x3 least-squares plane; rim/ridge: Laplacian in the convex 10% tail with slope above the caution level",
         "disclaimer": "Preliminary terrain screening from orbital altimetry — not a certified landing-hazard assessment.",
     }
@@ -158,13 +207,23 @@ class SuitabilityConfig:
     max_unknown_pct: float = 5.0
     max_dark_hours: float | None = None
     antenna_mask_deg: float | None = None
-    weights: dict[str, float] = field(default_factory=lambda: {"sun": 35.0, "dte": 30.0, "slope": 20.0, "roughness": 10.0, "solarElevation": 5.0})
+    weights: dict[str, float] = field(
+        default_factory=lambda: {"sun": 35.0, "dte": 30.0, "slope": 20.0, "roughness": 10.0, "solarElevation": 5.0}
+    )
 
     @classmethod
     def from_dict(cls, d: dict[str, Any] | None) -> SuitabilityConfig:
         d = d or {}
         c = cls()
-        for k_json, k in (("minSunPct", "min_sun_pct"), ("minDtePct", "min_dte_pct"), ("maxSlopeDeg", "max_slope_deg"), ("maxRoughnessM", "max_roughness_m"), ("maxUnknownPct", "max_unknown_pct"), ("maxDarkHours", "max_dark_hours"), ("antennaMaskDeg", "antenna_mask_deg")):
+        for k_json, k in (
+            ("minSunPct", "min_sun_pct"),
+            ("minDtePct", "min_dte_pct"),
+            ("maxSlopeDeg", "max_slope_deg"),
+            ("maxRoughnessM", "max_roughness_m"),
+            ("maxUnknownPct", "max_unknown_pct"),
+            ("maxDarkHours", "max_dark_hours"),
+            ("antennaMaskDeg", "antenna_mask_deg"),
+        ):
             if k_json in d:
                 setattr(c, k, None if d[k_json] is None else float(d[k_json]))
         if c.max_unknown_pct is None:
@@ -181,7 +240,16 @@ def body_vectors_km(ets: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDAr
     return sun, earth
 
 
-def visibility_series(site_km: NDArray[np.float64], lat: float, lon: float, horizon: HorizonProfile, sun: NDArray[np.float64], earth: NDArray[np.float64], earth_radius_km: float, mask_deg: float | None) -> dict[str, NDArray[Any]]:
+def visibility_series(
+    site_km: NDArray[np.float64],
+    lat: float,
+    lon: float,
+    horizon: HorizonProfile,
+    sun: NDArray[np.float64],
+    earth: NDArray[np.float64],
+    earth_radius_km: float,
+    mask_deg: float | None,
+) -> dict[str, NDArray[Any]]:
     b = enu_basis(lat, lon)
     M = np.stack([b.east, b.north, b.up])
     out: dict[str, NDArray[Any]] = {}
@@ -230,14 +298,19 @@ def site_metrics(series: dict[str, NDArray[Any]], step_s: float) -> dict[str, fl
 
     def frac(a: NDArray[np.float64]) -> float:
         return float(np.nansum(a == 1)) / n
+
     unknown = float(np.isnan(series["sun_vis"]).sum() + np.isnan(series["earth_vis"]).sum()) / (2 * n)
     lit = series["sun_vis"] == 1
     geom_up = series["sun_geom"] == 1
     blocked_by_terrain = float(np.sum(geom_up & (series["sun_vis"] == 0))) / max(1, int(geom_up.sum())) if geom_up.any() else None
     return {
-        "sunPct": round(100 * frac(series["sun_vis"]), 2), "sunHours": round(frac(series["sun_vis"]) * window_h, 2),
+        "sunPct": round(100 * frac(series["sun_vis"]), 2),
+        "sunHours": round(frac(series["sun_vis"]) * window_h, 2),
         "meanSolarElevationLitDeg": round(float(np.mean(series["sun_el"][lit])), 3) if lit.any() else None,
-        "earthPct": round(100 * frac(series["earth_vis"]), 2), "dtePct": round(100 * frac(series["dte"]), 2), "dteHours": round(frac(series["dte"]) * window_h, 2), "windowHours": round(window_h, 3),
+        "earthPct": round(100 * frac(series["earth_vis"]), 2),
+        "dtePct": round(100 * frac(series["dte"]), 2),
+        "dteHours": round(frac(series["dte"]) * window_h, 2),
+        "windowHours": round(window_h, 3),
         "longestDarkHours": round(_longest_run_hours(series["sun_vis"], step_s, 0.0), 2),
         "longestBlackoutHours": round(_longest_run_hours(series["dte"], step_s, 0.0), 2),
         "sunTerrainBlockedPct": None if blocked_by_terrain is None else round(100 * blocked_by_terrain, 2),
@@ -248,17 +321,30 @@ def site_metrics(series: dict[str, NDArray[Any]], step_s: float) -> dict[str, fl
 def evaluate(m: dict[str, Any], c: SuitabilityConfig) -> dict[str, Any]:
     """Hard constraints first (missing -> unknown, never pass), then an explainable 0-100 score."""
     checks: list[dict[str, Any]] = []
+
     def chk(key: str, label: str, value: float | None, limit: float | None, ok_fn: Any, unit: str) -> None:
         if limit is None:
             return
-        checks.append({"key": key, "label": label, "value": value, "limit": limit, "unit": unit, "result": "unknown" if value is None else ("pass" if ok_fn(value, limit) else "fail")})
+        checks.append(
+            {
+                "key": key,
+                "label": label,
+                "value": value,
+                "limit": limit,
+                "unit": unit,
+                "result": "unknown" if value is None else ("pass" if ok_fn(value, limit) else "fail"),
+            }
+        )
+
     chk("unknown", "Unknown (coverage-limited) time", m.get("unknownPct"), c.max_unknown_pct, lambda v, lim: v <= lim, "%")
     chk("sun", "Direct sunlight", m.get("sunPct"), c.min_sun_pct, lambda v, lim: v >= lim, "%")
     chk("dte", "Geometric direct-to-Earth", m.get("dtePct"), c.min_dte_pct, lambda v, lim: v >= lim, "%")
     chk("dark", "Longest darkness", m.get("longestDarkHours"), c.max_dark_hours, lambda v, lim: v <= lim, "h")
     chk("slope", "Slope", m.get("slopeDeg"), c.max_slope_deg, lambda v, lim: v <= lim, "°")
     chk("roughness", "Roughness", m.get("roughnessM"), c.max_roughness_m, lambda v, lim: v <= lim, "m")
-    status = "fail" if any(x["result"] == "fail" for x in checks) else "unknown" if any(x["result"] == "unknown" for x in checks) else "pass"
+    status = (
+        "fail" if any(x["result"] == "fail" for x in checks) else "unknown" if any(x["result"] == "unknown" for x in checks) else "pass"
+    )
     w = c.weights
     norm: dict[str, float | None] = {
         "sun": None if m.get("sunPct") is None else m["sunPct"] / 100,
@@ -275,12 +361,24 @@ def evaluate(m: dict[str, Any], c: SuitabilityConfig) -> dict[str, Any]:
     if missing or total == 0:
         score, breakdown = None, None
     else:
-        breakdown = {k: round(100 * used[k] * float(norm[k]) / total, 2) for k in used}
+        breakdown = {k: round(100 * used[k] * float(norm[k] or 0.0) / total, 2) for k in used}
         score = round(sum(breakdown.values()), 2)
-    favourable, unfavourable = [], []
+    favourable: list[str] = []
+    unfavourable: list[str] = []
     for x in checks:
-        (favourable if x["result"] == "pass" else unfavourable).append(f"{x['label']} {x['value'] if x['value'] is not None else 'unavailable'}{x['unit']} vs limit {x['limit']}{x['unit']}: {x['result']}")
-    return {"status": status, "checks": checks, "score": score, "breakdown": breakdown, "normalized": norm, "missingForScore": missing, "favourable": favourable, "unfavourable": unfavourable}
+        (favourable if x["result"] == "pass" else unfavourable).append(
+            f"{x['label']} {x['value'] if x['value'] is not None else 'unavailable'}{x['unit']} vs limit {x['limit']}{x['unit']}: {x['result']}"
+        )
+    return {
+        "status": status,
+        "checks": checks,
+        "score": score,
+        "breakdown": breakdown,
+        "normalized": norm,
+        "missingForScore": missing,
+        "favourable": favourable,
+        "unfavourable": unfavourable,
+    }
 
 
 def _terrain_at(dem: Any, lat: float, lon: float) -> dict[str, Any]:
@@ -300,10 +398,22 @@ def time_grid(start_utc: str, end_utc: str, step_s: int, max_samples: int = 2000
     n = int((e1 - e0) // step_s) + 1
     if n > max_samples:
         raise ValueError(f"too many time samples ({n}); max {max_samples} — increase the step")
-    return e0 + np.arange(n) * float(step_s)
+    return np.asarray(e0 + np.arange(n) * float(step_s), dtype=np.float64)
 
 
-def evaluate_point(dem: Any, base: Any, lat: float, lon: float, sun: NDArray[np.float64], earth: NDArray[np.float64], step_s: float, cfg: SuitabilityConfig, earth_radius_km: float, hparams: HorizonParams, horizon_fn: Any = None) -> dict[str, Any]:
+def evaluate_point(
+    dem: Any,
+    base: Any,
+    lat: float,
+    lon: float,
+    sun: NDArray[np.float64],
+    earth: NDArray[np.float64],
+    step_s: float,
+    cfg: SuitabilityConfig,
+    earth_radius_km: float,
+    hparams: HorizonParams,
+    horizon_fn: Any = None,
+) -> dict[str, Any]:
     terrain = _terrain_at(dem, lat, lon)
     if terrain["heightM"] is None:
         m: dict[str, Any] = {"sunPct": None, "dtePct": None, "unknownPct": 100.0, **terrain, "covered": False}
@@ -315,7 +425,9 @@ def evaluate_point(dem: Any, base: Any, lat: float, lon: float, sun: NDArray[np.
     return {"latitudeDeg": lat, "longitudeEastDeg": lon, "metrics": m, "evaluation": evaluate(m, cfg)}
 
 
-def suitability_grid(dem: Any, base: Any, lat: float, lon: float, half_m: float, n: int, start_utc: str, end_utc: str, step_s: int, cfg: SuitabilityConfig) -> dict[str, Any]:
+def suitability_grid(
+    dem: Any, base: Any, lat: float, lon: float, half_m: float, n: int, start_utc: str, end_utc: str, step_s: int, cfg: SuitabilityConfig
+) -> dict[str, Any]:
     if n < 1 or n > 21:
         raise ValueError("grid size must be 1-21 cells per side")
     ets = time_grid(start_utc, end_utc, step_s)
@@ -331,21 +443,59 @@ def suitability_grid(dem: Any, base: Any, lat: float, lon: float, half_m: float,
             y = y0[0] - (i - (n - 1) / 2) * spacing
             la, lo = base.xy_to_latlon(np.array([x]), np.array([y]))
             r = evaluate_point(dem, base, float(la[0]), float(lo[0]), sun, earth, step_s, cfg, er, hp)
-            r.update({"row": i, "col": j, "offsetEastM": float((j - (n - 1) / 2) * spacing), "offsetNorthM": float(-(i - (n - 1) / 2) * spacing)})
+            r.update(
+                {"row": i, "col": j, "offsetEastM": float((j - (n - 1) / 2) * spacing), "offsetNorthM": float(-(i - (n - 1) / 2) * spacing)}
+            )
             cells.append(r)
-    ranked = sorted([c for c in cells if c["evaluation"]["status"] == "pass" and c["evaluation"]["score"] is not None], key=lambda c: -c["evaluation"]["score"])
+    ranked = sorted(
+        [c for c in cells if c["evaluation"]["status"] == "pass" and c["evaluation"]["score"] is not None],
+        key=lambda c: -c["evaluation"]["score"],
+    )
     return {
-        "center": {"latitudeDeg": lat, "longitudeEastDeg": lon}, "grid": {"size": n, "spacingM": spacing, "halfSizeM": half_m, "plane": "south polar stereographic (map x east of 0 deg meridian, y toward it)"},
-        "window": {"startUtc": start_utc, "endUtc": end_utc, "stepSeconds": step_s, "samples": int(len(ets)), "lastSampleUtc": et_to_utc(float(ets[-1]))},
-        "config": {"minSunPct": cfg.min_sun_pct, "minDtePct": cfg.min_dte_pct, "maxSlopeDeg": cfg.max_slope_deg, "maxRoughnessM": cfg.max_roughness_m, "maxUnknownPct": cfg.max_unknown_pct, "maxDarkHours": cfg.max_dark_hours, "antennaMaskDeg": cfg.antenna_mask_deg, "weights": cfg.weights},
-        "cells": cells, "bestPassing": [{"row": c["row"], "col": c["col"], "latitudeDeg": c["latitudeDeg"], "longitudeEastDeg": c["longitudeEastDeg"], "score": c["evaluation"]["score"]} for c in ranked[:5]],
+        "center": {"latitudeDeg": lat, "longitudeEastDeg": lon},
+        "grid": {
+            "size": n,
+            "spacingM": spacing,
+            "halfSizeM": half_m,
+            "plane": "south polar stereographic (map x east of 0 deg meridian, y toward it)",
+        },
+        "window": {
+            "startUtc": start_utc,
+            "endUtc": end_utc,
+            "stepSeconds": step_s,
+            "samples": int(len(ets)),
+            "lastSampleUtc": et_to_utc(float(ets[-1])),
+        },
+        "config": {
+            "minSunPct": cfg.min_sun_pct,
+            "minDtePct": cfg.min_dte_pct,
+            "maxSlopeDeg": cfg.max_slope_deg,
+            "maxRoughnessM": cfg.max_roughness_m,
+            "maxUnknownPct": cfg.max_unknown_pct,
+            "maxDarkHours": cfg.max_dark_hours,
+            "antennaMaskDeg": cfg.antenna_mask_deg,
+            "weights": cfg.weights,
+        },
+        "cells": cells,
+        "bestPassing": [
+            {
+                "row": c["row"],
+                "col": c["col"],
+                "latitudeDeg": c["latitudeDeg"],
+                "longitudeEastDeg": c["longitudeEastDeg"],
+                "score": c["evaluation"]["score"],
+            }
+            for c in ranked[:5]
+        ],
         "counts": {k: sum(1 for c in cells if c["evaluation"]["status"] == k) for k in ("pass", "fail", "unknown")},
         "method": "per cell: finest-LOLA height/slope/roughness (5x5 stencil); 240 m curvature-aware horizon (2 deg bins, 150 km); SPICE Sun/Earth (LT+S) with per-cell parallax; any-disk visibility",
         "disclaimer": "Simplified MoonNav suitability screening — not an official NASA rating and not a landing-safety certification. Sunlight alone never establishes safety.",
     }
 
 
-def date_series(dem: Any, base: Any, lat: float, lon: float, starts_utc: list[str], hours: float, step_s: int, cfg: SuitabilityConfig) -> list[dict[str, Any]]:
+def date_series(
+    dem: Any, base: Any, lat: float, lon: float, starts_utc: list[str], hours: float, step_s: int, cfg: SuitabilityConfig
+) -> list[dict[str, Any]]:
     """Same site, several analysis windows (each `hours` long)."""
     er = float(sp.bodvrd("EARTH", "RADII", 3)[1][0])
     hp = HorizonParams(azimuth_step_deg=1.0, max_radius_m=300_000.0, observer_height_m=2.0)
@@ -364,7 +514,19 @@ def date_series(dem: Any, base: Any, lat: float, lon: float, starts_utc: list[st
     return out
 
 
-def sensitivity(dem: Any, base: Any, lat: float, lon: float, start_utc: str, hours: float, step_s: int, cfg: SuitabilityConfig, spacing_m: float = 500.0, n: int = 5, day_shifts: list[float] | None = None) -> dict[str, Any]:
+def sensitivity(
+    dem: Any,
+    base: Any,
+    lat: float,
+    lon: float,
+    start_utc: str,
+    hours: float,
+    step_s: int,
+    cfg: SuitabilityConfig,
+    spacing_m: float = 500.0,
+    n: int = 5,
+    day_shifts: list[float] | None = None,
+) -> dict[str, Any]:
     """How results change when the landing point moves (n x n grid, `spacing_m`) or the date shifts.
 
     Every number comes from an executed calculation; alternatives are only listed when they were
@@ -375,30 +537,105 @@ def sensitivity(dem: Any, base: Any, lat: float, lon: float, start_utc: str, hou
     grid = suitability_grid(dem, base, lat, lon, spacing_m * (n - 1) / 2, n, start_utc, end_utc, step_s, cfg)
     centre = next(c for c in grid["cells"] if c["row"] == (n - 1) // 2 and c["col"] == (n - 1) // 2)
     c0 = centre["metrics"]
+
     def delta(c: dict[str, Any], k: str) -> float | None:
         a, b = c["metrics"].get(k), c0.get(k)
         return None if a is None or b is None else round(a - b, 3)
+
     loc = []
     for c in grid["cells"]:
         dist_km = math.hypot(c["offsetEastM"], c["offsetNorthM"]) / 1000
-        loc.append({**{k: c[k] for k in ("row", "col", "latitudeDeg", "longitudeEastDeg", "offsetEastM", "offsetNorthM")}, "distanceKm": round(dist_km, 3), "sunHours": c["metrics"].get("sunHours"), "dteHours": c["metrics"].get("dteHours"), "slopeDeg": c["metrics"].get("slopeDeg"), "deltaSunHours": delta(c, "sunHours"), "deltaDteHours": delta(c, "dteHours"), "score": c["evaluation"]["score"], "status": c["evaluation"]["status"]})
+        loc.append(
+            {
+                **{k: c[k] for k in ("row", "col", "latitudeDeg", "longitudeEastDeg", "offsetEastM", "offsetNorthM")},
+                "distanceKm": round(dist_km, 3),
+                "sunHours": c["metrics"].get("sunHours"),
+                "dteHours": c["metrics"].get("dteHours"),
+                "slopeDeg": c["metrics"].get("slopeDeg"),
+                "deltaSunHours": delta(c, "sunHours"),
+                "deltaDteHours": delta(c, "dteHours"),
+                "score": c["evaluation"]["score"],
+                "status": c["evaluation"]["status"],
+            }
+        )
+
     def rate(key: str) -> float | None:
         vals = [abs(x[key]) / x["distanceKm"] for x in loc if x["distanceKm"] > 0 and x[key] is not None]
         return round(max(vals), 3) if vals else None
+
     starts = [et_to_utc(utc_to_et(start_utc) + d * 86400) for d in shifts]
     dates = date_series(dem, base, lat, lon, starts, hours, step_s, cfg)
     base_d = next((d for d, s in zip(dates, shifts, strict=True) if s == 0), dates[0])
-    date_rows = [{"dayShift": s, "startUtc": d["startUtc"], "sunHours": d["metrics"].get("sunHours"), "dteHours": d["metrics"].get("dteHours"), "meanSolarElevationLitDeg": d["metrics"].get("meanSolarElevationLitDeg"), "score": d["evaluation"]["score"], "status": d["evaluation"]["status"], "deltaSunHours": None if d["metrics"].get("sunHours") is None else round(d["metrics"]["sunHours"] - base_d["metrics"]["sunHours"], 3), "deltaDteHours": None if d["metrics"].get("dteHours") is None else round(d["metrics"]["dteHours"] - base_d["metrics"]["dteHours"], 3)} for d, s in zip(dates, shifts, strict=True)]
+    date_rows = [
+        {
+            "dayShift": s,
+            "startUtc": d["startUtc"],
+            "sunHours": d["metrics"].get("sunHours"),
+            "dteHours": d["metrics"].get("dteHours"),
+            "meanSolarElevationLitDeg": d["metrics"].get("meanSolarElevationLitDeg"),
+            "score": d["evaluation"]["score"],
+            "status": d["evaluation"]["status"],
+            "deltaSunHours": None
+            if d["metrics"].get("sunHours") is None
+            else round(d["metrics"]["sunHours"] - base_d["metrics"]["sunHours"], 3),
+            "deltaDteHours": None
+            if d["metrics"].get("dteHours") is None
+            else round(d["metrics"]["dteHours"] - base_d["metrics"]["dteHours"], 3),
+        }
+        for d, s in zip(dates, shifts, strict=True)
+    ]
     base_score = centre["evaluation"]["score"]
-    better_loc = sorted([x for x in loc if x["status"] == "pass" and x["score"] is not None and (base_score is None or x["score"] > base_score + 0.05)], key=lambda x: -x["score"])[:3]
-    better_dates = sorted([x for x in date_rows if x["status"] == "pass" and x["score"] is not None and (base_d["evaluation"]["score"] is None or x["score"] > base_d["evaluation"]["score"] + 0.05)], key=lambda x: -x["score"])[:3]
+    better_loc = sorted(
+        [x for x in loc if x["status"] == "pass" and x["score"] is not None and (base_score is None or x["score"] > base_score + 0.05)],
+        key=lambda x: -x["score"],
+    )[:3]
+    better_dates = sorted(
+        [
+            x
+            for x in date_rows
+            if x["status"] == "pass"
+            and x["score"] is not None
+            and (base_d["evaluation"]["score"] is None or x["score"] > base_d["evaluation"]["score"] + 0.05)
+        ],
+        key=lambda x: -x["score"],
+    )[:3]
+
     def rng(rows: list[dict[str, Any]], k: str) -> list[float] | None:
         v = [r[k] for r in rows if r[k] is not None]
         return [min(v), max(v)] if v else None
+
     return {
-        "original": {"latitudeDeg": lat, "longitudeEastDeg": lon, "startUtc": start_utc, "hours": hours, "metrics": c0, "evaluation": centre["evaluation"]},
-        "location": {"spacingM": spacing_m, "size": n, "cells": loc, "sunHoursRange": rng(loc, "sunHours"), "dteHoursRange": rng(loc, "dteHours"), "maxSunChangeHoursPerKm": rate("deltaSunHours"), "maxDteChangeHoursPerKm": rate("deltaDteHours"), "betterAlternatives": better_loc},
-        "date": {"dayShifts": shifts, "rows": date_rows, "sunHoursRange": rng(date_rows, "sunHours"), "dteHoursRange": rng(date_rows, "dteHours"), "betterAlternatives": better_dates},
-        "resolution": {"timeStepSeconds": step_s, "windowHours": hours, "gridSpacingM": spacing_m, "horizon": "240 m LOLA, 2 deg bins / 150 km (location grid); 1 deg / 300 km (date series)", "terrain": "finest LOLA product at each point for height/slope/roughness"},
+        "original": {
+            "latitudeDeg": lat,
+            "longitudeEastDeg": lon,
+            "startUtc": start_utc,
+            "hours": hours,
+            "metrics": c0,
+            "evaluation": centre["evaluation"],
+        },
+        "location": {
+            "spacingM": spacing_m,
+            "size": n,
+            "cells": loc,
+            "sunHoursRange": rng(loc, "sunHours"),
+            "dteHoursRange": rng(loc, "dteHours"),
+            "maxSunChangeHoursPerKm": rate("deltaSunHours"),
+            "maxDteChangeHoursPerKm": rate("deltaDteHours"),
+            "betterAlternatives": better_loc,
+        },
+        "date": {
+            "dayShifts": shifts,
+            "rows": date_rows,
+            "sunHoursRange": rng(date_rows, "sunHours"),
+            "dteHoursRange": rng(date_rows, "dteHours"),
+            "betterAlternatives": better_dates,
+        },
+        "resolution": {
+            "timeStepSeconds": step_s,
+            "windowHours": hours,
+            "gridSpacingM": spacing_m,
+            "horizon": "240 m LOLA, 2 deg bins / 150 km (location grid); 1 deg / 300 km (date series)",
+            "terrain": "finest LOLA product at each point for height/slope/roughness",
+        },
         "window": grid["window"],
     }

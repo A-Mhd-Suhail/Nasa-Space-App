@@ -43,8 +43,32 @@ lines = [
     "|---|---|---|---|---|---|---|---|---|---|---|---|",
 ]
 for r in rep["records"]:
-    lines.append("| " + " | ".join(cell(r[k]) for k in ("id", "category", "source", "product", "epochUtc", "location", "method", "moonnav", "reference", "difference", "tolerance")) + f" | **{r['result'].upper()}**{(' — ' + r['note']) if r.get('note') else ''} |")
-lines += ["", "## Not compared", "- **SVS 4930 rendered illumination frames (pixels):** the frames are published as images without a machine-readable projection/extent, so pixel-level lit/shadow comparison is not performed. The numeric values stamped on those frames (sub-solar point, sub-Earth point, distance) are compared above through the SVS Dial-a-Moon API.", ""]
+    lines.append(
+        "| "
+        + " | ".join(
+            cell(r[k])
+            for k in (
+                "id",
+                "category",
+                "source",
+                "product",
+                "epochUtc",
+                "location",
+                "method",
+                "moonnav",
+                "reference",
+                "difference",
+                "tolerance",
+            )
+        )
+        + f" | **{r['result'].upper()}**{(' — ' + r['note']) if r.get('note') else ''} |"
+    )
+lines += [
+    "",
+    "## Not compared",
+    "- **SVS 4930 rendered illumination frames (pixels):** the frames are published as images without a machine-readable projection/extent, so pixel-level lit/shadow comparison is not performed. The numeric values stamped on those frames (sub-solar point, sub-Earth point, distance) are compared above through the SVS Dial-a-Moon API.",
+    "",
+]
 (ROOT / "docs/VALIDATION_REPORT.md").write_text("\n".join(lines))
 print(json.dumps(rep["summary"]))
 for r in rep["records"]:

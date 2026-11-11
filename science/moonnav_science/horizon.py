@@ -113,7 +113,9 @@ def _elev_angle(obs_r: float, sample_r: NDArray[np.float64], delta: NDArray[np.f
     return np.degrees(np.arctan2(up, horiz))
 
 
-def compute_horizon(dem: HeightSampler, lat_deg: float, lon_deg: float, params: HorizonParams | None = None, site_height_m: float | None = None) -> HorizonProfile:
+def compute_horizon(
+    dem: HeightSampler, lat_deg: float, lon_deg: float, params: HorizonParams | None = None, site_height_m: float | None = None
+) -> HorizonProfile:
     p = params or HorizonParams()
     R = dem.radius_ref_m
     step = p.radial_step_m or dem.scale_m
@@ -168,7 +170,13 @@ class _Sampler:
 
 
 def compute_horizon_multires(
-    composite: HeightSampler, base: HeightSampler, near_scale_m: float, lat_deg: float, lon_deg: float, params: HorizonParams, near_radius_m: float = 6000.0
+    composite: HeightSampler,
+    base: HeightSampler,
+    near_scale_m: float,
+    lat_deg: float,
+    lon_deg: float,
+    params: HorizonParams,
+    near_radius_m: float = 6000.0,
 ) -> HorizonProfile:
     """Two-pass horizon: near field from the finest DEM, far field from the base DEM.
 
@@ -182,9 +190,23 @@ def compute_horizon_multires(
     if not math.isfinite(site_h):
         raise ValueError("site is outside DEM coverage or on a no-data pixel")
     near_step = 2.0 * near_scale_m
-    near_p = HorizonParams(azimuth_step_deg=params.azimuth_step_deg, max_radius_m=near_radius_m, radial_step_m=near_step, min_distance_m=near_step, observer_height_m=params.observer_height_m)
-    far_p = HorizonParams(azimuth_step_deg=params.azimuth_step_deg, max_radius_m=params.max_radius_m, radial_step_m=base.scale_m, min_distance_m=near_radius_m, observer_height_m=params.observer_height_m)
-    near = compute_horizon(_Sampler(composite.sample_height, near_scale_m, composite.radius_ref_m), lat_deg, lon_deg, near_p, site_height_m=site_h)
+    near_p = HorizonParams(
+        azimuth_step_deg=params.azimuth_step_deg,
+        max_radius_m=near_radius_m,
+        radial_step_m=near_step,
+        min_distance_m=near_step,
+        observer_height_m=params.observer_height_m,
+    )
+    far_p = HorizonParams(
+        azimuth_step_deg=params.azimuth_step_deg,
+        max_radius_m=params.max_radius_m,
+        radial_step_m=base.scale_m,
+        min_distance_m=near_radius_m,
+        observer_height_m=params.observer_height_m,
+    )
+    near = compute_horizon(
+        _Sampler(composite.sample_height, near_scale_m, composite.radius_ref_m), lat_deg, lon_deg, near_p, site_height_m=site_h
+    )
     far = compute_horizon(base, lat_deg, lon_deg, far_p, site_height_m=site_h)
     n_el = np.nan_to_num(near.elevation_deg, nan=-np.inf)
     f_el = np.nan_to_num(far.elevation_deg, nan=-np.inf)
@@ -192,9 +214,18 @@ def compute_horizon_multires(
     elev = np.where(use_near, n_el, f_el)
     elev = np.where(np.isfinite(elev), elev, np.nan)
     block = np.where(use_near, near.blocking_distance_m, far.blocking_distance_m)
-    p = HorizonParams(azimuth_step_deg=params.azimuth_step_deg, max_radius_m=params.max_radius_m, radial_step_m=None, min_distance_m=near_step, observer_height_m=params.observer_height_m, interpolation="bilinear")
+    p = HorizonParams(
+        azimuth_step_deg=params.azimuth_step_deg,
+        max_radius_m=params.max_radius_m,
+        radial_step_m=None,
+        min_distance_m=near_step,
+        observer_height_m=params.observer_height_m,
+        interpolation="bilinear",
+    )
     notes = list(far.notes) + [
         f"near field 0-{near_radius_m / 1000:.0f} km sampled every {near_step:.0f} m from the finest available LOLA product; far field to {params.max_radius_m / 1000:.0f} km from the {base.scale_m:.0f} m product",
         f"{int(np.sum(use_near & np.isfinite(elev)))} of {len(elev)} azimuths are set by near-field terrain",
     ]
-    return HorizonProfile(near.azimuths_deg, elev, block, far.coverage_distance_m, far.status, far.beyond_bound_deg, site_h, near.observer_radius_m, p, notes)
+    return HorizonProfile(
+        near.azimuths_deg, elev, block, far.coverage_distance_m, far.status, far.beyond_bound_deg, site_h, near.observer_radius_m, p, notes
+    )

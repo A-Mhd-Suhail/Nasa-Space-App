@@ -23,7 +23,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import numpy as np
@@ -123,10 +123,19 @@ class TiledPolarDem:
     lru_max: int = 64
 
     # Reuse the projection maths of the validated full-file reader.
-    latlon_to_xy = PolarDem.latlon_to_xy
-    xy_to_latlon = PolarDem.xy_to_latlon
-    xy_to_pixel = PolarDem.xy_to_pixel
-    pixel_to_xy = PolarDem.pixel_to_xy
+    # Same projection maths as the validated full-file reader (PolarDem), applied to this product's label.
+    def latlon_to_xy(self, lat: NDArray[np.float64], lon: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        return PolarDem.latlon_to_xy(cast(Any, self), lat, lon)
+
+    def xy_to_latlon(self, x: NDArray[np.float64], y: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        return PolarDem.xy_to_latlon(cast(Any, self), x, y)
+
+    def xy_to_pixel(self, x: NDArray[np.float64], y: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        return PolarDem.xy_to_pixel(cast(Any, self), x, y)
+
+    def pixel_to_xy(self, row: NDArray[np.float64], col: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        return PolarDem.pixel_to_xy(cast(Any, self), row, col)
+
     pole = -1
 
     @classmethod
@@ -164,10 +173,20 @@ class TiledPolarDem:
         if abs(_num(label, "MAP_SCALE") - spec["scaleM"]) > 1e-9:
             raise DemValidationError("unexpected MAP_SCALE")
         return cls(
-            product_id=product_id, url=url, label=label, label_sha256=hashlib.sha256(lbl_path.read_bytes()).hexdigest(), cache_dir=cache,
-            lines=lines, samples=samples, scale_m=_num(label, "MAP_SCALE"), line_offset=_num(label, "LINE_PROJECTION_OFFSET"),
-            sample_offset=_num(label, "SAMPLE_PROJECTION_OFFSET"), radius_ref_m=_num(label, "OFFSET"), scaling_factor=_num(label, "SCALING_FACTOR"),
-            max_abs_lat_edge=abs(_num(label, "MAXIMUM_LATITUDE")), frame_name=label["COORDINATE_SYSTEM_NAME"],
+            product_id=product_id,
+            url=url,
+            label=label,
+            label_sha256=hashlib.sha256(lbl_path.read_bytes()).hexdigest(),
+            cache_dir=cache,
+            lines=lines,
+            samples=samples,
+            scale_m=_num(label, "MAP_SCALE"),
+            line_offset=_num(label, "LINE_PROJECTION_OFFSET"),
+            sample_offset=_num(label, "SAMPLE_PROJECTION_OFFSET"),
+            radius_ref_m=_num(label, "OFFSET"),
+            scaling_factor=_num(label, "SCALING_FACTOR"),
+            max_abs_lat_edge=abs(_num(label, "MAXIMUM_LATITUDE")),
+            frame_name=label["COORDINATE_SYSTEM_NAME"],
         )
 
     # --- tile cache ---------------------------------------------------------
@@ -209,9 +228,17 @@ class TiledPolarDem:
         np.save(tmp, out)
         tmp.replace(p)
         meta = {
-            "productId": self.product_id, "sourceUrl": self.url, "labelSha256": self.label_sha256, "tile": [tr, tc], "tileSize": TILE,
-            "rows": [r0, r0 + nr - 1], "cols": [c0, c0 + nc - 1], "byteRangeCount": len(ranges_all), "dtype": "int16 DN (height = DN * SCALING_FACTOR m)",
-            "scalingFactor": self.scaling_factor, "sha256": hashlib.sha256(out.tobytes()).hexdigest(),
+            "productId": self.product_id,
+            "sourceUrl": self.url,
+            "labelSha256": self.label_sha256,
+            "tile": [tr, tc],
+            "tileSize": TILE,
+            "rows": [r0, r0 + nr - 1],
+            "cols": [c0, c0 + nc - 1],
+            "byteRangeCount": len(ranges_all),
+            "dtype": "int16 DN (height = DN * SCALING_FACTOR m)",
+            "scalingFactor": self.scaling_factor,
+            "sha256": hashlib.sha256(out.tobytes()).hexdigest(),
             "retrievedAtUtc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
         p.with_suffix(".json").write_text(json.dumps(meta, indent=1))
@@ -226,7 +253,9 @@ class TiledPolarDem:
         cs = range(max(0, int((col[0] - rpx) // TILE)), min((self.samples - 1) // TILE, int((col[0] + rpx) // TILE)) + 1)
         return [(r, c) for r in rs for c in cs]
 
-    def ensure_region(self, lat: float, lon: float, radius_m: float, client: httpx.Client | None = None, max_new_tiles: int = 64) -> dict[str, Any]:
+    def ensure_region(
+        self, lat: float, lon: float, radius_m: float, client: httpx.Client | None = None, max_new_tiles: int = 64
+    ) -> dict[str, Any]:
         """Fetch missing tiles around a point (bounded). Returns a coverage summary."""
         if not self.covers(lat):
             return {"productId": self.product_id, "covered": False, "fetched": 0, "cached": 0, "missing": 0}
@@ -242,7 +271,14 @@ class TiledPolarDem:
         finally:
             if own:
                 c.close()
-        return {"productId": self.product_id, "covered": True, "tiles": len(need), "fetched": fetched, "cached": len(need) - len(todo), "missing": max(0, len(todo) - max_new_tiles)}
+        return {
+            "productId": self.product_id,
+            "covered": True,
+            "tiles": len(need),
+            "fetched": fetched,
+            "cached": len(need) - len(todo),
+            "missing": max(0, len(todo) - max_new_tiles),
+        }
 
     # --- sampling ---------------------------------------------------------
     def covers(self, lat_deg: float) -> bool:
@@ -275,11 +311,22 @@ class TiledPolarDem:
     def metadata(self) -> dict[str, object]:
         tiles = sorted(self.cache_dir.glob(f"t{TILE}_*.npy"))
         return {
-            "productId": self.product_id, "dataSetId": self.label.get("DATA_SET_ID"), "productVersion": self.label.get("PRODUCT_VERSION_ID"),
-            "fileName": self.label.get("FILE_NAME") or self.url.rsplit("/", 1)[-1].upper(), "sourceUrl": self.url, "labelSha256": self.label_sha256,
-            "projection": "POLAR STEREOGRAPHIC (spherical)", "frame": self.frame_name, "referenceRadiusM": self.radius_ref_m, "pixelSpacingM": self.scale_m,
-            "lines": self.lines, "samples": self.samples, "coverage": f"south of {self.max_abs_lat_edge} deg S", "access": "HTTP byte-range tiles of the PDS file, cached",
-            "cachedTiles": len(tiles), "cachedAreaKm2": round(len(tiles) * (TILE * self.scale_m / 1000) ** 2, 1),
+            "productId": self.product_id,
+            "dataSetId": self.label.get("DATA_SET_ID"),
+            "productVersion": self.label.get("PRODUCT_VERSION_ID"),
+            "fileName": self.label.get("FILE_NAME") or self.url.rsplit("/", 1)[-1].upper(),
+            "sourceUrl": self.url,
+            "labelSha256": self.label_sha256,
+            "projection": "POLAR STEREOGRAPHIC (spherical)",
+            "frame": self.frame_name,
+            "referenceRadiusM": self.radius_ref_m,
+            "pixelSpacingM": self.scale_m,
+            "lines": self.lines,
+            "samples": self.samples,
+            "coverage": f"south of {self.max_abs_lat_edge} deg S",
+            "access": "HTTP byte-range tiles of the PDS file, cached",
+            "cachedTiles": len(tiles),
+            "cachedAreaKm2": round(len(tiles) * (TILE * self.scale_m / 1000) ** 2, 1),
             "noDataPolicy": "no cached tile or outside coverage -> null (never zero)",
         }
 

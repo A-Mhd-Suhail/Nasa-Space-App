@@ -135,7 +135,14 @@ def _high_res_point(lat: float, lon: float) -> dict[str, Any] | None:
     if lyr is None or lyr is comp.base_dem:
         return None
     t = _terrain_at(comp, lat, lon)
-    return {"productId": lyr.product_id, "resolutionM": lyr.scale_m, "heightM": None if t["heightM"] is None else round(t["heightM"], 2), "slopeDeg": t["slopeDeg"], "roughnessM": t["roughnessM"], "slopeMethod": f"central differences, {2 * lyr.scale_m:.0f} m baseline"}
+    return {
+        "productId": lyr.product_id,
+        "resolutionM": lyr.scale_m,
+        "heightM": None if t["heightM"] is None else round(t["heightM"], 2),
+        "slopeDeg": t["slopeDeg"],
+        "roughnessM": t["roughnessM"],
+        "slopeMethod": f"central differences, {2 * lyr.scale_m:.0f} m baseline",
+    }
 
 
 class HorizonRequest(BaseModel):
@@ -355,23 +362,48 @@ def _ephemeris_locked(req: EphemerisRequest) -> dict[str, Any]:
         terrain_note = f"terrain unavailable: {type(exc).__name__}"
     site = site_vector_m(req.latitudeDeg, lon, MOON_REFERENCE_RADIUS_M + height + req.observerHeightM) / 1000.0
     eph = SpiceEphemeris(site, enu_basis(req.latitudeDeg, lon), "LT+S")
-    out: dict[str, Any] = {"utc": req.utc, "site": {"latitudeDeg": req.latitudeDeg, "longitudeEastDeg": lon, "heightM": height if profile else None}, "bodies": {}}
+    out: dict[str, Any] = {
+        "utc": req.utc,
+        "site": {"latitudeDeg": req.latitudeDeg, "longitudeEastDeg": lon, "heightM": height if profile else None},
+        "bodies": {},
+    }
     for target in ("SUN", "EARTH"):
         g = eph.geometry(target, et)  # type: ignore[arg-type]
         body: dict[str, Any] = {
-            "azimuthDeg": g.azimuth_deg, "elevationDeg": g.elevation_deg, "distanceKm": g.distance_km, "angularRadiusDeg": g.angular_radius_deg,
+            "azimuthDeg": g.azimuth_deg,
+            "elevationDeg": g.elevation_deg,
+            "distanceKm": g.distance_km,
+            "angularRadiusDeg": g.angular_radius_deg,
             "aboveGeometricHorizon": g.elevation_deg > 0,
         }
         if profile is not None:
             hz, bound = profile.at(g.azimuth_deg)
             s = classify(g.elevation_deg, g.angular_radius_deg, hz, bound, "any_disk")
-            body.update({"terrainHorizonDeg": hz, "state": s.state, "visible": s.lit, "visibleFraction": s.visible_fraction, "clearanceDeg": s.clearance_deg})
+            body.update(
+                {
+                    "terrainHorizonDeg": hz,
+                    "state": s.state,
+                    "visible": s.lit,
+                    "visibleFraction": s.visible_fraction,
+                    "clearanceDeg": s.clearance_deg,
+                }
+            )
         else:
-            body.update({"terrainHorizonDeg": None, "state": "unknown" if g.elevation_deg > 0 else "below_horizon", "visible": None if g.elevation_deg > 0 else False})
+            body.update(
+                {
+                    "terrainHorizonDeg": None,
+                    "state": "unknown" if g.elevation_deg > 0 else "below_horizon",
+                    "visible": None if g.elevation_deg > 0 else False,
+                }
+            )
         out["bodies"][target.lower()] = body
     out["provenance"] = {
-        "ephemerisSource": "NAIF SPICE spkcpo (LT+S) in MOON_ME", "kernelManifestId": k.manifest_id, "terrainProductId": req.terrainProductId if profile else None,
-        "methodVersion": METHOD_VERSION, "timeScale": "UTC input, converted to TDB (ET) with naif0012.tls", "note": terrain_note,
+        "ephemerisSource": "NAIF SPICE spkcpo (LT+S) in MOON_ME",
+        "kernelManifestId": k.manifest_id,
+        "terrainProductId": req.terrainProductId if profile else None,
+        "methodVersion": METHOD_VERSION,
+        "timeScale": "UTC input, converted to TDB (ET) with naif0012.tls",
+        "note": terrain_note,
     }
     return out
 
@@ -433,7 +465,18 @@ def suitability(req: SuitabilityRequest) -> dict[str, Any]:
     with SPICE_LOCK:
         kernels()
         try:
-            return suitability_grid(dem, base, req.latitudeDeg, lon, req.halfSizeM, req.gridSize, req.startUtc, req.endUtc, req.stepSeconds, SuitabilityConfig.from_dict(req.config))
+            return suitability_grid(
+                dem,
+                base,
+                req.latitudeDeg,
+                lon,
+                req.halfSizeM,
+                req.gridSize,
+                req.startUtc,
+                req.endUtc,
+                req.stepSeconds,
+                SuitabilityConfig.from_dict(req.config),
+            )
         except ValueError as exc:
             raise AnalysisInputError(str(exc), "window") from exc
 
@@ -466,8 +509,14 @@ def suitability_matrix(req: MatrixRequest) -> dict[str, Any]:
             except ValueError as exc:
                 raise AnalysisInputError(str(exc), "sites") from exc
         rows.append({"key": s.key, "latitudeDeg": s.latitudeDeg, "longitudeEastDeg": lon, "cells": res})
-    return {"rows": rows, "startsUtc": req.startsUtc, "hours": req.hours, "stepSeconds": req.stepSeconds, "config": req.config or {},
-            "method": "per site: finest-LOLA terrain stencil, 240 m horizon (1 deg / 300 km), SPICE LT+S Sun/Earth, any-disk visibility; hard constraints then weighted score"}
+    return {
+        "rows": rows,
+        "startsUtc": req.startsUtc,
+        "hours": req.hours,
+        "stepSeconds": req.stepSeconds,
+        "config": req.config or {},
+        "method": "per site: finest-LOLA terrain stencil, 240 m horizon (1 deg / 300 km), SPICE LT+S Sun/Earth, any-disk visibility; hard constraints then weighted score",
+    }
 
 
 class SensitivityRequest(BaseModel):
@@ -491,6 +540,18 @@ def sensitivity_ep(req: SensitivityRequest) -> dict[str, Any]:
     with SPICE_LOCK:
         kernels()
         try:
-            return sensitivity(dem, base, req.latitudeDeg, lon, req.startUtc, req.hours, req.stepSeconds, SuitabilityConfig.from_dict(req.config), req.spacingM, req.gridSize, req.dayShifts)
+            return sensitivity(
+                dem,
+                base,
+                req.latitudeDeg,
+                lon,
+                req.startUtc,
+                req.hours,
+                req.stepSeconds,
+                SuitabilityConfig.from_dict(req.config),
+                req.spacingM,
+                req.gridSize,
+                req.dayShifts,
+            )
         except ValueError as exc:
             raise AnalysisInputError(str(exc), "window") from exc

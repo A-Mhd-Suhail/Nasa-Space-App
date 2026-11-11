@@ -317,18 +317,18 @@ class TestHigherResDem:
         heights = ((yy - 100) * 0.1).astype("int16")  # metres-ish, scaled by 0.5
         img.write_bytes(heights.astype("<i2").tobytes())
         lbl.write_text(
-            f'PDS_VERSION_ID = PDS3\n'
-            f'LINES = {lines}\nLINE_SAMPLES = {samples}\n'
-            f'SAMPLE_TYPE = LSB_INTEGER\nSAMPLE_BITS = 16\n'
-            f'SCALING_FACTOR = 0.5 <m/pixel>\nOFFSET = 1737400. <m>\n'
+            f"PDS_VERSION_ID = PDS3\n"
+            f"LINES = {lines}\nLINE_SAMPLES = {samples}\n"
+            f"SAMPLE_TYPE = LSB_INTEGER\nSAMPLE_BITS = 16\n"
+            f"SCALING_FACTOR = 0.5 <m/pixel>\nOFFSET = 1737400. <m>\n"
             f'MAP_PROJECTION_TYPE = "POLAR STEREOGRAPHIC"\n'
-            f'A_AXIS_RADIUS = 1737.4 <km>\nB_AXIS_RADIUS = 1737.4 <km>\n'
-            f'CENTER_LATITUDE = -90.0\nCENTER_LONGITUDE = 0.0\n'
-            f'MAP_SCALE = 5.0 <m/pixel>\n'
-            f'LINE_PROJECTION_OFFSET = 100.0\nSAMPLE_PROJECTION_OFFSET = 100.0\n'
+            f"A_AXIS_RADIUS = 1737.4 <km>\nB_AXIS_RADIUS = 1737.4 <km>\n"
+            f"CENTER_LATITUDE = -90.0\nCENTER_LONGITUDE = 0.0\n"
+            f"MAP_SCALE = 5.0 <m/pixel>\n"
+            f"LINE_PROJECTION_OFFSET = 100.0\nSAMPLE_PROJECTION_OFFSET = 100.0\n"
             f'POSITIVE_LONGITUDE_DIRECTION = "EAST"\n'
             f'KEYWORD_LATITUDE_TYPE = "PLANETOCENTRIC"\n'
-            f'MAXIMUM_LATITUDE = -87.5\n'
+            f"MAXIMUM_LATITUDE = -87.5\n"
             f'COORDINATE_SYSTEM_NAME = "MEAN EARTH/POLAR AXIS OF DE421"\n'
             f'DATA_SET_ID = "LRO-L-LOLA-4-GDR-V1.0"\n'
             f'PRODUCT_VERSION_ID = "V1.0"\n'
@@ -363,4 +363,3 @@ class TestHigherResDem:
         assert md["productId"] == "lola-ldem-875s-5m-v1"
         assert md["pixelSpacingM"] == 5.0
         assert "87.5" in md["coverage"]
-

@@ -56,7 +56,14 @@ def _fmt(utc: str) -> str:
 
 
 def fetch_azel(
-    target: Target, lat: float, lon_east: float, height_km: float, start_utc: str, stop_utc: str, step: str, client: httpx.Client | None = None
+    target: Target,
+    lat: float,
+    lon_east: float,
+    height_km: float,
+    start_utc: str,
+    stop_utc: str,
+    step: str,
+    client: httpx.Client | None = None,
 ) -> tuple[list[tuple[str, float, float]], dict[str, Any]]:
     """Fetch an apparent az/el observer table from Horizons. Returns (rows, meta)."""
     params = horizons_params(target, lat, lon_east, height_km, _fmt(start_utc), _fmt(stop_utc), step)
@@ -119,7 +126,12 @@ def cross_check(lat: float, lon_east: float, height_m: float, start_utc: str, st
     site_km = site_vector_m(lat, lon_east, MOON_REFERENCE_RADIUS_M + height_m) / 1000.0
     eph = SpiceEphemeris(site_km, enu_basis(lat, lon_east), "LT+S")
     out: dict[str, Any] = {
-        "site": {"latitudeDeg": lat, "longitudeEastDeg": lon_east, "heightM": height_m, "heightReference": "1737.4 km sphere (Horizons GEODETIC on the IAU Moon sphere)"},
+        "site": {
+            "latitudeDeg": lat,
+            "longitudeEastDeg": lon_east,
+            "heightM": height_m,
+            "heightReference": "1737.4 km sphere (Horizons GEODETIC on the IAU Moon sphere)",
+        },
         "window": {"startUtc": start_utc, "stopUtc": stop_utc, "step": step},
         "method": "Apparent airless az/el: Horizons QUANTITIES=4 (CENTER=coord@301, COORD_TYPE=GEODETIC) vs SPICE spkcpo LT+S in MOON_ME; separation = great-circle angle",
         "thresholdsDeg": {"pass": PASS_DEG, "warn": WARN_DEG},
@@ -129,16 +141,28 @@ def cross_check(lat: float, lon_east: float, height_m: float, start_utc: str, st
     with httpx.Client(timeout=TIMEOUT_S, headers={"User-Agent": USER_AGENT}) as client:
         for target in ("SUN", "EARTH"):
             rows, meta = fetch_azel(target, lat, lon_east, height_m / 1000.0, start_utc, stop_utc, step, client)  # type: ignore[arg-type]
-            cmp_rows = []
+            cmp_rows: list[dict[str, Any]] = []
             for utc_h, az_h, el_h in rows[:MAX_ROWS]:
                 utc = horizons_time_to_iso(utc_h)
                 g = eph.geometry(target, utc_to_et(utc))  # type: ignore[arg-type]
                 sep = angular_separation_deg(g.azimuth_deg, g.elevation_deg, az_h, el_h)
-                cmp_rows.append({"utc": utc, "horizons": {"azDeg": az_h, "elDeg": el_h}, "spice": {"azDeg": round(g.azimuth_deg, 6), "elDeg": round(g.elevation_deg, 6)}, "separationDeg": round(sep, 6)})
-            seps = [r["separationDeg"] for r in cmp_rows]
+                cmp_rows.append(
+                    {
+                        "utc": utc,
+                        "horizons": {"azDeg": az_h, "elDeg": el_h},
+                        "spice": {"azDeg": round(g.azimuth_deg, 6), "elDeg": round(g.elevation_deg, 6)},
+                        "separationDeg": round(sep, 6),
+                    }
+                )
+            seps: list[float] = [float(r["separationDeg"]) for r in cmp_rows]  # type: ignore[arg-type]
             mx = max(seps) if seps else math.nan
             worst = max(worst, mx)
-            out["bodies"][target.lower()] = {"rows": cmp_rows, "maxSeparationDeg": mx, "meanSeparationDeg": sum(seps) / len(seps) if seps else None, "horizons": meta}
+            out["bodies"][target.lower()] = {
+                "rows": cmp_rows,
+                "maxSeparationDeg": mx,
+                "meanSeparationDeg": sum(seps) / len(seps) if seps else None,
+                "horizons": meta,
+            }
     status: Literal["pass", "warn", "fail"] = "pass" if worst < PASS_DEG else "warn" if worst < WARN_DEG else "fail"
     out["maxSeparationDeg"] = worst
     out["status"] = status

@@ -99,5 +99,8 @@ def test_ephemeris_endpoint_returns_terrain_aware_geometry():
     # Outside LOLA 75S coverage: geometry only, terrain state unknown (never "visible").
     r2 = c.post("/v1/ephemeris", json={"latitudeDeg": 0.0, "longitudeEastDeg": 0.0, "utc": "2026-12-01T00:00:00Z"}, headers=h).json()
     assert r2["bodies"]["earth"]["terrainHorizonDeg"] is None and r2["bodies"]["earth"]["state"] in {"unknown", "below_horizon"}
-    assert c.post("/v1/ephemeris", json={"latitudeDeg": -95, "longitudeEastDeg": 0, "utc": "2026-12-01T00:00:00Z"}, headers=h).status_code == 422
+    assert (
+        c.post("/v1/ephemeris", json={"latitudeDeg": -95, "longitudeEastDeg": 0, "utc": "2026-12-01T00:00:00Z"}, headers=h).status_code
+        == 422
+    )
     assert c.post("/v1/ephemeris", json={"latitudeDeg": -89, "longitudeEastDeg": 0, "utc": "2026-12-01T00:00:00Z"}).status_code == 401

@@ -27,7 +27,9 @@ class SynthDem:
     latlon_to_xy = PolarDem.latlon_to_xy
     xy_to_latlon = PolarDem.xy_to_latlon
 
-    def __init__(self, fn, scale_m: float = 20.0, product_id: str = "synth", nan_box: tuple[float, float, float, float] | None = None) -> None:  # type: ignore[no-untyped-def]
+    def __init__(
+        self, fn, scale_m: float = 20.0, product_id: str = "synth", nan_box: tuple[float, float, float, float] | None = None
+    ) -> None:  # type: ignore[no-untyped-def]
         self.fn, self.scale_m, self.product_id, self.nan_box = fn, scale_m, product_id, nan_box
 
     def covers(self, lat: float) -> bool:
@@ -60,7 +62,9 @@ def test_hazard_screen_flags_steep_terrain_and_unknown_data():
     assert r["verdict"] == "within_thresholds" and r["summary"]["maxSlopeDeg"] == 0.0
     steep = SynthDem(lambda x, y: 0.4 * x)  # 21.8 deg everywhere
     r = hazard_screen(steep, lat, lon, 400.0)
-    assert r["verdict"] == "exceeds" and abs(r["summary"]["maxSlopeDeg"] - math.degrees(math.atan(0.4))) < 1e-3  # summary is rounded to 0.001 deg
+    assert (
+        r["verdict"] == "exceeds" and abs(r["summary"]["maxSlopeDeg"] - math.degrees(math.atan(0.4))) < 1e-3
+    )  # summary is rounded to 0.001 deg
     x0, y0 = flat.latlon_to_xy(np.array([lat]), np.array([lon]))
     holey = SynthDem(lambda x, y: 0 * x, nan_box=(x0[0] - 30, x0[0] + 30, y0[0] - 30, y0[0] + 30))
     r = hazard_screen(holey, lat, lon, 400.0)
@@ -70,7 +74,15 @@ def test_hazard_screen_flags_steep_terrain_and_unknown_data():
 
 def test_suitability_missing_data_is_never_a_pass():
     c = SuitabilityConfig()
-    ok = {"sunPct": 80, "dtePct": 90, "unknownPct": 0, "slopeDeg": 3, "roughnessM": 0.2, "meanSolarElevationLitDeg": 2.0, "longestDarkHours": 10}
+    ok = {
+        "sunPct": 80,
+        "dtePct": 90,
+        "unknownPct": 0,
+        "slopeDeg": 3,
+        "roughnessM": 0.2,
+        "meanSolarElevationLitDeg": 2.0,
+        "longestDarkHours": 10,
+    }
     e = evaluate(ok, c)
     assert e["status"] == "pass" and e["score"] is not None
     assert abs(sum(e["breakdown"].values()) - e["score"]) < 0.02
@@ -109,7 +121,13 @@ def test_multires_horizon_sees_a_near_ridge_the_coarse_grid_misses():
 
 def test_multipart_byteranges_parser_and_range_assembly():
     boundary = "abc123"
-    body = (f"--{boundary}\r\nContent-Type: application/octet-stream\r\nContent-Range: bytes 0-3/100\r\n\r\n".encode() + b"\x01\x02\x03\x04" + f"\r\n--{boundary}\r\nContent-Range: bytes 10-11/100\r\n\r\n".encode() + b"\x0a\x0b" + f"\r\n--{boundary}--\r\n".encode())
+    body = (
+        f"--{boundary}\r\nContent-Type: application/octet-stream\r\nContent-Range: bytes 0-3/100\r\n\r\n".encode()
+        + b"\x01\x02\x03\x04"
+        + f"\r\n--{boundary}\r\nContent-Range: bytes 10-11/100\r\n\r\n".encode()
+        + b"\x0a\x0b"
+        + f"\r\n--{boundary}--\r\n".encode()
+    )
     parts = _parse_multipart(body, f"multipart/byteranges; boundary={boundary}")
     assert parts == [(0, 3, b"\x01\x02\x03\x04"), (10, 11, b"\x0a\x0b")]
 
@@ -122,7 +140,10 @@ def test_multipart_byteranges_parser_and_range_assembly():
     assert got == {0: b"\x01\x02\x03\x04", 10: b"\x0a\x0b"}
 
 
-@pytest.mark.skipif(not (DATA / "tiles" / "lola-ldem-875s-5m-v2").exists() or not (DATA / "raw/lola/ldem_75s_240m.img").exists(), reason="high-resolution tiles not ingested")
+@pytest.mark.skipif(
+    not (DATA / "tiles" / "lola-ldem-875s-5m-v2").exists() or not (DATA / "raw/lola/ldem_75s_240m.img").exists(),
+    reason="high-resolution tiles not ingested",
+)
 def test_cached_5m_tiles_agree_with_240m_product_at_shackleton():
     from moonnav_science.analysis import get_dem
     from moonnav_science.tiles import TiledPolarDem
@@ -147,8 +168,22 @@ def test_suitability_grid_endpoints_require_coverage_and_token():
     api.TOKEN = os.environ["SCIENCE_SERVICE_TOKEN"]
     c = TestClient(api.app)
     h = {"Authorization": f"Bearer {api.TOKEN}"}
-    assert c.post("/v1/suitability/grid", json={"latitudeDeg": -60, "longitudeEastDeg": 0, "startUtc": "2026-12-01T00:00:00Z", "endUtc": "2026-12-02T00:00:00Z"}, headers=h).status_code == 422
-    assert c.post("/v1/sensitivity", json={"latitudeDeg": -85.98, "longitudeEastDeg": 358.33, "startUtc": "2026-12-01T00:00:00Z", "gridSize": 4}, headers=h).status_code == 422
+    assert (
+        c.post(
+            "/v1/suitability/grid",
+            json={"latitudeDeg": -60, "longitudeEastDeg": 0, "startUtc": "2026-12-01T00:00:00Z", "endUtc": "2026-12-02T00:00:00Z"},
+            headers=h,
+        ).status_code
+        == 422
+    )
+    assert (
+        c.post(
+            "/v1/sensitivity",
+            json={"latitudeDeg": -85.98, "longitudeEastDeg": 358.33, "startUtc": "2026-12-01T00:00:00Z", "gridSize": 4},
+            headers=h,
+        ).status_code
+        == 422
+    )
     assert c.post("/v1/terrain/hazards", json={"latitudeDeg": -85.98, "longitudeEastDeg": 358.33}).status_code == 401
 
 
@@ -166,7 +201,10 @@ def test_pds_range_requests_retry_then_give_up_without_substitution(monkeypatch)
         fetch_ranges(c, "https://example.invalid/x.img", [(0, 1)])
     assert calls["n"] == 3
 
-    with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404))) as c, pytest.raises(tiles.TileFetchError, match="HTTP 404"):
+    with (
+        httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404))) as c,
+        pytest.raises(tiles.TileFetchError, match="HTTP 404"),
+    ):
         fetch_ranges(c, "https://example.invalid/x.img", [(0, 1)])
 
 
