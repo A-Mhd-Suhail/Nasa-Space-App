@@ -30,4 +30,4 @@ Last updated: 2026-11-12. Detail: `docs/FINAL_8_WORKSTREAMS.md`, `docs/IMPLEMENT
 ## Exact user actions remaining
 1. Click the MoonNav verification link in the Gmail inbox for `amhdsuhail2026+moonnav@gmail.com` while the local dev server runs, then tell Claude.
 2. Run `npx vercel login` in a terminal (browser/device login; never share the password or token in chat).
-4. Rotate the Google App Password and the GitHub PAT, because both were pasted into chat, then update `.env.local` and Vercel.
+3. Rotate the Google App Password and the GitHub PAT, because both were pasted into chat, then update `.env.local` and Vercel.
