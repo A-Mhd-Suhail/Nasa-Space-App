@@ -22,6 +22,9 @@ Check delivery before going live: `npm run mail:test -- you@example.org` (reads 
 
 Source products: `scripts/fetch_data.sh` downloads from NASA first and falls back to SHA-256-verified verbatim mirrors when NASA hosts are unreachable (e.g. locked-down CI networks); build the image on an open network to pin the preferred `moon_de440_250416.tf` release.
 
+### Mail delivery diagnostics
+Every send writes one structured log line: `event:"mail.delivery"` with `kind` (`verify-email` | `reset-password` | …), `status` (`accepted` | `rejected` | `failed`), `messageId`, `smtpResponse` (e.g. `250 2.0.0 OK`), `errorCode`, `linkHost`, `appUrlHost`, a masked recipient and the duration. Credentials, tokens, links and message text are never logged. View them with `npx vercel logs -e production --since 10m --json | grep mail.delivery`. `accepted` means the SMTP server took the message; it does not prove inbox placement. To locate a message in Gmail, search `rfc822msgid:<id>` with "All Mail" selected. Better Auth hides send failures from the HTTP response (non-enumeration), so the log is the only place they appear. Alert on `"status":"failed"`.
+
 ## 4. Science API + worker (Google Cloud Run, default — see DECISION_LOG D-013)
 ```bash
 docker build -f science/Dockerfile -t REGION-docker.pkg.dev/PROJECT/moonnav/science:0.1.0 .

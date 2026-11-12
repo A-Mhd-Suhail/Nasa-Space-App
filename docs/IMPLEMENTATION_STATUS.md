@@ -93,9 +93,14 @@ Full checklist with evidence and blockers: **`FINAL_8_WORKSTREAMS.md`**.
 |---|---|
 | 1. GitHub push incl. CI | Pushed 2026-11-12 (`1a759aa`, private). Actions status not readable with this PAT. |
 | 2. Vercel deployment | **Live** at https://moonnav.vercel.app (app public, science internal, serverless job drain, Supabase storage). Verified 2026-11-12. |
-| 3. Real SMTP email | Gmail SMTP: verified end to end locally; set in Vercel; production delivery confirmed by the owner (2026-11-12). |
+| 3. Real SMTP email | Gmail SMTP: verified end to end locally; set in Vercel. Production logs (2026-11-12) show every reset and verification mail accepted by Gmail (250). Delivery diagnostics added; inbox placement still needs the owner's check (see `CLAUDE_HANDOFF.md`). |
 | 4. SVS 4930 validation | Verified Complete (numeric). Pixel comparison is not data-feasible. 52 pass / 0 fail / 1 unavailable. |
 | 5. PSR map layer | Verified Complete: LOLA LPSR/AVGVISIB layers, point lookup, report row, tests. |
 | 6. FPS instrumentation | Verified Complete on Apple M5 / Chromium: perf panel, baseline JSON, tests. |
 | 7. High-res terrain use | Verified Complete: all planner tools, coverage preview, first use 112.5 s → 8.0 s. |
 | 8. Terrain limitations | Verified Complete: the limitation table in `KNOWN_LIMITATIONS.md` and the validation evidence. |
+
+### Email delivery pass (2026-11-12)
+- Found: send failures were swallowed by the auth library and the resend button always claimed success.
+- Fixed: structured delivery logging with message ids, one retry, localhost-link guard, honest resend errors.
+- Verified in production: password reset and sign-up verification are each accepted by Gmail with SMTP 250 and a correct production link host. Inbox arrival of the latest messages is **not yet confirmed**.

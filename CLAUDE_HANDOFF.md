@@ -36,6 +36,27 @@ Not set on purpose: `SCIENCE_API_URL` (injected by the binding), `APP_URL` (deri
   - For higher volume, switch to a transactional provider (`MAIL_DRIVER=resend` or another SMTP service).
 - 2026-11-12 23:47 UTC: a second production password-reset email was sent to the test account (HTTP 200).
 
+## Email delivery investigation (2026-11-12, second pass)
+Findings from production logs and code:
+- **Both flows use the same path**: Better Auth callback → `sendMail()` (`src/lib/mail.ts`) → Gmail SMTP `smtp.gmail.com:465`, implicit TLS, `From` = the Gmail account. Verified in production logs: password reset ×2 and sign-up verification ×1 were each **accepted by Gmail with SMTP `250 2.0.0 OK`**, `accepted:1, rejected:0`, about 3 s each, correct recipient domain, and the link host is `moonnav.vercel.app` (never localhost).
+- **Env values can't be read back**: `vercel env pull` masks Production variables as sensitive. The effective configuration is therefore proven through the delivery log fields (`driver`, `host`, `port`, `secure`, `fromDomain`, `appUrlHost`), not by reading variables.
+- **Defect found: failures were invisible.** Better Auth catches errors from the send callbacks (`runInBackgroundOrAwait`) and returns success, by design, for non-enumeration. A failed SMTP send therefore showed no error anywhere, and the "Send a new link" button always said "A new link is on its way".
+- **Fixes**:
+  - `sendMail` now returns only after the provider answers and logs one JSON line per attempt (`event:"mail.delivery"`): kind, driver, masked recipient (`a***@gmail.com`), link host, status (`accepted`/`rejected`/`failed`), message id, SMTP response code, error code, duration. It never logs passwords, tokens, links, message text or full addresses.
+  - It uses a fresh transport per attempt with explicit timeouts, retries once on transient errors (timeouts, resets, 4xx), and refuses to send a localhost link from a public deployment.
+  - The login page's "Send a new link" reports failures instead of claiming success.
+- **Read the logs**: `npx vercel logs -e production --since 10m --json | grep mail.delivery`.
+- **What can't be verified from here**: whether Gmail placed a message in Inbox, Spam, or only "All Mail". The server only sees SMTP acceptance, and reading the mailbox is out of scope for the credentials we hold (SMTP only). Use the Gmail search `rfc822msgid:<message-id>` with "All Mail" selected, from the ids in the logs.
+- **Likely inbox-side cause**: the sender and recipient are the same Gmail account (`amhdsuhail2026@gmail.com` → `…+moonnav@…`). Gmail may skip the Inbox, notifications, or fold identical subjects into one thread for mail you send to yourself. Test with a different recipient address before treating it as an application bug.
+
+### Final verification on the deployed build (03:12 UTC, 2026-11-12) — inbox placement still to be confirmed by the owner
+| Flow | Gmail SMTP result | Message-ID (search `rfc822msgid:` in Gmail, "All Mail") |
+|---|---|---|
+| Sign-up verification (`…+moonnav3@gmail.com`) | accepted, `250 2.0.0 OK`, 1.2 s, link host `moonnav.vercel.app` | `<95561c58-a5ba-fb3f-5e2f-ee32c3f9099b@gmail.com>` |
+| Password reset (`…+moonnav@gmail.com`) | accepted, `250 2.0.0 OK`, 0.6 s, link host `moonnav.vercel.app` | `<cde69063-5d31-19c7-d184-80b9d7ff7da9@gmail.com>` |
+Local regression after the change (outbox mode): `auth-fixes.spec.ts` 8/8 on Chromium + WebKit; register and forgot-password flows pass on both. Two earlier failures were test-environment effects, not product bugs: a stale dev-server cache (fixed by a clean restart) and the password-reset rate limit (3 per 5 min per IP, **stored in the shared Supabase DB, so local runs and production tests count against the same limit**; wait 5 min between runs).
+Test accounts created in production for these checks: `amhdsuhail2026+moonnav@`, `+moonnav2@` (unverified), `+moonnav3@` (unverified).
+
 ## Operating notes
 - E2E needs the outbox: start the web server with `MAIL_DRIVER=outbox` in its environment (process env overrides `.env.local`). Never run the registering E2E suites against production, because they would send real email to `example.test` addresses.
 - Read-only production check: `E2E_BASE_URL=https://moonnav.vercel.app npx playwright test tests/e2e/public.spec.ts --project=chromium`.

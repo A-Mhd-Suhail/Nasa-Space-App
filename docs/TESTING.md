@@ -64,3 +64,11 @@ E2E suites read verification links from the local outbox. Start the web server w
 | Secrets | none in 5 pages + 16 JS chunks or the build log |
 | Local before deploy | on-demand jobs + Supabase storage: `workspace.spec.ts` 10/10 (no worker process); pytest 84; Vitest 61; lint/typecheck clean |
 | Production email | password-reset email sent through Gmail SMTP; arrival confirmed by the owner |
+
+## Email delivery pass (2026-11-12)
+| Check | Result |
+|---|---|
+| Production reset ×3, verification ×2 (all logged) | all accepted by Gmail with SMTP 250, correct recipient, production link host, 0.6–3 s |
+| Local auth E2E after the mail changes | `auth-fixes.spec.ts` 8/8 (Chromium + WebKit); register + forgot-password pass on both |
+| Inbox placement | **not verified by the application**; the owner searches Gmail by message id (see `CLAUDE_HANDOFF.md`) |
+Note: the password-reset limiter (3 per 5 min per IP) is shared across local and production through the database; space E2E runs at least 5 minutes apart.

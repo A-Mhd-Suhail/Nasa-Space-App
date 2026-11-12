@@ -16,6 +16,7 @@ export function LoginForm({ localMail = false }: { localMail?: boolean }) {
   const [unverified, setUnverified] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,8 +64,9 @@ export function LoginForm({ localMail = false }: { localMail?: boolean }) {
         <Notice tone="warn" title="Verify your email first">
           We sent a verification link when you registered.{" "}
           {resent ? "A new link is on its way." : (
-            <button type="button" className="text-accent underline" onClick={async () => { await authClient.sendVerificationEmail({ email: unverified, callbackURL: "/login?verified=1" }); setResent(true); }}>Send a new link</button>
+            <button type="button" className="text-accent underline" onClick={async () => { setResendError(null); const r = await authClient.sendVerificationEmail({ email: unverified, callbackURL: "/login?verified=1" }); if (r.error) setResendError(r.error.status === 429 ? "Too many requests. Wait a minute and try again." : "The link could not be sent. Try again in a moment."); else setResent(true); }}>Send a new link</button>
           )}
+          {resendError && <span className="mt-1 block text-bad" role="alert">{resendError}</span>}
           {localMail && <span className="mt-1 block">Running locally without a mail server: open the <a href="/dev/mail" className="text-accent underline">local mailbox</a> to find the link.</span>}
         </Notice>
       )}
