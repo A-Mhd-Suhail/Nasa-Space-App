@@ -15,7 +15,7 @@ Last updated: 2026-11-13. Detail: `docs/DEPLOYMENT.md` (architecture, variables,
 | Test suite | DONE | `npm run test:e2e:stack`: isolated local database, three browsers. See `docs/TESTING.md` for the latest counts. Firefox works when run outside the agent's sandboxed shell. |
 | Performance | DONE | Functions in `hnd1` next to the Supabase database (152 ms → 3–4 ms per query). Before/after table in `docs/TESTING.md`. |
 | Database pooler | **OWNER DECISION** | Session pooler serves the whole app from 15 connections. Mitigated in code; recommended: switch `DATABASE_URL` to the transaction pooler (port 6543). See `docs/DEPLOYMENT.md`. Not applied: it changes a production variable. |
-| First administrator + MFA | **OWNER ACTION** | No admin account of the owner exists yet. **The production database also holds 10 leftover admin/curator test accounts** (found 2026-11-13; see `FINAL_PRODUCTION_READINESS_REPORT.md` section B.1) that should be demoted after the owner approves. |
+| First administrator + MFA | **OWNER ACTION** | No admin account of the owner exists yet. The 10 leftover admin/curator test accounts found on 2026-11-13 were demoted and suspended with the owner's approval (0 privileged accounts now; see `FINAL_PRODUCTION_READINESS_REPORT.md` section B.1). |
 | Optional LOLA illumination | DONE | Local originals verified by SHA-256; production uses a lossless PSR pack and 0.001-rounded sunlight packs from a private bucket; boundary and invalid-input tests. |
 
 ## Architecture in one paragraph

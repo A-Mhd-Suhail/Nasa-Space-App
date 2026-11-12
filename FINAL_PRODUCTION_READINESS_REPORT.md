@@ -3,7 +3,7 @@
 Verified 2026-11-13 against the live system. Everything below was checked in this pass unless marked "from earlier pass".
 
 ## H. Final status
-**PRODUCTION READY — OWNER ACTIONS PENDING.** The implementation is complete and verified. What remains needs your accounts or your approval: credential rotation, the first administrator, and clearing leftover privileged test accounts. One of those (the leftover admin accounts, §C) is a real security cleanup and should be done before the site is shown publicly.
+**PRODUCTION READY — OWNER ACTIONS PENDING.** The implementation is complete and verified, and the leftover privileged test accounts were cleared on 2026-11-13 (§B.1). What remains needs your accounts: credential rotation and creating the first administrator. The exposed credentials (§C) should be rotated before the site is shown publicly.
 
 ## A. Completed and verified
 | Area | Evidence |
@@ -20,11 +20,9 @@ Verified 2026-11-13 against the live system. Everything below was checked in thi
 Not repeated in this pass, deliberately: registration, demo and analysis runs against production, because they create accounts or rows and no code changed. Production logs could not be read this pass (the log query returned no rows), so "no runtime errors" is supported by live checks, not by logs.
 
 ## B. Owner actions required
-**1. Clear the leftover privileged accounts (needs your approval; I can run it).**
+**1. Clear the leftover privileged accounts — DONE 2026-11-13 (approved by the owner).** In one guarded transaction (it aborted unless it found exactly these 10 test accounts): the 10 accounts were set to role `user` and status `suspended`, their 9 sessions were deleted, and one audit event was written per account. Verified afterwards: 0 admin/curator accounts remain, 0 sessions held by those accounts. Original findings:
 - *Why:* the production database holds **10 admin/curator accounts that are not yours**: 9 `@example.test` accounts (6 admin, 3 curator, MFA on, unknown random passwords, 9 live sessions) created by old E2E runs that used to write to the shared database, and the seeded `admin@moonnav.test` (admin, **no MFA**; its password is `DEV_ADMIN_PASSWORD` in your local `.env.local`). Anyone who knew that password could sign in, enrol their own MFA and become admin. The test suite no longer touches this database.
-- *Steps:* reply "approve cleanup". In one transaction I will set those 10 accounts to role `user`, delete their sessions, set status `disabled`, and write one audit event each. Nothing else is touched (the other test accounts and your accounts are left alone).
-- *Expected result:* `select count(*) from "user" where role in ('admin','curator')` returns 0.
-- *Verify:* I re-run that read-only query and show the count; `/admin` shows "access denied" for those users.
+- *Result:* `select count(*) from "user" where role in ('admin','curator')` now returns 0. No other account was touched.
 
 **2. Create the first administrator (you run the command; I only verify).**
 - *Eligible account:* your account ending `2007@gmail.com` is registered, email **verified**, active, role `user`. (Your account ending `2026@gmail.com` is registered but **not verified**, so it is not eligible.) Do step 1 first.
@@ -61,7 +59,7 @@ Do this in one sitting: the site is down for the moments between the password re
 | Google App Password | **exposed; not yet rotated.** Still the value in Vercel and `.env.local` (Vercel's variables were last changed 23 h ago). Steps: §B.3 |
 | GitHub tokens | **exposed; revocation is yours** (§B.4). None stored anywhere here |
 | Supabase DB password and keys | **exposed in the earlier session; not yet rotated** (§B.5) |
-| Leftover admin/curator accounts | **open, needs approval** (§B.1): 10 accounts, 9 with live sessions, 1 without MFA |
+| Leftover admin/curator accounts | **closed 2026-11-13** (§B.1): demoted, suspended, sessions removed, audited; 0 privileged accounts remain |
 | First administrator | not created yet (§B.2); the script refuses unverified, inactive and demo accounts and asks for a retyped confirmation |
 | MFA | enrolment, challenge and backup-code recovery verified by the suite (7 tests × 3 browsers, earlier pass); enforced for admin and curator pages and APIs |
 | Internal science service | not public; every route needs `SCIENCE_SERVICE_TOKEN` |
@@ -88,5 +86,5 @@ Do this in one sitting: the site is down for the moments between the password re
 | Full local suite (`npm run test:e2e:stack`) | not re-run: no code changed since the verified 249/249 run (83 per browser, 0 skipped). Unavailable: none |
 
 ## G. Blockers
-**Critical (before public exposure):** the 10 leftover admin/curator accounts (§B.1) and the exposed, unrotated credentials (§B.3–B.5).
+**Critical (before public exposure):** the exposed, unrotated credentials (§B.3–B.5).
 **Optional / future:** the transaction pooler (§E); a paid plan for a sub-daily cron; separate databases for Production, Preview and local development; production log alerts on `mail.delivery` `failed` and `Failed query`; deleting the other leftover test accounts (about 50 `@example.test`, `@moonnav.test` and `+alias` rows).
