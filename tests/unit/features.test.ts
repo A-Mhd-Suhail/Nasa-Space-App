@@ -105,3 +105,15 @@ describe("rendering diagnostics statistics", () => {
     expect(frameStats([NaN, -1, Infinity]).fpsMean).toBe(0);
   });
 });
+
+describe("header service status", () => {
+  it("treats the serverless on-demand worker as healthy, and a missing worker as a warning", async () => {
+    const { serviceStatus } = await import("../../src/components/shell/DataStatus");
+    const base = { status: "ok", database: { status: "ok" } };
+    expect(serviceStatus({ ...base, science: { status: "ok" }, worker: { status: "on_demand" } }, false)).toMatchObject({ ok: true, label: "Engine online · jobs run on demand", tone: "bg-ok" });
+    expect(serviceStatus({ ...base, science: { status: "ok" }, worker: { status: "ok" } }, false).label).toBe("Engine + worker online");
+    expect(serviceStatus({ ...base, science: { status: "ok" }, worker: { status: "no_live_worker" } }, false)).toMatchObject({ ok: false, label: "No live worker", tone: "bg-warn" });
+    expect(serviceStatus({ ...base, science: { status: "unavailable" }, worker: { status: "on_demand" } }, false)).toMatchObject({ ok: false, label: "Engine unavailable", tone: "bg-bad" });
+    expect(serviceStatus(undefined, true).label).toBe("Checking services");
+  });
+});

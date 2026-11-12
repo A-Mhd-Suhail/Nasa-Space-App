@@ -5,5 +5,5 @@ terrain horizon profiles, visibility intervals, optional panel energy and
 geometric direct-to-Earth (DTE) windows.
 """
 
-METHOD_VERSION = "moonnav-method-1.0.0"
+METHOD_VERSION = "moonnav-method-1.1.0"
 SOFTWARE_VERSION = "0.1.0"

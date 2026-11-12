@@ -10,6 +10,7 @@ import { EXPLAIN } from "@/lib/explain";
 import { AdvancedOnly, SimpleOnly } from "../shell/ModeToggle";
 import { IntervalTable, PowerPanel, ProvenancePanel, QualityPanel } from "./panels";
 import { OperationsPanel } from "./OperationsPanel";
+import { LinkBudgetPanel, SolarSurfacePanel } from "./SolarSurfacePanel";
 import { BlockExplanation, PlainSummary } from "./PlainLanguage";
 
 function LiveSummary({ r, i }: { r: AnalysisResult; i: number }) {
@@ -58,6 +59,7 @@ export function SunView({ r, precomputed }: { r: AnalysisResult; precomputed?: b
       </Card>
       <HorizonCard horizon={r.horizon} rows={rows} selectedIndex={t.index} kind={kind} maskDeg={r.earth.antennaMinimumElevationDeg} subtitle={`360° terrain horizon from ${String(r.provenance.terrainProduct.fileName)} with the Sun and Earth tracks; ${r.horizon.truncatedRayCount} of ${r.horizon.azimuthsDeg.length} rays reach the DEM coverage edge.`} />
       <IntervalTable intervals={r.sun.visibleIntervals} title="Direct-sunlight intervals" emptyText="The Sun is not visible from this site at any time in the analysed interval (for example, a permanently shadowed crater floor)." caption="Sunlit intervals with UTC start, end and duration" />
+      <SolarSurfacePanel r={r} row={row} kind={kind} />
       <PowerPanel r={r} />
       {r.power.energyWh != null && (
         <Card>
@@ -112,6 +114,7 @@ export function EarthView({ r, precomputed }: { r: AnalysisResult; precomputed?:
         <div className="px-2 py-2"><ElevationTimeline rows={rows} body="earth" intervals={r.earth.dteWindows} selectedIndex={t.index} onSelect={t.setIndex} maskDeg={r.earth.antennaMinimumElevationDeg} /></div>
       </Card>
       <HorizonCard horizon={r.horizon} rows={rows} selectedIndex={t.index} kind={kind} maskDeg={r.earth.antennaMinimumElevationDeg} subtitle="Earth stays within a small region of the sky because of libration; terrain in that direction decides DTE." />
+      <AdvancedOnly><LinkBudgetPanel r={r} /></AdvancedOnly>
       <IntervalTable intervals={r.earth.dteWindows} title="Geometric DTE windows" emptyText="Earth is never in line of sight above the terrain (and antenna mask) in the analysed interval." caption="Geometric direct-to-Earth windows" />
       <AdvancedOnly className="grid gap-4 xl:grid-cols-2">
         <QualityPanel r={r} />

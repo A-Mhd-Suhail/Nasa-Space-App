@@ -1,7 +1,11 @@
 /** Types mirroring the science engine result (science/moonnav_science/analysis.py). */
 
 export type Interval = { startUtc: string; endUtc: string; durationS: number; kind: "visible" | "unknown"; startRefined: boolean; endRefined: boolean };
-export type IntervalSummary = { totalVisibleSeconds: number; fractionVisible: number; intervalCount: number; unknownSeconds: number; unknownIntervalCount: number };
+export type IntervalSummary = {
+  totalVisibleSeconds: number; fractionVisible: number; intervalCount: number; unknownSeconds: number; unknownIntervalCount: number;
+  /** Added in method 1.1.0 (absent on analyses computed with an earlier method). */
+  longestVisibleS?: number; longestDarkS?: number; totalDarkSeconds?: number; darkIntervalCount?: number; interruptionCount?: number; darkDefinition?: string;
+};
 
 export type BodyState = "visible" | "partial" | "terrain_blocked" | "below_horizon" | "below_antenna_mask" | "unknown";
 
@@ -19,6 +23,24 @@ export type TimeRow = {
   earthState: BodyState;
   dteGeometric: boolean | null;
   powerW: number | null;
+  /** Added in method 1.1.0 */
+  earthDistanceKm?: number | null;
+  sunIrradianceWm2?: number | null;
+  surfaceIncidenceDeg?: number | null;
+  terrainIrradianceWm2?: number | null;
+  panelIrradianceWm2?: number | null;
+};
+
+export type SurfaceBlock = {
+  terrain: { status: string; slopeDeg: number | null; aspectDeg: number | null; normalEnu: number[] | null; baselineM: number; method: string };
+  irradianceModel: string;
+  notModelled: string[];
+  meanTerrainIrradianceWm2?: number;
+  peakTerrainIrradianceWm2?: number;
+  terrainEnergyWhPerM2?: number;
+  integration?: string;
+  status?: string;
+  reason?: string;
 };
 
 export type HorizonData = {
@@ -64,6 +86,8 @@ export type AnalysisResult = {
     nextTransitionUtc: string | null;
     label: string;
   };
+  /** Added in method 1.1.0: local ground normal and direct-beam irradiance on the real ground. */
+  surface?: SurfaceBlock;
   power: {
     status: string;
     energyWh: number | null;

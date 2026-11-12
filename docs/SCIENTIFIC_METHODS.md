@@ -1,4 +1,6 @@
-# Scientific methods — `moonnav-method-1.0.0`
+# Scientific methods — `moonnav-method-1.1.0`
+
+> Version 1.1.0 adds terrain-normal incidence, ground irradiance, the terrain-aligned panel, darkness metrics and the optional link margin. The consolidated, current description is `SCIENTIFIC_METHODOLOGY.md`; this file keeps the original per-module detail.
 
 Code: `science/moonnav_science/`. Tests: `science/tests/` (48 tests).
 

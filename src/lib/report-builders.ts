@@ -134,6 +134,13 @@ export async function buildPdf(r: AnalysisResult, c: ReportContext): Promise<Uin
   kv("Geometric DTE windows", `${fmtH(r.earth.dte.totalVisibleSeconds)} (${(r.earth.dte.fractionVisible * 100).toFixed(1)}%), ${r.earth.dte.intervalCount} window(s)`);
   kv("Unknown (coverage)", `Sun ${fmtH(r.sun.unknownSeconds)}, Earth ${fmtH(r.earth.unknownSeconds)}`);
   kv("Panel energy", r.power.energyWh == null ? `not calculated (${r.power.status})` : `${r.power.energyWh.toFixed(1)} Wh idealized (${r.power.integration})`);
+  if (r.sun.longestDarkS != null) kv("Longest Sun darkness", `${fmtH(r.sun.longestDarkS)}; ${r.sun.interruptionCount ?? 0} interruption(s) between sunlit periods`);
+  if (r.earth.longestDarkS != null) kv("Longest Earth blockage", `${fmtH(r.earth.longestDarkS)} (geometric line of sight, not RF link availability)`);
+  if (r.surface) {
+    const t = r.surface.terrain;
+    kv("Ground slope at site (DEM)", t.status === "ok" ? `${t.slopeDeg?.toFixed(1)}°, facing ${t.aspectDeg == null ? "n/a (flat)" : `${t.aspectDeg.toFixed(0)}°`}, ${t.baselineM} m baseline` : "UNAVAILABLE - no DEM heights at the site");
+    kv("Direct-beam irradiance on the ground", r.surface.meanTerrainIrradianceWm2 == null ? "unavailable or partial" : `mean ${r.surface.meanTerrainIrradianceWm2} W/m2, peak ${r.surface.peakTerrainIrradianceWm2} W/m2, ${((r.surface.terrainEnergyWhPerM2 ?? 0) / 1000).toFixed(2)} kWh/m2 (physical irradiance, not electrical output)`);
+  } else kv("Ground slope and irradiance", `not in this analysis (computed with ${r.provenance.methodVersion})`);
 
   // Sun & Earth elevation vs terrain horizon chart
   h2("Sun and Earth elevation vs terrain horizon");

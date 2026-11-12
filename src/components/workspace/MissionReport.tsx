@@ -121,6 +121,12 @@ export function MissionReport({ analysisId, result: r, scenario, validation, res
           <Row k="Geometric DTE windows" v={`${fmtHours(r.earth.dte.totalVisibleSeconds)} h (${(r.earth.dte.fractionVisible * 100).toFixed(1)}%) in ${r.earth.dte.intervalCount} window(s); antenna mask ${r.earth.antennaMinimumElevationDeg ?? "none"}`} info={EXPLAIN.dteWindow} kind="calculated" />
           <Row k="Unknown (coverage)" v={`Sun ${fmtHours(r.sun.unknownSeconds)} h · Earth ${fmtHours(r.earth.unknownSeconds)} h`} kind={r.sun.unknownSeconds + r.earth.unknownSeconds > 0 ? "unavailable" : undefined} />
           <Row k="Panel energy" v={r.power.energyWh == null ? `not modelled (${r.power.status})` : `${r.power.energyWh.toFixed(1)} Wh idealized`} kind={r.power.energyWh == null ? "unavailable" : "modelled"} />
+          {r.sun.longestDarkS != null && <Row k="Longest Sun darkness" v={`${fmtHours(r.sun.longestDarkS)} h · ${r.sun.interruptionCount ?? 0} interruption(s) between sunlit periods`} kind="calculated" />}
+          {r.surface ? (
+            <Row k="Ground slope and irradiance" v={r.surface.terrain.status === "ok" ? `${fmtNum(r.surface.terrain.slopeDeg, 1)}° slope · mean ${fmtNum(r.surface.meanTerrainIrradianceWm2, 1)} W/m² · peak ${fmtNum(r.surface.peakTerrainIrradianceWm2, 0)} W/m² (direct beam, physical irradiance)` : "unavailable: no DEM heights at the site"} kind={r.surface.terrain.status === "ok" ? "calculated" : "unavailable"} />
+          ) : (
+            <Row k="Ground slope and irradiance" v={`not in this analysis (computed with ${r.provenance.methodVersion})`} kind="unavailable" />
+          )}
         </dl>
       </Card>
 

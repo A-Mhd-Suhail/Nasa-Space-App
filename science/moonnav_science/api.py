@@ -17,6 +17,7 @@ from typing import Any
 
 import numpy as np
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -66,6 +67,15 @@ async def input_error(request: Request, exc: AnalysisInputError) -> JSONResponse
     return _err(422, "invalid_input", str(exc), getattr(request.state, "rid", ""), exc.field)
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """422 in the service's standard error shape. The offending input is never echoed back (it may be NaN or huge,
+    which the default handler cannot serialise, turning a bad request into a 500)."""
+    first = exc.errors()[0] if exc.errors() else {}
+    field = ".".join(str(x) for x in first.get("loc", ()) if x not in ("body", "query", "path"))
+    return _err(422, "invalid_input", f"{first.get('msg', 'invalid request')}", getattr(request.state, "rid", ""), field or None)
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     out: dict[str, Any] = {"service": "moonnav-science", "methodVersion": METHOD_VERSION, "softwareVersion": SOFTWARE_VERSION}
@@ -83,6 +93,50 @@ def health() -> dict[str, Any]:
         out["terrain"] = {"status": "error", "message": str(exc)}
     out["status"] = "ok" if out["kernels"]["status"] == "ok" and out["terrain"]["status"] == "ok" else "degraded"
     return out
+
+
+class LinkBudgetRequest(BaseModel):
+    frequencyHz: float = Field(ge=1e8, le=1e11, allow_inf_nan=False)
+    eirpDbw: float = Field(ge=-30, le=90, allow_inf_nan=False)
+    receiverGOverTDbK: float = Field(ge=-50, le=80, allow_inf_nan=False)
+    dataRateBps: float = Field(ge=1, le=1e10, allow_inf_nan=False)
+    requiredEbN0Db: float = Field(ge=-5, le=40, allow_inf_nan=False)
+    otherLossesDb: float = Field(default=0.0, ge=0, le=60, allow_inf_nan=False)
+    distancesKm: list[float] = Field(min_length=1, max_length=5000)
+
+
+@app.post("/v1/link-budget", dependencies=[Depends(require_token)])
+def link_budget(req: LinkBudgetRequest) -> dict[str, Any]:
+    """Illustrative free-space link margin at the supplied Earth-Moon distances (see link_budget.py for what is NOT modelled)."""
+    from .link_budget import LinkAssumptions, fspl_db, margin_db
+
+    if any(not (300_000.0 <= d <= 500_000.0) for d in req.distancesKm):
+        raise HTTPException(422, "distancesKm must be Earth-Moon distances between 300,000 and 500,000 km")
+    a = LinkAssumptions(req.frequencyHz, req.eirpDbw, req.receiverGOverTDbK, req.dataRateBps, req.requiredEbN0Db, req.otherLossesDb)
+    m = [round(margin_db(a, d), 2) for d in req.distancesKm]
+    return {
+        "marginDb": m,
+        "fsplDb": {
+            "min": round(fspl_db(min(req.distancesKm), req.frequencyHz), 2),
+            "max": round(fspl_db(max(req.distancesKm), req.frequencyHz), 2),
+        },
+        "summary": {
+            "minDb": min(m),
+            "meanDb": round(sum(m) / len(m), 2),
+            "maxDb": max(m),
+            "fractionPositive": round(sum(1 for x in m if x >= 0) / len(m), 4),
+            "samples": len(m),
+        },
+        "label": "Illustrative free-space link margin from user-supplied values. Not a mission link analysis, not DSN availability.",
+        "notModelled": [
+            "antenna pointing and patterns (use other losses)",
+            "ground-station availability and DSN scheduling",
+            "atmosphere/weather",
+            "terrain multipath",
+            "coding beyond required Eb/N0",
+        ],
+        "formula": "margin = EIRP - FSPL - L_other + G/T + 228.6 - 10log10(R) - Eb/N0_required",
+    }
 
 
 @app.get("/v1/products", dependencies=[Depends(require_token)])

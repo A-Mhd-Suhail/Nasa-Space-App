@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { InvitationAcceptClient } from "@/components/workspace/InvitationAcceptClient";
 import { currentUser } from "@/lib/dal";
+import { Providers } from "@/components/shell/Providers";
 import { PublicShell } from "@/components/shell/PublicShell";
 
 export const metadata: Metadata = { title: "Workspace invitation", robots: { index: false, follow: false } };
@@ -10,7 +11,9 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   const u = await currentUser();
   return (
     <PublicShell>
-      <InvitationAcceptClient signedIn={!!u} signedInEmail={u?.email ?? null} verified={!!u?.emailVerified} />
+      <Providers>
+        <InvitationAcceptClient signedIn={!!u} signedInEmail={u?.email ?? null} verified={!!u?.emailVerified} />
+      </Providers>
     </PublicShell>
   );
 }

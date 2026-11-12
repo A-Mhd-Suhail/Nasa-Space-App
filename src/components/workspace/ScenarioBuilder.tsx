@@ -63,7 +63,7 @@ export function ScenarioBuilder({ projects, sites, products, initial, locations 
     antennaMinimumElevationDeg: maskOn ? num(mask) : null,
     solarPanel: panelOn
       ? {
-          areaM2: num(panel.areaM2), efficiency: num(panel.efficiency), derating: num(panel.derating), orientation: panel.orientation as "fixed" | "two_axis_tracking",
+          areaM2: num(panel.areaM2), efficiency: num(panel.efficiency), derating: num(panel.derating), orientation: panel.orientation as "fixed" | "two_axis_tracking" | "terrain_aligned",
           normalAzimuthDeg: panel.orientation === "fixed" ? num(panel.normalAzimuthDeg) : null, normalElevationDeg: panel.orientation === "fixed" ? num(panel.normalElevationDeg) : null,
           maxOutputW: panel.maxOutputW ? num(panel.maxOutputW) : null,
         }
@@ -203,7 +203,7 @@ export function ScenarioBuilder({ projects, sites, products, initial, locations 
                 <Field label="Area (m²)" htmlFor="parea" error={E("solarPanel.areaM2")}><Input id="parea" inputMode="decimal" value={panel.areaM2} onChange={(e) => setPanel({ ...panel, areaM2: e.target.value })} /></Field>
                 <Field label="Efficiency (0–0.5)" htmlFor="peff" error={E("solarPanel.efficiency")}><Input id="peff" inputMode="decimal" value={panel.efficiency} onChange={(e) => setPanel({ ...panel, efficiency: e.target.value })} /></Field>
                 <Field label="Derating (0–1)" htmlFor="pder" error={E("solarPanel.derating")}><Input id="pder" inputMode="decimal" value={panel.derating} onChange={(e) => setPanel({ ...panel, derating: e.target.value })} /></Field>
-                <Field label="Orientation" htmlFor="porient"><Select id="porient" value={panel.orientation} onChange={(e) => setPanel({ ...panel, orientation: e.target.value })}><option value="two_axis_tracking">Two-axis Sun tracking</option><option value="fixed">Fixed normal</option></Select></Field>
+                <Field label="Orientation" htmlFor="porient"><Select id="porient" value={panel.orientation} onChange={(e) => setPanel({ ...panel, orientation: e.target.value })}><option value="two_axis_tracking">Two-axis Sun tracking</option><option value="fixed">Fixed normal</option><option value="terrain_aligned">Flat on the ground (follows the local DEM slope)</option></Select></Field>
                 {panel.orientation === "fixed" && (
                   <>
                     <Field label="Normal azimuth (°)" htmlFor="paz" error={E("solarPanel.normalAzimuthDeg")}><Input id="paz" inputMode="decimal" value={panel.normalAzimuthDeg} onChange={(e) => setPanel({ ...panel, normalAzimuthDeg: e.target.value })} /></Field>

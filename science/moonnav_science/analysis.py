@@ -20,6 +20,7 @@ from .geometry import enu_basis, normalize_lon_east, site_vector_m, validate_lat
 from .horizon import HorizonParams, HorizonProfile, compute_horizon, compute_horizon_multires
 from .kernels import LoadedKernels, check_coverage, et_to_utc, load_kernels, utc_to_et
 from .power import PanelAssumptions, incidence_cosine, integrate_wh, irradiance_w_m2, power_w
+from .surface import TerrainNormal, incidence_cos, terrain_normal
 from .tiles import MultiResDem, TiledPolarDem, TileFetchError, available_tiled
 from .visibility import VisibilityRule, VisibilitySample, classify, extract_intervals
 
@@ -341,6 +342,14 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
     if horizon.notes:
         warnings.extend(horizon.notes)
 
+    # Local ground normal from the DEM (baseline = 2 x the finest local pixel spacing), for surface incidence / terrain-aligned panels.
+    near_m = float(dem.near_scale(sc.lat_deg, lon)) if isinstance(dem, MultiResTerrain) else float(dem.scale_m)
+    surf: TerrainNormal = terrain_normal(dem, sc.lat_deg, lon, 2.0 * near_m)
+    if sc.panel is not None and sc.panel.orientation == "terrain_aligned" and surf.status != "ok":
+        raise AnalysisInputError(
+            "a terrain-aligned panel needs DEM heights around the site; none are available here", "assumptions.solarPanel.orientation"
+        )
+
     site_r_m = dem.radius_ref_m + horizon.site_height_m + sc.observer_height_m
     site_km = site_vector_m(sc.lat_deg, lon, site_r_m) / 1000.0
     basis = enu_basis(sc.lat_deg, lon)
@@ -374,6 +383,7 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
     earth_states: list[bool | None] = []
     dte_states: list[bool | None] = []
     watts: list[float] = []
+    irr_rows: list[float | None] = []
     sun_el_vis: list[float] = []
     for et in times:
         gs, vs = eval_body("SUN", et, sc.sun_rule)
@@ -383,12 +393,18 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
         if ve.lit and mask is not None and ge.elevation_deg < mask:
             earth_state = "below_antenna_mask"
         w = None
+        s_irr = irradiance_w_m2(gs.distance_km)  # W/m2 normal to the Sun at this Sun distance (inverse-square TSI)
+        cos_surf = incidence_cos(surf.vector(), gs.azimuth_deg, gs.elevation_deg) if surf.status == "ok" else None
+        terrain_irr = None if (cos_surf is None or vs.visible_fraction is None) else s_irr * max(0.0, cos_surf) * vs.visible_fraction
+        panel_irr = None
         if sc.panel is not None:
             if vs.visible_fraction is None:
                 w = None
             else:
-                cosi = incidence_cosine(sc.panel, basis, gs.azimuth_deg, gs.elevation_deg)
-                w = power_w(sc.panel, irradiance_w_m2(gs.distance_km), cosi, vs.visible_fraction)
+                cosi = incidence_cosine(sc.panel, basis, gs.azimuth_deg, gs.elevation_deg, surf.vector() if surf.status == "ok" else None)
+                panel_irr = s_irr * cosi * vs.visible_fraction
+                w = power_w(sc.panel, s_irr, cosi, vs.visible_fraction)
+        irr_rows.append(terrain_irr)
         sun_states.append(vs.lit)
         earth_states.append(ve.lit)
         dte_states.append(dte)
@@ -406,11 +422,16 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
                 "sunVisibleFraction": _r(vs.visible_fraction),
                 "sunDistanceKm": _r(gs.distance_km, 0),
                 "earthAzDeg": _r(ge.azimuth_deg),
+                "earthDistanceKm": _r(ge.distance_km, 0),
                 "earthElDeg": _r(ge.elevation_deg),
                 "earthHorizonDeg": _r(ve.horizon_deg),
                 "earthState": earth_state,
                 "dteGeometric": dte,
                 "powerW": _r(w, 3) if w is not None else None,
+                "sunIrradianceWm2": _r(s_irr, 2),
+                "surfaceIncidenceDeg": None if cos_surf is None else _r(math.degrees(math.acos(max(-1.0, min(1.0, cos_surf)))), 2),
+                "terrainIrradianceWm2": _r(terrain_irr, 2) if terrain_irr is not None else None,
+                "panelIrradianceWm2": _r(panel_irr, 2) if panel_irr is not None else None,
             }
         )
 
@@ -439,7 +460,24 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
         unk = [i for i in ivs if i.kind == "unknown"]
         tv = sum(i.end_et - i.start_et for i in vis)
         tu = sum(i.end_et - i.start_et for i in unk)
+        # Dark = the known gaps between visible/unknown intervals (boundaries are the refined event times).
+        edges = sorted((i.start_et, i.end_et, i.kind) for i in ivs)
+        gaps: list[tuple[float, float, bool]] = []  # (start, end, bounded by visible intervals on both sides)
+        cursor, prev_kind = et0, None
+        for a, b, kind in edges:
+            if a - cursor > 1e-6:
+                gaps.append((cursor, a, prev_kind == "visible" and kind == "visible"))
+            cursor, prev_kind = max(cursor, b), kind
+        if et1 - cursor > 1e-6:
+            gaps.append((cursor, et1, False))
+        dark = [g for g in gaps]
         return {
+            "longestVisibleS": round(max((i.end_et - i.start_et for i in vis), default=0.0), 1),
+            "longestDarkS": round(max((b - a for a, b, _ in dark), default=0.0), 1),
+            "totalDarkSeconds": round(sum(b - a for a, b, _ in dark), 1),
+            "darkIntervalCount": len(dark),
+            "interruptionCount": sum(1 for _, _, inner in dark if inner),
+            "darkDefinition": "known not-visible time between visible/unknown intervals; interruptions = dark gaps between two visible intervals",
             "totalVisibleSeconds": round(tv, 1),
             "fractionVisible": round(tv / total_s, 5),
             "intervalCount": len(vis),
@@ -482,6 +520,26 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
                 "irradianceModel": "TSI 1361 W/m2 at 1 AU scaled by inverse-square Sun distance",
                 "notModelled": ["temperature", "dust", "battery/storage", "wiring/MPPT beyond derating", "reflected light"],
             },
+        }
+
+    ti = [(t, v) for t, v in zip(times, irr_rows, strict=True) if v is not None]
+    surface_block: dict[str, Any] = {
+        "terrain": surf.as_dict(),
+        "irradianceModel": "direct beam only: S(t) = 1361 W/m2 x (1 AU / r_sun)^2 x max(0, n_terrain . s) x visible Sun-disk fraction",
+        "notModelled": ["scattered or reflected light (earthshine, terrain albedo)", "sub-pixel shadowing", "thermal and dust effects"],
+    }
+    if ti and len(ti) == len(times):
+        wm2 = [v for _, v in ti]
+        surface_block |= {
+            "meanTerrainIrradianceWm2": _r(float(np.mean(wm2)), 2),
+            "peakTerrainIrradianceWm2": _r(max(wm2), 2),
+            "terrainEnergyWhPerM2": _r(integrate_wh([t for t, _ in ti], wm2), 2),
+            "integration": f"trapezoidal over {sc.step_s} s samples",
+        }
+    else:
+        surface_block |= {
+            "status": "unavailable_or_partial",
+            "reason": "DEM normal unavailable or some Sun-disk visibility samples unknown",
         }
 
     unknown_fraction = sum(1 for s in sun_states + earth_states if s is None) / (2 * len(times))
@@ -554,6 +612,7 @@ def run_analysis(sc: Scenario, progress: ProgressCallback = _noop_progress) -> d
             "nextTransitionUtc": next_transition(dte_states),
             "label": "Geometric Direct-to-Earth Visibility (line of sight only; not RF link availability)",
         },
+        "surface": surface_block,
         "power": power,
         "horizon": horizon.to_dict() | {"cacheKey": horizon_key},
         "timeseries": rows,

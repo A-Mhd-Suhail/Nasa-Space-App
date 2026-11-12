@@ -7,7 +7,8 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
 - **Coverage 75°S–90°S only.** Sites north of 75°S are rejected. Rays that reach the coverage edge are flagged and may produce "unknown" states.
 - **Named sites are IAU feature centres**, not NASA candidate landing sites or approved sites. Crater centres are often permanently shadowed.
 - **Power is idealized**: no thermal, dust, storage, MPPT/wiring losses beyond the derating factor, no reflected/Earthshine light.
-- **DTE is geometric line of sight only**: no RF link budget, antenna patterns, pointing, ground-station visibility or scheduling.
+- **DTE is geometric line of sight.** An optional, clearly labelled free-space link margin (Advanced mode, user-supplied frequency/EIRP/G·T/data rate) exists; there are still no antenna patterns, pointing, weather, ground-station scheduling or DSN availability.
+- **Ground irradiance is direct-beam only** and the incidence angle is taken at the Sun-disk centre (no albedo, scattering or partial-disk weighting of the angle).
 - **Earth disk** uses the equatorial radius (no oblateness, no atmosphere).
 - **3D lighting/shadows** are a visual aid limited to the 40 km patch (with a small ambient fill); analytic states use the 300 km horizon.
 - **Analysis limits**: DE440s kernel span (1849–2150), ≤ 400 days and ≤ 20,000 samples per analysis.

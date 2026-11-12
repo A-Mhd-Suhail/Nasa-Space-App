@@ -22,7 +22,7 @@ export const solarPanelSchema = z
     areaM2: z.number().positive().max(1000),
     efficiency: z.number().gt(0).max(0.5),
     derating: z.number().gt(0).max(1),
-    orientation: z.enum(["fixed", "two_axis_tracking"]),
+    orientation: z.enum(["fixed", "two_axis_tracking", "terrain_aligned"]),
     normalAzimuthDeg: z.number().min(0).lt(360).nullable().optional(),
     normalElevationDeg: z.number().min(-90).max(90).nullable().optional(),
     maxOutputW: z.number().positive().nullable().optional(),

@@ -1,6 +1,6 @@
 # MoonNav scientific validation report
 
-Generated 2026-11-12T20:11:00Z by `science/scripts/validate.py` (live references). Re-run any time; results are deterministic for offline checks.
+Generated 2026-11-12T22:12:00Z by `science/scripts/validate.py` (live references). Re-run any time; results are deterministic for offline checks.
 
 **Summary:** 52 pass · 0 fail · 1 reference unavailable.
 

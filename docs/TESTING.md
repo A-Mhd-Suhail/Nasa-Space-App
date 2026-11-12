@@ -12,7 +12,9 @@
 - Run it from a normal terminal (not a sandboxed tool shell): see the Firefox finding below.
 
 ### Results
-Final complete run on the final code (2026-11-13), all specs, one stack: **249 passed, 0 failed, 0 skipped, 0 flaky** in 19.8 min. Per browser: **chromium 83/83**, **webkit 83/83**, **firefox 83/83** (the same 83 tests in each engine; no test is skipped or engine-specific).
+Latest complete run (2026-11-13, method 1.1.0, includes the new solar-surface and invitation tests), all specs, one stack: **264 passed, 0 failed, 0 skipped** in 19.9 min, 88 per browser (Chromium, Firefox, WebKit). Vitest 62, science pytest 129, ruff and mypy clean.
+
+Previous run (before method 1.1.0): **249 passed, 0 failed, 0 skipped, 0 flaky** in 19.8 min. Per browser: **chromium 83/83**, **webkit 83/83**, **firefox 83/83** (the same 83 tests in each engine; no test is skipped or engine-specific).
 Specs (tests per browser): `auth-fixes` 4, `demo` 5, `features` 6, `planner` 8, `public` 21, `reliability` 4, `security` 7, `signup-duplicates` 8, `verification` 7, `visual` 3, `workspace` 10.
 Along the way, earlier complete runs (the first with 235/237, then 248/249, twice) each exposed one failure; every one was investigated and either fixed in the application (the bugs in the table below) or was a race in a test that typed or pressed a key before the page had hydrated (fixed with the project's existing wait-for-hydration pattern, no assertion weakened). Nothing was retried to get a green result and no failure was marked as passing.
 

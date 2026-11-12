@@ -213,3 +213,13 @@ test("rendering diagnostics: ?perf=1 shows live frame stats and records a sample
   await panel.getByRole("button", { name: "Close diagnostics" }).click();
   await expect(panel).toBeHidden();
 });
+
+test("an invitation link opens without crashing (invalid token shows a clear message)", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const res = await page.goto("/invite/not-a-real-token");
+  expect(res?.status()).toBeLessThan(400);
+  await expect(page.getByText("Something went wrong on this page")).toHaveCount(0);
+  await expect(page.getByRole("heading").first()).toBeVisible();
+  expect(errors.filter((e) => /QueryClient/.test(e))).toEqual([]);
+});
