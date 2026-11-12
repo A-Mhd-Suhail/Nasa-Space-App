@@ -335,14 +335,45 @@ Use the live-DOM records in section 19 for exact labels per page. Naming rules i
 - **UNAVAILABLE:** curator direct file upload (needs the unused R2 driver; scripts load data); mobile-device (physical) testing; OAuth/social login; AI assistant.
 - **PARTIALLY IMPLEMENTED:** RF link modelling (optional illustrative margin only; no DSN scheduling, antenna patterns, weather or multipath); roughness is at DEM-stencil scale (not lander-foot scale); 5/20/40 m terrain only near the pole (5 m to 87.5°S, 20 m to 85°S, 40 m to 80°S); ground irradiance is direct-beam only and incidence is evaluated at the Sun-disk centre; long-term Sun/Earth visibility on Vercel uses 0.001-rounded copies.
 - **BLOCKED / owner:** none for the website itself; production credentials rotation and the first administrator are owner actions (`FINAL_PRODUCTION_READINESS_REPORT.md`).
-- **Defect found by this crawl and fixed afterwards:** `/invite/[token]` returned a 500 for every link (missing query provider). The page record in section 19 (PG for `/invite/undefined`, anonymous) shows the pre-fix behaviour; after the fix the page renders and a new E2E test (`public.spec.ts`) covers it. Re-run the crawl to refresh that record.
+- **Defect found by the first crawl and fixed:** `/invite/[token]` returned a 500 for every link (missing query provider). It was fixed in commit `907d38b`, covered by an E2E test, verified on production, and the crawl in this document was re-run on the fixed code: the page now renders (an unknown token shows the invalid-invitation state). The valid-token state (invitee accepts) is documented from the source (`InvitationAcceptClient`); the API emails the token and never returns it, so the crawl could not open a live one.
 - Full list: `docs/KNOWN_LIMITATIONS.md`, `SCIENTIFIC_METHODOLOGY.md` §12.
+
+
+## 30.1 Current deployment and production route status
+- Repository `A-Mhd-Suhail/Nasa-Space-App` (private), branch `main`, deployed commit `907d38b` (method `moonnav-method-1.1.0`). Vercel project `hack-zz/moonnav`, production deployment `dpl_FRa2u69REnyutZ86aEjhJD7v1fsn` (`moonnav-7x3tj4e4p-hack-zz.vercel.app`), region `hnd1`, served at https://moonnav.vercel.app. Deployed with the Vercel CLI from the clean working tree (the project has no Git integration, so Vercel records no Git SHA; see `FINAL_PRODUCTION_RELEASE_REPORT.md`).
+- HTTP status of each URL on production, anonymous, redirects not followed (307 = redirect to sign-in, i.e. protected; `/dev/mail` 404 = development-only page is absent in production):
+
+| URL | Status |
+|---|---|
+| `/` | 200 |
+| `/explore` | 200 |
+| `/learn` | 200 |
+| `/methodology` | 200 |
+| `/sources` | 200 |
+| `/validation` | 200 |
+| `/about` | 200 |
+| `/login` | 200 |
+| `/register` | 200 |
+| `/forgot-password` | 200 |
+| `/verify-email` | 200 |
+| `/reset-password` | 200 |
+| `/invite/x` | 200 |
+| `/share/x` | 200 |
+| `/app` | 307 |
+| `/app/projects` | 307 |
+| `/admin` | 307 |
+| `/settings/security` | 307 |
+| `/dev/mail` | 404 |
+| `/api/v1/health` | 200 |
+| `/api/v1/sites` | 200 |
+
 
 ## 31. Verification and test evidence
 
 | Evidence | Result |
 |---|---|
 | Full E2E, isolated stack (`npm run test:e2e:stack`) | 264 passed, 0 failed (88 per browser × Chromium, Firefox, WebKit), 2026-11-13 |
+| Production read-only suites after deploying `907d38b` (Chromium) | 35 passed: public, demo, reliability and solar-surface (disposable demo accounts only) |
 | Science (pytest) | 129 tests; scientific reference suite 52 pass / 0 fail / 1 unavailable |
 | Unit (Vitest) | 62 tests |
 | Production read-only suites (public, demo, reliability) | recorded in `docs/TESTING.md` |

@@ -113,7 +113,7 @@ async function main() {
   const stoken = share.url?.split("/").pop() ?? share.token;
   const ws = (await (await user.ctx.request.get(`${BASE}/api/v1/workspaces`)).json()).workspaces[0].id;
   const inv = await (await user.ctx.request.post(`${BASE}/api/v1/workspaces/${ws}/invitations`, { data: { email: `invitee-${randomBytes(3).toString("hex")}@example.test`, role: "viewer" }, headers: uh })).json();
-  const itoken = inv.token ?? inv.invitation?.token ?? inv.url?.split("/").pop();
+  const itoken = "sample-invalid-token"; // the API emails the real token and never returns it; the invalid-token state is what an anonymous visitor sees
   const R = { aid, ids, pid, uaid, up, stoken, itoken };
   log(`ids: ${JSON.stringify(Object.fromEntries(Object.entries(R).map(([k, v]) => [k, String(v).slice(0, 18)])))}`);
 

@@ -1,8 +1,8 @@
 # MoonNav Complete Website Reference
 
-> Generated 2026-11-12T22:50:32Z by `scripts/build-website-reference.mjs` from this template (`scripts/website-reference.template.md`) plus live inventories scanned from the source and a real crawl of the running application. Regenerate with `node scripts/build-website-reference.mjs` after any UI or API change; do not edit the generated tables by hand.
+> Generated 2026-11-12T23:35:21Z by `scripts/build-website-reference.mjs` from this template (`scripts/website-reference.template.md`) plus live inventories scanned from the source and a real crawl of the running application. Regenerate with `node scripts/build-website-reference.mjs` after any UI or API change; do not edit the generated tables by hand.
 > Inventory size: 43 pages, 68 web API route files, 12 internal science endpoints, 25 database tables, 67 component files.
-> Crawl evidence: 72 page visits (51 distinct URLs) as roles anonymous, demo, user, admin; 1124 button observations, 293 buttons actually clicked, 380 form-field observations. Crawl generated 2026-11-12T22:18:28.958Z against the isolated local stack.
+> Crawl evidence: 72 page visits (51 distinct URLs) as roles anonymous, demo, user, admin; 1117 button observations, 299 buttons actually clicked, 344 form-field observations. Crawl generated 2026-11-12T23:25:24.299Z against the isolated local stack.
 
 ---
 
@@ -135,18 +135,18 @@ HTTP status (or redirect target) when each role opened each URL in the isolated 
 | `/forgot-password` | 200 | — | — | — |
 | `/reset-password` | 200 | — | — | — |
 | `/verify-email` | 200 | — | — | — |
-| `/share/Y1GaSdnU4SaZMeVmAmIuUysByjQaBErK9u6MUuhoR2w` | 200 | — | — | — |
-| `/invite/undefined` | 500 | — | — | — |
+| `/share/XSS8QPPhrrhJGQS-_Kw1vzA2GgDpiGHhj4JdI4uy2-8` | 200 | — | — | — |
+| `/invite/sample-invalid-token` | 200 | — | — | — |
 | `/does-not-exist` | 404 | — | — | — |
 | `/app` | — | 200 | 200 | — |
 | `/app/projects` | — | 200 | 200 | — |
-| `/app/projects/prj_9531040a-dede-4625-a509-fd8495bfb7f8` | — | 200 | 200 | — |
+| `/app/projects/prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb` | — | 200 | 200 | — |
 | `/app/explorer` | — | redirect → /app/explorer | redirect → /app/explorer | — |
 | `/app/explorer?site=shackleton&tab=region` | — | 200 | 200 | — |
 | `/app/sites/mons-malapert` | — | 200 | 200 | — |
-| `/app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | — | 200 | 200 | — |
-| `/app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd` | — | 200 | 200 | — |
-| `/app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,ana_18399e57` | — | 200 | 200 | — |
+| `/app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | — | 200 | 200 | — |
+| `/app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff8440` | — | 200 | 200 | — |
+| `/app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,ana_2d041a4d` | — | 200 | 200 | — |
 | `/app/planner` | — | 200 | 200 | — |
 | `/app/reports` | — | 200 | 200 | — |
 | `/app/scenarios/new` | — | 200 | 200 | — |
@@ -156,12 +156,12 @@ HTTP status (or redirect target) when each role opened each URL in the isolated 
 | `/settings/profile` | — | 200 | 200 | — |
 | `/settings/security` | — | 200 | 200 | — |
 | `/dev/mail` | — | 200 | 200 | — |
-| `/app/analyses/ana_e56f7a73-5ffb-425b-a265-a84b85b2f775` | — | 200 | — | — |
-| `/app/analysis/sun?analysisId=ana_e56f7a73-5ffb-425b-a265-a84b85b2f775` | — | 200 | — | — |
-| `/app/analysis/earth?analysisId=ana_e56f7a73-5ffb-425b-a265-a84b85b2f77` | — | 200 | — | — |
+| `/app/analyses/ana_1a3f07a7-3cbe-4c06-897c-9ee799dd9e5b` | — | 200 | — | — |
+| `/app/analysis/sun?analysisId=ana_1a3f07a7-3cbe-4c06-897c-9ee799dd9e5b` | — | 200 | — | — |
+| `/app/analysis/earth?analysisId=ana_1a3f07a7-3cbe-4c06-897c-9ee799dd9e5` | — | 200 | — | — |
 | `/admin` | — | redirect → /app | redirect → /app | 200 |
-| `/app/analyses/ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | — | — | 200 | — |
-| `/app/analyses/ana_c10943ee-cb8e-40a7-becb-f505c31fefd0/report` | — | — | 200 | — |
+| `/app/analyses/ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | — | — | 200 | — |
+| `/app/analyses/ana_92ac2083-0218-4d26-9aa5-746d8ff84407/report` | — | — | 200 | — |
 | `/app/onboarding` | — | — | 200 | — |
 | `/admin/users` | — | — | — | 200 |
 | `/admin/data` | — | — | — | 200 |
@@ -420,7 +420,7 @@ Every page's buttons, links, tabs, tables and notices, read from the live DOM pe
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > System and data overview ⏎ Science service ⏎ Ok ⏎ Kernels: ok moonnav-kernels-2026-11-10-a ⏎ Coverage: 1849-12-25T23:59:19Z → 2150-01-21T23:58:51Z ⏎ Terrain: ok lola-ldem-75s-240m-v2, lola-multires-v1 ⏎ Workers & jobs ⏎ Ok ⏎ Live workers: 1 ⏎ Last seen: 2026-11-12 22:26:27 ⏎ Completed: 24 ⏎ Registry ⏎ Superseded Products: 1 ⏎ Approved Products: 11 ⏎ Users: 13 ⏎ Recent audit events ⏎ demo.start · user urp9sZYj5poCzp94fq ⏎ 2026-11-12 22:20:18 ⏎ scenario.create · scenario scn_02cc2c25-e265- ⏎ 2026-11-12 22:20:18 ⏎ scenario.create · scenario scn_791febfe-a8dd- ⏎ 2026-11-12 22:20:18 ⏎ scenario.create · scenario scn_091784c8-71ff- ⏎ 2026-11-12 22:20:18 ⏎ scenario.create · scenario scn_c2fdea73-770
+  > System and data overview ⏎ Science service ⏎ Ok ⏎ Kernels: ok moonnav-kernels-2026-11-10-a ⏎ Coverage: 1849-12-25T23:59:19Z → 2150-01-21T23:58:51Z ⏎ Terrain: ok lola-ldem-75s-240m-v2, lola-multires-v1 ⏎ Workers & jobs ⏎ Ok ⏎ Live workers: 1 ⏎ Last seen: 2026-11-12 23:33:30 ⏎ Completed: 9 ⏎ Registry ⏎ Superseded Products: 1 ⏎ Approved Products: 11 ⏎ Users: 4 ⏎ Recent audit events ⏎ demo.start · user 973ThGsfoTmpq2qcf6 ⏎ 2026-11-12 23:27:14 ⏎ scenario.create · scenario scn_63249d53-3042- ⏎ 2026-11-12 23:27:14 ⏎ scenario.create · scenario scn_af5918fe-4113- ⏎ 2026-11-12 23:27:14 ⏎ scenario.create · scenario scn_6048a03e-f820- ⏎ 2026-11-12 23:27:14 ⏎ scenario.create · scenario scn_a5c69216-a467-
 
 **Buttons observed (live DOM)**
 
@@ -446,11 +446,11 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 - **Observed per viewer role:** admin → 200
 - **Source:** `src/app/admin/audit/page.tsx` · access rule in code: admin (MFA required)
 - **Tabs / radio groups:** “Simple” · “Advanced” (selected) · “Light theme” · “Dark theme” · “Match system” (selected)
-- **Tables:** Time (UTC) / Actor / Action / Object / Details (50 rows)
+- **Tables:** Time (UTC) / Actor / Action / Object / Details (17 rows)
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Administration ⏎ Audit log ⏎ Audit log ⏎ Append-only: a database trigger rejects updates and deletes on audit events. ⏎ Time (UTC)	Actor	Action	Object	Details ⏎ 2026-11-12 22:20:18	demo-7085c24e-e80@demo.moonnav.invalid	demo.start	user urp9sZYj5poCzp94fqXy	{"ttlHours":24} ⏎ 2026-11-12 22:20:18	demo-7085c24e-e80@demo.moonnav.invalid	scenario.create	scenario scn_02cc2c25-e265-41	{"projectId":"prj_5f5008d8-aff3-4b61-99e7-739850f9d59e","definitionHash":"c606cdd852a2ed79972445341bcc80a1bd6ce85ee32866130717a3bd93c7dc16"} ⏎ 2026-11-12 22:20:18	demo-7085c24e-e80@demo.moonnav.invalid	scenario.create	scenario scn_791febfe-a8dd-40	{"projectId":"prj_5f5008d8-aff3-4b61-99e7-739850f9d59e","definitionHash"
+  > Administration ⏎ Audit log ⏎ Audit log ⏎ Append-only: a database trigger rejects updates and deletes on audit events. ⏎ Time (UTC)	Actor	Action	Object	Details ⏎ 2026-11-12 23:27:14	demo-cf825c6e-035@demo.moonnav.invalid	demo.start	user 973ThGsfoTmpq2qcf6VR	{"ttlHours":24} ⏎ 2026-11-12 23:27:14	demo-cf825c6e-035@demo.moonnav.invalid	scenario.create	scenario scn_63249d53-3042-4c	{"projectId":"prj_95bbdbca-28d0-43d3-a3b0-fb135590bb03","definitionHash":"eb7f68414cb156714e6f5b506c85a051ef77fed636a78ae8e749789c362386ff"} ⏎ 2026-11-12 23:27:14	demo-cf825c6e-035@demo.moonnav.invalid	scenario.create	scenario scn_af5918fe-4113-44	{"projectId":"prj_95bbdbca-28d0-43d3-a3b0-fb135590bb03","definitionHash"
 
 **Buttons observed (live DOM)**
 
@@ -459,7 +459,7 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | BTN-04-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner Crawl's field book Personal · Owner” |
 | BTN-04-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-04-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-04-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.7910000000848ms exceeded. |
+| BTN-04-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1184.435999999987ms exceeded. |
 | BTN-04-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-04-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-04-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -572,7 +572,7 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | BTN-06-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner Crawl's field book Personal · Owner” |
 | BTN-06-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-06-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-06-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.8659999999218ms exceeded. |
+| BTN-06-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.76800000004ms exceeded. |
 | BTN-06-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-06-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-06-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -594,11 +594,11 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 - **Observed per viewer role:** admin → 200
 - **Source:** `src/app/admin/jobs/page.tsx` · access rule in code: curator or admin (MFA required)
 - **Tabs / radio groups:** “Simple” (selected) · “Advanced” · “Light theme” · “Dark theme” · “Match system” (selected)
-- **Tables:** Job / Scenario / Status / Attempts / Worker / Created / Actions (24 rows)
+- **Tables:** Job / Scenario / Status / Attempts / Worker / Created / Actions (9 rows)
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Administration ⏎ Jobs ⏎ Analysis jobs ⏎ Queued, running, failed, retried and completed jobs with logs. Retrying requires the admin role. ⏎ Filter ⏎ All ⏎ queued ⏎ running ⏎ completed ⏎ failed ⏎ cancelled ⏎ Job	Scenario	Status	Attempts	Worker	Created	Actions ⏎ job_96cf999f-152… ⏎ log ⏎ 	Precomputed demonstration · shackleton	 ⏎ Completed	0/3	—	2026-11-12 22:20:18	 ⏎ job_4743ad20-d62… ⏎ log ⏎ 	Precomputed demonstration · mons-mouton	 ⏎ Completed	0/3	—	2026-11-12 22:20:18	 ⏎ job_e5be48fd-bcd… ⏎ log ⏎ 	Precomputed demonstration · de-gerlache	 ⏎ Completed	0/3	—	2026-11-12 22:20:18	 ⏎ job_959124af-c92… ⏎ log ⏎ 	Precomputed demonstration · mons-malapert	 ⏎ Completed	0/3	—	2026-11-12 22:20:18	 ⏎ job
+  > Administration ⏎ Jobs ⏎ Analysis jobs ⏎ Queued, running, failed, retried and completed jobs with logs. Retrying requires the admin role. ⏎ Filter ⏎ All ⏎ queued ⏎ running ⏎ completed ⏎ failed ⏎ cancelled ⏎ Job	Scenario	Status	Attempts	Worker	Created	Actions ⏎ job_46394245-699… ⏎ log ⏎ 	Precomputed demonstration · de-gerlache	 ⏎ Completed	0/3	—	2026-11-12 23:27:14	 ⏎ job_edeadc1d-ba5… ⏎ log ⏎ 	Precomputed demonstration · mons-mouton	 ⏎ Completed	0/3	—	2026-11-12 23:27:14	 ⏎ job_a313ffe5-43b… ⏎ log ⏎ 	Precomputed demonstration · shackleton	 ⏎ Completed	0/3	—	2026-11-12 23:27:14	 ⏎ job_50059c99-075… ⏎ log ⏎ 	Precomputed demonstration · mons-malapert	 ⏎ Completed	0/3	—	2026-11-12 23:27:14	 ⏎ job
 
 **Buttons observed (live DOM)**
 
@@ -633,11 +633,11 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 - **Observed per viewer role:** admin → 200
 - **Source:** `src/app/admin/users/page.tsx` · access rule in code: admin (MFA required)
 - **Tabs / radio groups:** “Simple” · “Advanced” (selected) · “Light theme” · “Dark theme” · “Match system” (selected)
-- **Tables:** User / Status / MFA / Role / Change role (reason required) (13 rows)
+- **Tables:** User / Status / MFA / Role / Change role (reason required) (4 rows)
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Administration ⏎ Users & roles ⏎ Users & roles ⏎ Role changes require a reason, are audited, and sign the user out so new privileges apply on their next sign-in. Curator and admin roles need MFA before their areas open. ⏎ User	Status	MFA	Role	Change role (reason required) ⏎ Demo Explorer ⏎ demo-7085c24e-e80@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Crawl admin ⏎ [test-account]@example.test ⏎ 	Active	on	Admin	You cannot change your own role ⏎ Crawl user ⏎ [test-account]@example.test ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Demo Explorer ⏎ demo-652d4299-33e@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ 
+  > Administration ⏎ Users & roles ⏎ Users & roles ⏎ Role changes require a reason, are audited, and sign the user out so new privileges apply on their next sign-in. Curator and admin roles need MFA before their areas open. ⏎ User	Status	MFA	Role	Change role (reason required) ⏎ Demo Explorer ⏎ demo-cf825c6e-035@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Crawl admin ⏎ [test-account]@example.test ⏎ 	Active	on	Admin	You cannot change your own role ⏎ Crawl user ⏎ [test-account]@example.test ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Demo Explorer ⏎ demo-13375642-218@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ cur
 
 **Buttons observed (live DOM)**
 
@@ -646,7 +646,7 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | BTN-08-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner Crawl's field book Personal · Owner” |
 | BTN-08-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-08-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-08-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.9479999999749ms exceeded. |
+| BTN-08-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1197.234999999986ms exceeded. |
 | BTN-08-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-08-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-08-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -656,15 +656,6 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | BTN-08-10 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 | BTN-08-11 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 | BTN-08-12 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-13 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-14 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-15 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-16 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-17 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-18 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-19 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-20 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-08-21 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 
 **Links in the page body**
 
@@ -682,24 +673,6 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | Reason | input[text] | Reason | no |  |  |  |
 | New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
 | Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
 
 
 ### PG-09 · Users & roles  `/admin/users?x=1`
@@ -708,11 +681,11 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 - **Observed per viewer role:** admin → 200
 - **Source:** `src/app/admin/users/page.tsx` · access rule in code: admin (MFA required)
 - **Tabs / radio groups:** “Simple” (selected) · “Advanced” · “Light theme” · “Dark theme” · “Match system” (selected)
-- **Tables:** User / Status / MFA / Role / Change role (reason required) (13 rows)
+- **Tables:** User / Status / MFA / Role / Change role (reason required) (4 rows)
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Administration ⏎ Users & roles ⏎ Users & roles ⏎ Role changes require a reason, are audited, and sign the user out so new privileges apply on their next sign-in. Curator and admin roles need MFA before their areas open. ⏎ User	Status	MFA	Role	Change role (reason required) ⏎ Demo Explorer ⏎ demo-7085c24e-e80@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Crawl admin ⏎ [test-account]@example.test ⏎ 	Active	on	Admin	You cannot change your own role ⏎ Crawl user ⏎ [test-account]@example.test ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Demo Explorer ⏎ demo-652d4299-33e@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ 
+  > Administration ⏎ Users & roles ⏎ Users & roles ⏎ Role changes require a reason, are audited, and sign the user out so new privileges apply on their next sign-in. Curator and admin roles need MFA before their areas open. ⏎ User	Status	MFA	Role	Change role (reason required) ⏎ Demo Explorer ⏎ demo-cf825c6e-035@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Crawl admin ⏎ [test-account]@example.test ⏎ 	Active	on	Admin	You cannot change your own role ⏎ Crawl user ⏎ [test-account]@example.test ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ curator ⏎ admin ⏎ Apply ⏎ Demo Explorer ⏎ demo-13375642-218@demo.moonnav.invalid ⏎ 	Active	off	User	 ⏎ user ⏎ analyst ⏎ cur
 
 **Buttons observed (live DOM)**
 
@@ -730,15 +703,6 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | BTN-09-09 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 | BTN-09-10 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 | BTN-09-11 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-12 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-13 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-14 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-15 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-16 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-17 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-18 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-19 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
-| BTN-09-20 | Apply | main | button, disabled |  | Same control observed; not probed in this role/page |
 
 **Links in the page body**
 
@@ -751,24 +715,6 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
 | New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Demo Explorer | select[select-one] |  | no |  | user | user · analyst · curator · admin |
-| Reason | input[text] | Reason | no |  |  |  |
-| New role for Crawl admin | select[select-one] |  | no |  | admin | user · analyst · curator · admin |
 | Reason | input[text] | Reason | no |  |  |  |
 | New role for Crawl user | select[select-one] |  | no |  | user | user · analyst · curator · admin |
 | Reason | input[text] | Reason | no |  |  |  |
@@ -809,12 +755,12 @@ Account menu for Crawl admin”; horizontal scroll: none; screenshot `docs/websi
 |---|---|---|
 | Projects | `/app/projects` | no |
 | New scenario | `/app/scenarios/new` | no |
-| Crawl scenario v1 | `/app/analyses/ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
+| Crawl scenario v1 | `/app/analyses/ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
 | 1. Choose a site | `/app/explorer` | no |
 | 2. Pick dates and run | `/app/scenarios/new?guided=1` | no |
 | 3. Read the results | `/app/analysis/sun` | no |
 | 4. Compare and report | `/app/compare` | no |
-| Crawl project 1 scenarios | `/app/projects/prj_9531040a-dede-4625-a509-fd8495bfb7f8` | no |
+| Crawl project 1 scenarios | `/app/projects/prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb` | no |
 
 - **Mobile (390×844):** header controls: “Open navigation”, “CCrawl's field bookPersonal · owner”, “Simple”, “Advanced”, “Toggle rendering diagnostics”, “Search (Command K)”, “Light theme”, “Dark theme”, “Match system”, “CU
 Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app-mobile.png`
@@ -830,7 +776,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `run-horizons`, `horizons-status`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Projects ⏎ Project ⏎ Crawl scenario v1 ⏎ Crawl scenario ⏎ v1 ⏎ Completed ⏎ Analysis ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 ⏎ Direct sunlight ⏎ CALCULATED ⏎ 52.7h ⏎ Earth in line of sight ⏎ CALCULATED ⏎ 72.0h ⏎ Geometric DTE windows ⏎ CALCULATED ⏎ 72.0h ⏎ Panel energy ⏎ MODELLED ⏎ 1117Wh ⏎ Open the analysis ⏎ STORED RESULT ⏎ Quality medium · moonnav-method-1.1.0 · completed 2026-11-12 22:18:28 UTC ⏎ Sun & Power ⏎ Mission report ⏎ Earth & DTE ⏎ Site detail / 3D ⏎ Export report ⏎ Compare… ⏎ Result SHA-256 ae42a75252ff88befa40faac18791ad6645180a5e386829b1bfbb37e4bdc679a ⏎ Independent validation · JPL Horizons ⏎ Re-computes the Sun and Earth directions for this site with NASA/JPL Horizons and m
+  > Projects ⏎ Project ⏎ Crawl scenario v1 ⏎ Crawl scenario ⏎ v1 ⏎ Completed ⏎ Analysis ana_92ac2083-0218-4d26-9aa5-746d8ff84407 ⏎ Direct sunlight ⏎ CALCULATED ⏎ 52.7h ⏎ Earth in line of sight ⏎ CALCULATED ⏎ 72.0h ⏎ Geometric DTE windows ⏎ CALCULATED ⏎ 72.0h ⏎ Panel energy ⏎ MODELLED ⏎ 1117Wh ⏎ Open the analysis ⏎ STORED RESULT ⏎ Quality medium · moonnav-method-1.1.0 · completed 2026-11-12 23:25:23 UTC ⏎ Sun & Power ⏎ Mission report ⏎ Earth & DTE ⏎ Site detail / 3D ⏎ Export report ⏎ Compare… ⏎ Result SHA-256 c7601f0122b6b674d0936ec94a21dbeff887e79ae6bfa9bcd3931b636f10e983 ⏎ Independent validation · JPL Horizons ⏎ Re-computes the Sun and Earth directions for this site with NASA/JPL Horizons and m
 
 **Buttons observed (live DOM)**
 
@@ -854,13 +800,13 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | Label | Destination | External |
 |---|---|---|
 | Projects | `/app/projects` | no |
-| Project | `/app/projects/prj_9531040a-dede-4625-a509-fd8495bfb7f8` | no |
-| Sun & Power | `/app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
-| Mission report | `/app/analyses/ana_c10943ee-cb8e-40a7-becb-f505c31fefd0/report` | no |
-| Earth & DTE | `/app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
-| Site detail / 3D | `/app/sites/mons-malapert?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
-| Export report | `/app/reports?analysisId=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
-| Compare… | `/app/compare?ids=ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
+| Project | `/app/projects/prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb` | no |
+| Sun & Power | `/app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
+| Mission report | `/app/analyses/ana_92ac2083-0218-4d26-9aa5-746d8ff84407/report` | no |
+| Earth & DTE | `/app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
+| Site detail / 3D | `/app/sites/mons-malapert?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
+| Export report | `/app/reports?analysisId=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
+| Compare… | `/app/compare?ids=ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
 
 
 ### PG-12 · Mons Malapert — Crawl scenario v1  `/app/analyses/:id/report`
@@ -876,7 +822,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `mission-report`, `polar-sky-plot`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > MOONNAV MISSION REPORT · CRAWL PROJECT ⏎ Mons Malapert — Crawl scenario v1 ⏎ Analysis ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 · completed 2026-11-12 22:18:28 UTC · report generated 2026-11-12 22:23:46 UTC · MoonNav 0.1.0 · method moonnav-method-1.1.0 ⏎ Print / Save as PDF ⏎ Report JSON ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Independent research/education prototype — not NASA-owned, endorsed or flight-certified. Geometric direct-to-Earth visibility is line of sight only, not RF link availability. The suitability score is a simplified MoonNav example, not an official NASA mission feasibility rating. ⏎ 1. Site and mission time ⏎ Site ⏎ Mons Malapert — Named-feature centre, not an official landing site.
+  > MOONNAV MISSION REPORT · CRAWL PROJECT ⏎ Mons Malapert — Crawl scenario v1 ⏎ Analysis ana_92ac2083-0218-4d26-9aa5-746d8ff84407 · completed 2026-11-12 23:25:23 UTC · report generated 2026-11-12 23:30:48 UTC · MoonNav 0.1.0 · method moonnav-method-1.1.0 ⏎ Print / Save as PDF ⏎ Report JSON ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Independent research/education prototype — not NASA-owned, endorsed or flight-certified. Geometric direct-to-Earth visibility is line of sight only, not RF link availability. The suitability score is a simplified MoonNav example, not an official NASA mission feasibility rating. ⏎ 1. Site and mission time ⏎ Site ⏎ Mons Malapert — Named-feature centre, not an official landing site.
 
 **Buttons observed (live DOM)**
 
@@ -885,7 +831,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-12-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-12-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-12-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-12-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.7390000000014ms exceeded. |
+| BTN-12-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.8890000000247ms exceeded. |
 | BTN-12-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-12-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-12-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -926,7 +872,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `time-readout`, `plain-earth`, `ops-earth`, `link-budget`, `link-budget-run`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Earth & DTE ⏎ Earth azimuth and elevation against the terrain horizon and antenna mask, and geometric direct-to-Earth windows (not RF link availability). ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 · c10943ee ⏎ 74 samples. ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Site 85.980 degrees south, 358.330 degrees east. 2026-11-15 00:00:00 UTC. Sun visible, elevation -0.21 degrees. Earth visible, elevation 0.47 degrees. ⏎ Geometric Direct-to-Earth visibility — not RF link availability ⏎ These results say whether Earth is in line of sight above the local terrain. They do not model transmitter power, frequency, antenna patterns, pointing, ground-station scheduling or link margin, so they are not a guarantee of co
+  > Earth & DTE ⏎ Earth azimuth and elevation against the terrain horizon and antenna mask, and geometric direct-to-Earth windows (not RF link availability). ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 · 92ac2083 ⏎ 74 samples. ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Site 85.980 degrees south, 358.330 degrees east. 2026-11-15 00:00:00 UTC. Sun visible, elevation -0.21 degrees. Earth visible, elevation 0.47 degrees. ⏎ Geometric Direct-to-Earth visibility — not RF link availability ⏎ These results say whether Earth is in line of sight above the local terrain. They do not model transmitter power, frequency, antenna patterns, pointing, ground-station scheduling or link margin, so they are not a guarantee of co
 
 **Buttons observed (live DOM)**
 
@@ -935,7 +881,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-13-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-13-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-13-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-13-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1197.4710000000196ms exceeded. |
+| BTN-13-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.6270000000368ms exceeded. |
 | BTN-13-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-13-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-13-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -964,7 +910,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
-| Analysis Crawl scenario v1 · 2026-11-15 · c10943ee | select[select-one] |  | no |  | ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 | Crawl scenario v1 · 2026-11-15 · c10943ee |
+| Analysis Crawl scenario v1 · 2026-11-15 · 92ac2083 | select[select-one] |  | no |  | ana_92ac2083-0218-4d26-9aa5-746d8ff84407 | Crawl scenario v1 · 2026-11-15 · 92ac2083 |
 | Playback speed (multiple of real time) | select[select-one] |  | no |  | 3600 | 1× · 10× · 60× · 360× · 3,600× (1 h/s) · 21,600× (6 h/s) · 86,400× (24 h/s) |
 | Step size | select[select-one] |  | no |  | 3600 | 1 sample · 1 h · 6 h · 1 day |
 | Selected time sample | input[range] |  | no | min 0, max 73 | 0 |  |
@@ -978,8 +924,8 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | Other losses (dB) | input[text] |  | no |  | 0 |  |
 
 - **Mobile (390×844):** header controls: “Open navigation”, “CCrawl's field bookPersonal · owner”, “Simple”, “Advanced”, “Toggle rendering diagnostics”, “Search (Command K)”, “Light theme”, “Dark theme”, “Match system”, “CU
-Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png`
-- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png` (1440×900)
+Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png`
+- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png` (1440×900)
 
 ### PG-14 · Sun & Power  `/app/analysis/sun?analysisId=:id`
 
@@ -993,7 +939,7 @@ Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `time-readout`, `plain-sun`, `ops-sun`, `surface-panel`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Sun & Power ⏎ Sun azimuth and elevation against the terrain horizon, direct-sunlight intervals and optional idealized panel energy. ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 · c10943ee ⏎ 74 samples. ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Site 85.980 degrees south, 358.330 degrees east. 2026-11-15 00:00:00 UTC. Sun visible, elevation -0.21 degrees. Earth visible, elevation 0.47 degrees. ⏎ 2026-11-15 00:00:00 UTC ⏎ Speed ⏎ 1× ⏎ 10× ⏎ 60× ⏎ 360× ⏎ 3,600× (1 h/s) ⏎ 21,600× (6 h/s) ⏎ 86,400× (24 h/s) ⏎ Step ⏎ 1 sample ⏎ 1 h ⏎ 6 h ⏎ 1 day ⏎ sampled every 1 h · 1/74 ⏎ 2026-11-15 00:00:00 UTC ⏎ Playback range ⏎ 2026-11-18 00:00:00 UTC ⏎ In plain language ⏎ CALCULATED ⏎ Over the 3.0 days analysed, the Sun i
+  > Sun & Power ⏎ Sun azimuth and elevation against the terrain horizon, direct-sunlight intervals and optional idealized panel energy. ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 · 92ac2083 ⏎ 74 samples. ⏎ Export ⏎ PDF ⏎ CSV ⏎ JSON ⏎ Site 85.980 degrees south, 358.330 degrees east. 2026-11-15 00:00:00 UTC. Sun visible, elevation -0.21 degrees. Earth visible, elevation 0.47 degrees. ⏎ 2026-11-15 00:00:00 UTC ⏎ Speed ⏎ 1× ⏎ 10× ⏎ 60× ⏎ 360× ⏎ 3,600× (1 h/s) ⏎ 21,600× (6 h/s) ⏎ 86,400× (24 h/s) ⏎ Step ⏎ 1 sample ⏎ 1 h ⏎ 6 h ⏎ 1 day ⏎ sampled every 1 h · 1/74 ⏎ 2026-11-15 00:00:00 UTC ⏎ Playback range ⏎ 2026-11-18 00:00:00 UTC ⏎ In plain language ⏎ CALCULATED ⏎ Over the 3.0 days analysed, the Sun i
 
 **Buttons observed (live DOM)**
 
@@ -1029,7 +975,7 @@ Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal
 
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
-| Analysis Crawl scenario v1 · 2026-11-15 · c10943ee | select[select-one] |  | no |  | ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 | Crawl scenario v1 · 2026-11-15 · c10943ee |
+| Analysis Crawl scenario v1 · 2026-11-15 · 92ac2083 | select[select-one] |  | no |  | ana_92ac2083-0218-4d26-9aa5-746d8ff84407 | Crawl scenario v1 · 2026-11-15 · 92ac2083 |
 | Playback speed (multiple of real time) | select[select-one] |  | no |  | 3600 | 1× · 10× · 60× · 360× · 3,600× (1 h/s) · 21,600× (6 h/s) · 86,400× (24 h/s) |
 | Step size | select[select-one] |  | no |  | 3600 | 1 sample · 1 h · 6 h · 1 day |
 | Selected time sample | input[range] |  | no | min 0, max 73 | 0 |  |
@@ -1037,8 +983,8 @@ Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal
 | (unlabelled) | input[datetime-local] |  | no | min 2026-11-15T00:00, max 2026-11-18T00:00 | 2026-11-18T00:00 |  |
 
 - **Mobile (390×844):** header controls: “Open navigation”, “CCrawl's field bookPersonal · owner”, “Simple”, “Advanced”, “Toggle rendering diagnostics”, “Search (Command K)”, “Light theme”, “Dark theme”, “Match system”, “CU
-Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png`
-- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png` (1440×900)
+Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png`
+- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png` (1440×900)
 
 ### PG-15 · Compare scenarios  `/app/compare?ids=:id,:id,:id,:id`
 
@@ -1069,8 +1015,8 @@ Account menu for Crawl user”, “Panorama”, “Polar sky plot”; horizontal
 | BTN-15-10 | Record 10 s | other | button | perf-record | Same control observed; not probed in this role/page |
 
 - **Mobile (390×844):** header controls: “Open navigation”, “CCrawl's field bookPersonal · owner”, “Simple”, “Advanced”, “Toggle rendering diagnostics”, “Search (Command K)”, “Light theme”, “Dark theme”, “Match system”, “CU
-Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-mobile.png`
-- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-desktop.png` (1440×900)
+Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/website-crawl/screenshots/user-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-mobile.png`
+- **Desktop screenshot:** `docs/website-crawl/screenshots/user-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-desktop.png` (1440×900)
 
 ### PG-16 · South-pole explorer  `/app/explorer`
 
@@ -1123,12 +1069,12 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-16-29 | Mons Kocher 85.46°S | main | button |  | Same control observed; not probed in this role/page |
 | BTN-16-30 | Go | main | submit |  | Same control observed; not probed in this role/page |
 | BTN-16-31 | Save Mons Malapert as a location | header | button |  | Same control observed; not probed in this role/page |
-| BTN-16-32 | mons mouton | main | button |  | Same control observed; not probed in this role/page |
-| BTN-16-33 | Delete mons mouton | main | button |  | Same control observed; not probed in this role/page |
+| BTN-16-32 | de gerlache | main | button |  | Same control observed; not probed in this role/page |
+| BTN-16-33 | Delete de gerlache | main | button |  | Same control observed; not probed in this role/page |
 | BTN-16-34 | shackleton | main | button |  | Same control observed; not probed in this role/page |
 | BTN-16-35 | Delete shackleton | main | button |  | Same control observed; not probed in this role/page |
-| BTN-16-36 | de gerlache | main | button |  | Same control observed; not probed in this role/page |
-| BTN-16-37 | Delete de gerlache | main | button |  | Same control observed; not probed in this role/page |
+| BTN-16-36 | mons mouton | main | button |  | Same control observed; not probed in this role/page |
+| BTN-16-37 | Delete mons mouton | main | button |  | Same control observed; not probed in this role/page |
 | BTN-16-38 | mons malapert | main | button |  | Same control observed; not probed in this role/page |
 | BTN-16-39 | Delete mons malapert | main | button |  | Same control observed; not probed in this role/page |
 
@@ -1316,7 +1262,7 @@ Account menu for Demo Explorer”, “Save Mons Malapert as a location”, “Pa
 | BTN-19-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-19-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-19-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-19-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.6429999999818ms exceeded. |
+| BTN-19-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.8829999999725ms exceeded. |
 | BTN-19-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-19-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-19-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -1380,7 +1326,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-20-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-20-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-20-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-20-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.5029999999679ms exceeded. |
+| BTN-20-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.5509999999776ms exceeded. |
 | BTN-20-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-20-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-20-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -1393,7 +1339,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Destination | External |
 |---|---|---|
-| Crawl project | `/app/projects/prj_9531040a-dede-4625-a509-fd8495bfb7f8` | no |
+| Crawl project | `/app/projects/prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb` | no |
 
 **Form fields**
 
@@ -1413,7 +1359,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Projects ⏎ Crawl project ⏎ Crawl project ⏎ Rename ⏎ Duplicate ⏎ Archive ⏎ New scenario ⏎ Scenarios ⏎ Scenarios are immutable inputs. “New version” copies a scenario into the builder. ⏎ Crawl scenario v1 ⏎ 85.9800°S 358.3300°E (mons-malapert) · 2026-11-15 00:00 → 2026-11-18 00:00 UTC · 60 min ⏎ New version ⏎ Open / re-run ⏎ Completed ⏎ 2026-11-12 22:18 ⏎ · medium ⏎ Project notes ⏎ Project notes ⏎ Save notes ⏎ Comparison history ⏎ No comparisons yet. Compare analyses ⏎ Danger zone — delete this project
+  > Projects ⏎ Crawl project ⏎ Crawl project ⏎ Rename ⏎ Duplicate ⏎ Archive ⏎ New scenario ⏎ Scenarios ⏎ Scenarios are immutable inputs. “New version” copies a scenario into the builder. ⏎ Crawl scenario v1 ⏎ 85.9800°S 358.3300°E (mons-malapert) · 2026-11-15 00:00 → 2026-11-18 00:00 UTC · 60 min ⏎ New version ⏎ Open / re-run ⏎ Completed ⏎ 2026-11-12 23:25 ⏎ · medium ⏎ Project notes ⏎ Project notes ⏎ Save notes ⏎ Comparison history ⏎ No comparisons yet. Compare analyses ⏎ Danger zone — delete this project
 
 **Buttons observed (live DOM)**
 
@@ -1440,9 +1386,9 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | Label | Destination | External |
 |---|---|---|
 | Projects | `/app/projects` | no |
-| New scenario | `/app/scenarios/new?project=prj_9531040a-dede-4625-a509-fd8495bfb7f8` | no |
-| New version | `/app/scenarios/new?from=scn_c1692a28-cde2-4346-822d-c8ba5befceec` | no |
-| Completed 2026-11-12 22:18 · medium | `/app/analyses/ana_c10943ee-cb8e-40a7-becb-f505c31fefd0` | no |
+| New scenario | `/app/scenarios/new?project=prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb` | no |
+| New version | `/app/scenarios/new?from=scn_6e4c4354-6f7c-4b84-b62d-36e2625315d9` | no |
+| Completed 2026-11-12 23:25 · medium | `/app/analyses/ana_92ac2083-0218-4d26-9aa5-746d8ff84407` | no |
 | Compare analyses | `/app/compare` | no |
 
 **Form fields**
@@ -1463,7 +1409,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Reports & exports ⏎ PDF mission briefs, CSV time series and machine-readable JSON — all generated from the same stored analysis, with inputs, versions, coverage flags and limitations. Downloads use short-lived signed links. ⏎ Generated reports ⏎ PDFCrawl scenario · v1 ⏎ 2026-11-12 22:18 UTC · 21.6 KB · sha256 4a81658d72f4… ⏎ Download ⏎ Manage share links ⏎ Generate a report ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 ⏎ Format ⏎ PDF mission brief ⏎ CSV time series ⏎ JSON (machine-readable) ⏎ Generate
+  > Reports & exports ⏎ PDF mission briefs, CSV time series and machine-readable JSON — all generated from the same stored analysis, with inputs, versions, coverage flags and limitations. Downloads use short-lived signed links. ⏎ Generated reports ⏎ PDFCrawl scenario · v1 ⏎ 2026-11-12 23:25 UTC · 21.6 KB · sha256 28bbf148d77a… ⏎ Download ⏎ Manage share links ⏎ Generate a report ⏎ Analysis ⏎ Crawl scenario v1 · 2026-11-15 ⏎ Format ⏎ PDF mission brief ⏎ CSV time series ⏎ JSON (machine-readable) ⏎ Generate
 
 **Buttons observed (live DOM)**
 
@@ -1488,7 +1434,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
-| Analysis | select[select-one] |  | no |  | ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 | Crawl scenario v1 · 2026-11-15 |
+| Analysis | select[select-one] |  | no |  | ana_92ac2083-0218-4d26-9aa5-746d8ff84407 | Crawl scenario v1 · 2026-11-15 |
 | Format | select[select-one] |  | no |  | pdf | PDF mission brief · CSV time series · JSON (machine-readable) |
 
 
@@ -1512,7 +1458,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-23-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-23-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-23-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-23-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.6040000000503ms exceeded. |
+| BTN-23-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.4960000000428ms exceeded. |
 | BTN-23-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-23-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-23-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -1541,7 +1487,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
-| Project* | select[select-one] |  | no |  | prj_9531040a-dede-4625-a509-fd8495bfb7f8 | + New project… · Crawl project |
+| Project* | select[select-one] |  | no |  | prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb | + New project… · Crawl project |
 | Scenario name* | input[text] | e.g. Malapert — Nov 2026 week | no |  |  |  |
 | Named site (IAU Gazetteer feature centre) | select[select-one] |  | no |  | mons-malapert | Lunar South Pole (reference point) — 90.000°S 0.000°E · 1295 m · Shackleton — 89.670°S 129.780°E · -2786 m · de Gerlache — 88.485°S 271.655°E · -1192 m · Spudis — 89.510°S 275.390°E · -1383 m · Shoemaker — 88.137°S 45.911°E · -3938 m · Faustini — 87.183°S 84.310°E · -2756 m · Haworth — 87.450°S 354.830°E · -3303 m · Slater — 88.079°S 111.288°E · -1744 m · Henson — 88.570°S 229.370°E · -2485 m · Sverdrup — 88.321°S 206.613°E · -2883 m · Nobile — 85.275°S 53.273°E · 903 m · Cabeus — 85.330°S 317.867°E · -3732 m · Amundsen — 84.440°S 83.069°E · -3563 m · Malapert — 85.000°S 11.403°E · -2165 m · Mons Malapert — 85.980°S 358.330°E · 4915 m · Mons Mouton — 84.600°S 31.000°E · 5041 m · Mons Kocher — 85.460°S 241.940°E · 2459 m |
 | Observer / panel height above terrain (m) | input[text] |  | no |  | 2 |  |
@@ -1605,7 +1551,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Element | Placeholder | Required | Constraints | Default | Options |
 |---|---|---|---|---|---|---|
-| Project* | select[select-one] |  | no |  | prj_9531040a-dede-4625-a509-fd8495bfb7f8 | + New project… · Crawl project |
+| Project* | select[select-one] |  | no |  | prj_acf7409a-e367-4e90-85cc-5a89d7cd7efb | + New project… · Crawl project |
 | Scenario name* | input[text] | e.g. Malapert — Nov 2026 week | no |  | Guided example — Mons Malapert, one week |  |
 | Named site (IAU Gazetteer feature centre) | select[select-one] |  | no |  | mons-malapert | Lunar South Pole (reference point) — 90.000°S 0.000°E · 1295 m · Shackleton — 89.670°S 129.780°E · -2786 m · de Gerlache — 88.485°S 271.655°E · -1192 m · Spudis — 89.510°S 275.390°E · -1383 m · Shoemaker — 88.137°S 45.911°E · -3938 m · Faustini — 87.183°S 84.310°E · -2756 m · Haworth — 87.450°S 354.830°E · -3303 m · Slater — 88.079°S 111.288°E · -1744 m · Henson — 88.570°S 229.370°E · -2485 m · Sverdrup — 88.321°S 206.613°E · -2883 m · Nobile — 85.275°S 53.273°E · 903 m · Cabeus — 85.330°S 317.867°E · -3732 m · Amundsen — 84.440°S 83.069°E · -3563 m · Malapert — 85.000°S 11.403°E · -2165 m · Mons Malapert — 85.980°S 358.330°E · 4915 m · Mons Mouton — 84.600°S 31.000°E · 5041 m · Mons Kocher — 85.460°S 241.940°E · 2459 m |
 | Observer / panel height above terrain (m) | input[text] |  | no |  | 2 |  |
@@ -1647,7 +1593,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-25-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-25-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-25-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-25-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.6049999999814ms exceeded. |
+| BTN-25-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.3660000000382ms exceeded. |
 | BTN-25-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-25-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-25-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -1688,7 +1634,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-26-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-26-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-26-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-26-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.451000000001ms exceeded. |
+| BTN-26-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.753000000026ms exceeded. |
 | BTN-26-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-26-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-26-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -1783,7 +1729,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** none
 - **Visible text excerpt:**
 
-  > MoonNav ⏎ Development mailbox ⏎ Local development only ⏎ MAIL_DRIVER=outbox writes messages to data/outbox/ instead of sending them. This page disappears in production. ⏎ Verify your MoonNav email ⏎ 2026-11-12 22:18:27 UTC ⏎ to [test-account]@example.test ⏎ Confirm your email address to activate your account: ⏎ http://localhost:3100/api/auth/verify-email?token=[REDACTED]&callbackURL=%2F ⏎ The link expires in 24 hours. ⏎ Verify your MoonNav email ⏎ 2026-11-12 22:18:27 UTC ⏎ to [test-account]@example.test ⏎ Confirm your email address to activate your account: ⏎ http://localhost:3100/api/auth/verify-email?token=[REDACTED]&callbackURL=%2F ⏎ The link expires in 24 hours. ⏎ Verify your MoonNav ema
+  > MoonNav ⏎ Development mailbox ⏎ Local development only ⏎ MAIL_DRIVER=outbox writes messages to data/outbox/ instead of sending them. This page disappears in production. ⏎ Verify your MoonNav email ⏎ 2026-11-12 23:25:22 UTC ⏎ to [test-account]@example.test ⏎ Confirm your email address to activate your account: ⏎ http://localhost:3100/api/auth/verify-email?token=[REDACTED]&callbackURL=%2F ⏎ The link expires in 24 hours. ⏎ Verify your MoonNav email ⏎ 2026-11-12 23:25:21 UTC ⏎ to [test-account]@example.test ⏎ Confirm your email address to activate your account: ⏎ http://localhost:3100/api/auth/verify-email?token=[REDACTED]&callbackURL=%2F ⏎ The link expires in 24 hours.
 
 **Links in the page body**
 
@@ -2022,28 +1968,41 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | Email* | input[email] |  | yes |  |  |  |
 
 
-### PG-33 · Something went wrong on this page.  `/invite/undefined`
+### PG-33 · Workspace invitation · MoonNav  `/invite/:id`
 
 - **Document title:** Workspace invitation · MoonNav
-- **Observed per viewer role:** anonymous → 500
-- **Errors seen while loading:** console: Failed to load resource: the server responded with a status of 500 (Internal Server Error); console: Error: No QueryClient set, use QueryClientProvider to set one
-    at http://localhost:3100/_next/static/chunks/1ibpnffjy; console: client error: Error: No QueryClient set, use QueryClientProvider to set one
-- **Test ids on the page:** none
+- **Observed per viewer role:** anonymous → 200
+- **Source:** `src/app/(public)/invite/[token]/page.tsx` · access rule in code: public
+- **Section headings (h2), top to bottom:** “Invitation not available”
+- **Tabs / radio groups:** “Simple” · “Advanced” (selected) · “Light theme” · “Dark theme” · “Match system” (selected) · “Simple” · “Advanced” (selected) · “Light theme” · “Dark theme” · “Match system” (selected)
+- **Errors seen while loading:** console: Failed to load resource: the server responded with a status of 404 (Not Found); 404 /api/v1/invitations/sample-invalid-token
+- **Test ids on the page:** `mode-toggle`, `perf-toggle`
 - **Visible text excerpt:**
 
-  > Something went wrong on this page. ⏎ Your data is safe. Try again; if it keeps happening, note the reference below. ⏎ Try again ⏎ Back to MoonNav
+  > MoonNav ⏎ Explore ⏎ Learn ⏎ Methodology ⏎ Data sources ⏎ Validation ⏎ About ⏎ Simple ⏎ Advanced ⏎ Toggle rendering diagnostics ⏎ Open workspace ⏎ Invitation not available ⏎ The link may have expired, been revoked, or already used. ⏎ If you believe this is an error, ask the workspace owner to send a new invitation. ⏎ Return home ⏎ MoonNav ⏎ An independent research and education prototype. Not NASA-owned, endorsed or flight-certified; it does not select approved landing sites. Built for the 2026 NASA Space Apps Challenge “Lunar Landing Site Navigator”. ⏎ Product ⏎ Explorer ⏎ Learn ⏎ Create an account ⏎ About ⏎ Science ⏎ Methodology ⏎ Data sources ⏎ Known limitations ⏎ Legal ⏎ Privacy ⏎ Terms o
 
 **Buttons observed (live DOM)**
 
 | ID | Visible label / accessible name | Region | Type | Test id | Result of clicking it (executed in the isolated stack) |
 |---|---|---|---|---|---|
-| BTN-33-00 | Try again | main | button |  | Same control observed; not probed in this role/page |
+| BTN-33-00 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
+| BTN-33-01 | Advanced | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
+| BTN-33-02 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Clicked: toggles aria-pressed → true |
+| BTN-33-03 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
+| BTN-33-04 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
+| BTN-33-05 | Match system | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
+| BTN-33-06 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
+| BTN-33-07 | Advanced | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
+| BTN-33-08 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Clicked: toggles aria-pressed → true |
+| BTN-33-09 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
+| BTN-33-10 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
+| BTN-33-11 | Match system | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 
 **Links in the page body**
 
 | Label | Destination | External |
 |---|---|---|
-| Back to MoonNav | `/` | no |
+| Return home | `/` | no |
 
 
 ### PG-34 · From the problem to the blueprint in 12 steps  `/learn`
@@ -2320,7 +2279,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Profile & preferences ⏎ Display preferences never change scientific timestamps, which are stored and computed in UTC. ⏎ Profile ⏎ [test-account]@example.test · role user ⏎ Name ⏎ Preferred mode ⏎ Mission planning ⏎ Learn ⏎ Public exploration ⏎ Display time zone ⏎ UTC ⏎ Africa/Abidjan ⏎ Africa/Accra ⏎ Africa/Addis_Ababa ⏎ Africa/Algiers ⏎ Africa/Asmera ⏎ Africa/Bamako ⏎ Africa/Bangui ⏎ Africa/Banjul ⏎ Africa/Bissau ⏎ Africa/Blantyre ⏎ Africa/Brazzaville ⏎ Africa/Bujumbura ⏎ Africa/Cairo ⏎ Africa/Casablanca ⏎ Africa/Ceuta ⏎ Africa/Conakry ⏎ Africa/Dakar ⏎ Africa/Dar_es_Salaam ⏎ Africa/Djibouti ⏎ Africa/Douala ⏎ Africa/El_Aaiun ⏎ Africa/Freetown ⏎ Africa/Gaborone ⏎ Africa/Harare ⏎ Africa/Johann
+  > Profile & preferences ⏎ Display preferences never change scientific timestamps, which are stored and computed in UTC. ⏎ Profile ⏎ [test-account]@example.test · role user ⏎ Name ⏎ Preferred mode ⏎ Mission planning ⏎ Learn ⏎ Public exploration ⏎ Display time zone ⏎ UTC ⏎ Africa/Abidjan ⏎ Africa/Accra ⏎ Africa/Addis_Ababa ⏎ Africa/Algiers ⏎ Africa/Asmera ⏎ Africa/Bamako ⏎ Africa/Bangui ⏎ Africa/Banjul ⏎ Africa/Bissau ⏎ Africa/Blantyre ⏎ Africa/Brazzaville ⏎ Africa/Bujumbura ⏎ Africa/Cairo ⏎ Africa/Casablanca ⏎ Africa/Ceuta ⏎ Africa/Conakry ⏎ Africa/Dakar ⏎ Africa/Dar_es_Salaam ⏎ Africa/Djibouti ⏎ Africa/Douala ⏎ Africa/El_Aaiun ⏎ Africa/Freetown ⏎ Africa/Gaborone ⏎ Africa/Harare ⏎ Africa/Joh
 
 **Buttons observed (live DOM)**
 
@@ -2329,7 +2288,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 | BTN-42-00 | C Crawl's field book Personal · Owner | header | button |  | Clicked: opens “Crawl's field book Personal · Owner” |
 | BTN-42-01 | Simple | header | button |  | Clicked: calls PUT /api/v1/me/preferences |
 | BTN-42-02 | Advanced | header | button |  | Not executed: not clickable in this state: locator.click: Timeout 1800ms exceeded. |
-| BTN-42-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1196.6879999999655ms exceeded. |
+| BTN-42-03 | Rendering diagnostics (FPS, frame time, long tasks) | header | button | perf-toggle | Not executed: not clickable in this state: locator.scrollIntoViewIfNeeded: Timeout 1195.869000000006ms exceeded. |
 | BTN-42-04 | Search (Command K) | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-42-05 | Light theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
 | BTN-42-06 | Dark theme | header | button |  | Clicked: changes on-page state only (no navigation, no API call) |
@@ -2367,7 +2326,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Security ⏎ Password, two-factor authentication and sessions. ⏎ Change password ⏎ Other sessions are signed out. ⏎ Current password ⏎ New password ⏎ 12+ characters ⏎ Update password ⏎ Two-factor authentication: off ⏎ Time-based one-time codes (TOTP) from an authenticator app. ⏎ Confirm your password to start ⏎ Set up 2FA ⏎ Active sessions ⏎ Sign out other sessions ⏎ Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like · 10.244.157.77 · since 2026-11-12 22:18 ⏎ this device
+  > Security ⏎ Password, two-factor authentication and sessions. ⏎ Change password ⏎ Other sessions are signed out. ⏎ Current password ⏎ New password ⏎ 12+ characters ⏎ Update password ⏎ Two-factor authentication: off ⏎ Time-based one-time codes (TOTP) from an authenticator app. ⏎ Confirm your password to start ⏎ Set up 2FA ⏎ Active sessions ⏎ Sign out other sessions ⏎ Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like · 10.176.149.158 · since 2026-11-12 23:25 ⏎ this device
 
 **Buttons observed (live DOM)**
 
@@ -2411,7 +2370,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 - **Test ids on the page:** `mode-toggle`, `perf-toggle`, `perf-panel`, `perf-live`, `perf-record`
 - **Visible text excerpt:**
 
-  > Crawl scenario (v1) ⏎ PDF report version 1 · link expires 2026-11-15 22:18 UTC ⏎ Download PDF ⏎ Summary ⏎ STORED RESULT ⏎ Analysis ana_c10943ee-cb8e-40a7-becb-f505c31fefd0 · moonnav-method-1.1.0 ⏎ Site ⏎ 85.9800°S 358.3300°E, 4915 m ⏎ Interval (UTC) ⏎ 2026-11-15T00:00:00Z → 2026-11-18T00:00:00Z ⏎ Direct sunlight ⏎ 52.7 h (73.2%) ⏎ Geometric DTE ⏎ 72.0 h (100.0%) ⏎ Quality ⏎ Medium ⏎ Report SHA-256 ⏎ 4a81658d72f4d87b0d215fe488083dd5e0eefc1f9db29a3f1c7f0756b54b06fb ⏎ MoonNav is an independent research/education prototype; geometric DTE is line of sight only, not RF link availability.
+  > Crawl scenario (v1) ⏎ PDF report version 1 · link expires 2026-11-15 23:25 UTC ⏎ Download PDF ⏎ Summary ⏎ STORED RESULT ⏎ Analysis ana_92ac2083-0218-4d26-9aa5-746d8ff84407 · moonnav-method-1.1.0 ⏎ Site ⏎ 85.9800°S 358.3300°E, 4915 m ⏎ Interval (UTC) ⏎ 2026-11-15T00:00:00Z → 2026-11-18T00:00:00Z ⏎ Direct sunlight ⏎ 52.7 h (73.2%) ⏎ Geometric DTE ⏎ 72.0 h (100.0%) ⏎ Quality ⏎ Medium ⏎ Report SHA-256 ⏎ 28bbf148d77a675dc5928a416efed575a5f5df32f3adfb7dd492595f2eaa3343 ⏎ MoonNav is an independent research/education prototype; geometric DTE is line of sight only, not RF link availability.
 
 **Buttons observed (live DOM)**
 
@@ -2430,7 +2389,7 @@ Account menu for Crawl user”; horizontal scroll: none; screenshot `docs/websit
 
 | Label | Destination | External |
 |---|---|---|
-| Download PDF | `/api/v1/storage/local?key=reports%2Fws_d7c63dee-823d-4fea-af34-4e0a6d5a81dd%2Frep_2bc3f566-457f-414a-ad2b-5ae33089ba5e%2Fv1%2Freport.pdf&exp=1794522367&fn=moonnav-2bc3f566-v1.pdf&sig=f6aaf06cc8c684c9815279e7d6148a6138b70af0381509e96f65e3c008c202d8` | no |
+| Download PDF | `/api/v1/storage/local?key=reports%2Fws_a34d906a-e003-4488-a1cf-bc1c9d3b23bb%2Frep_d08400f6-afb2-4b44-a13f-775535148e00%2Fv1%2Freport.pdf&exp=1794526383&fn=moonnav-d08400f6-v1.pdf&sig=ac37a4e6d34cc0e3308c43b0f848740b8304e54e3c6f5cf5ad3090431a7e3bea` | no |
 
 
 ### PG-45 · Data sources  `/sources`
@@ -2888,18 +2847,49 @@ Use the live-DOM records in section 19 for exact labels per page. Naming rules i
 - **UNAVAILABLE:** curator direct file upload (needs the unused R2 driver; scripts load data); mobile-device (physical) testing; OAuth/social login; AI assistant.
 - **PARTIALLY IMPLEMENTED:** RF link modelling (optional illustrative margin only; no DSN scheduling, antenna patterns, weather or multipath); roughness is at DEM-stencil scale (not lander-foot scale); 5/20/40 m terrain only near the pole (5 m to 87.5°S, 20 m to 85°S, 40 m to 80°S); ground irradiance is direct-beam only and incidence is evaluated at the Sun-disk centre; long-term Sun/Earth visibility on Vercel uses 0.001-rounded copies.
 - **BLOCKED / owner:** none for the website itself; production credentials rotation and the first administrator are owner actions (`FINAL_PRODUCTION_READINESS_REPORT.md`).
-- **Defect found by this crawl and fixed afterwards:** `/invite/[token]` returned a 500 for every link (missing query provider). The page record in section 19 (PG for `/invite/undefined`, anonymous) shows the pre-fix behaviour; after the fix the page renders and a new E2E test (`public.spec.ts`) covers it. Re-run the crawl to refresh that record.
+- **Defect found by the first crawl and fixed:** `/invite/[token]` returned a 500 for every link (missing query provider). It was fixed in commit `907d38b`, covered by an E2E test, verified on production, and the crawl in this document was re-run on the fixed code: the page now renders (an unknown token shows the invalid-invitation state). The valid-token state (invitee accepts) is documented from the source (`InvitationAcceptClient`); the API emails the token and never returns it, so the crawl could not open a live one.
 - Full list: `docs/KNOWN_LIMITATIONS.md`, `SCIENTIFIC_METHODOLOGY.md` §12.
+
+
+## 30.1 Current deployment and production route status
+- Repository `A-Mhd-Suhail/Nasa-Space-App` (private), branch `main`, deployed commit `907d38b` (method `moonnav-method-1.1.0`). Vercel project `hack-zz/moonnav`, production deployment `dpl_FRa2u69REnyutZ86aEjhJD7v1fsn` (`moonnav-7x3tj4e4p-hack-zz.vercel.app`), region `hnd1`, served at https://moonnav.vercel.app. Deployed with the Vercel CLI from the clean working tree (the project has no Git integration, so Vercel records no Git SHA; see `FINAL_PRODUCTION_RELEASE_REPORT.md`).
+- HTTP status of each URL on production, anonymous, redirects not followed (307 = redirect to sign-in, i.e. protected; `/dev/mail` 404 = development-only page is absent in production):
+
+| URL | Status |
+|---|---|
+| `/` | 200 |
+| `/explore` | 200 |
+| `/learn` | 200 |
+| `/methodology` | 200 |
+| `/sources` | 200 |
+| `/validation` | 200 |
+| `/about` | 200 |
+| `/login` | 200 |
+| `/register` | 200 |
+| `/forgot-password` | 200 |
+| `/verify-email` | 200 |
+| `/reset-password` | 200 |
+| `/invite/x` | 200 |
+| `/share/x` | 200 |
+| `/app` | 307 |
+| `/app/projects` | 307 |
+| `/admin` | 307 |
+| `/settings/security` | 307 |
+| `/dev/mail` | 404 |
+| `/api/v1/health` | 200 |
+| `/api/v1/sites` | 200 |
+
 
 ## 31. Verification and test evidence
 
 | Evidence | Result |
 |---|---|
 | Full E2E, isolated stack (`npm run test:e2e:stack`) | 264 passed, 0 failed (88 per browser × Chromium, Firefox, WebKit), 2026-11-13 |
+| Production read-only suites after deploying `907d38b` (Chromium) | 35 passed: public, demo, reliability and solar-surface (disposable demo accounts only) |
 | Science (pytest) | 129 tests; scientific reference suite 52 pass / 0 fail / 1 unavailable |
 | Unit (Vitest) | 62 tests |
 | Production read-only suites (public, demo, reliability) | recorded in `docs/TESTING.md` |
-| Crawl behind this document | 72 page visits (51 distinct URLs) as roles anonymous, demo, user, admin; 1124 button observations, 293 buttons actually clicked, 380 form-field observations. Crawl generated 2026-11-12T22:18:28.958Z against the isolated local stack. |
+| Crawl behind this document | 72 page visits (51 distinct URLs) as roles anonymous, demo, user, admin; 1117 button observations, 299 buttons actually clicked, 344 form-field observations. Crawl generated 2026-11-12T23:25:24.299Z against the isolated local stack. |
 
 Automated tests (titles as written):
 
@@ -2947,32 +2937,32 @@ Automated tests (titles as written):
 | demo-app-mobile.png | /app | demo | 390×844 | loaded, default state, mobile layout |
 | demo-app_explorer-desktop.png | /app/explorer | demo | 1440×900 | loaded, default state |
 | demo-app_explorer-mobile.png | /app/explorer | demo | 390×844 | loaded, default state, mobile layout |
-| demo-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png | /app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f50 | demo | 1440×900 | loaded, default state |
-| demo-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png | /app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f50 | demo | 390×844 | loaded, default state, mobile layout |
-| demo-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png | /app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f | demo | 1440×900 | loaded, default state |
-| demo-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png | /app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f | demo | 390×844 | loaded, default state, mobile layout |
-| demo-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-desktop.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | demo | 1440×900 | loaded, default state |
-| demo-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-mobile.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | demo | 390×844 | loaded, default state, mobile layout |
+| demo-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png | /app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746 | demo | 1440×900 | loaded, default state |
+| demo-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png | /app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746 | demo | 390×844 | loaded, default state, mobile layout |
+| demo-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png | /app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-7 | demo | 1440×900 | loaded, default state |
+| demo-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png | /app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-7 | demo | 390×844 | loaded, default state, mobile layout |
+| demo-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-desktop.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | demo | 1440×900 | loaded, default state |
+| demo-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-mobile.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | demo | 390×844 | loaded, default state, mobile layout |
 | demo-app_planner-desktop.png | /app/planner | demo | 1440×900 | loaded, default state |
 | demo-app_planner-mobile.png | /app/planner | demo | 390×844 | loaded, default state, mobile layout |
 | demo-app_scenarios_new_guided_1-desktop.png | /app/scenarios/new?guided=1 | demo | 1440×900 | loaded, default state |
 | demo-app_scenarios_new_guided_1-mobile.png | /app/scenarios/new?guided=1 | demo | 390×844 | loaded, default state, mobile layout |
 | demo-app_settings-desktop.png | /app/settings | demo | 1440×900 | loaded, default state |
 | demo-app_settings-mobile.png | /app/settings | demo | 390×844 | loaded, default state, mobile layout |
-| demo-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-desktop.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | demo | 1440×900 | loaded, default state |
-| demo-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-mobile.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | demo | 390×844 | loaded, default state, mobile layout |
+| demo-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-desktop.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | demo | 1440×900 | loaded, default state |
+| demo-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-mobile.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | demo | 390×844 | loaded, default state, mobile layout |
 | demo-admin-desktop.png | /admin | demo | 1440×900 | loaded, default state |
 | demo-admin-mobile.png | /admin | demo | 390×844 | loaded, default state, mobile layout |
 | user-app-desktop.png | /app | user | 1440×900 | loaded, default state |
 | user-app-mobile.png | /app | user | 390×844 | loaded, default state, mobile layout |
 | user-app_explorer-desktop.png | /app/explorer | user | 1440×900 | loaded, default state |
 | user-app_explorer-mobile.png | /app/explorer | user | 390×844 | loaded, default state, mobile layout |
-| user-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png | /app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f50 | user | 1440×900 | loaded, default state |
-| user-app_analysis_sun_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png | /app/analysis/sun?analysisId=ana_c10943ee-cb8e-40a7-becb-f50 | user | 390×844 | loaded, default state, mobile layout |
-| user-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-desktop.png | /app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f | user | 1440×900 | loaded, default state |
-| user-app_analysis_earth_analysisId_ana_c10943ee_cb8e_40a7_becb_f505c31fefd0-mobile.png | /app/analysis/earth?analysisId=ana_c10943ee-cb8e-40a7-becb-f | user | 390×844 | loaded, default state, mobile layout |
-| user-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-desktop.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | user | 1440×900 | loaded, default state |
-| user-app_compare_ids_ana_d88510f9_96be_4a67_be63_78871d501a24_ana_18399e57_6aa7_-mobile.png | /app/compare?ids=ana_d88510f9-96be-4a67-be63-78871d501a24,an | user | 390×844 | loaded, default state, mobile layout |
+| user-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png | /app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746 | user | 1440×900 | loaded, default state |
+| user-app_analysis_sun_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png | /app/analysis/sun?analysisId=ana_92ac2083-0218-4d26-9aa5-746 | user | 390×844 | loaded, default state, mobile layout |
+| user-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-desktop.png | /app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-7 | user | 1440×900 | loaded, default state |
+| user-app_analysis_earth_analysisId_ana_92ac2083_0218_4d26_9aa5_746d8ff84407-mobile.png | /app/analysis/earth?analysisId=ana_92ac2083-0218-4d26-9aa5-7 | user | 390×844 | loaded, default state, mobile layout |
+| user-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-desktop.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | user | 1440×900 | loaded, default state |
+| user-app_compare_ids_ana_cf964f14_25b6_4032_9e54_bf792c3a5756_ana_2d041a4d_498d_-mobile.png | /app/compare?ids=ana_cf964f14-25b6-4032-9e54-bf792c3a5756,an | user | 390×844 | loaded, default state, mobile layout |
 | user-app_planner-desktop.png | /app/planner | user | 1440×900 | loaded, default state |
 | user-app_planner-mobile.png | /app/planner | user | 390×844 | loaded, default state, mobile layout |
 | user-app_scenarios_new_guided_1-desktop.png | /app/scenarios/new?guided=1 | user | 1440×900 | loaded, default state |
