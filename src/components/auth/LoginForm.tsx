@@ -1,4 +1,5 @@
 "use client";
+import { DemoButton } from "@/components/auth/DemoButton";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -48,9 +49,9 @@ export function LoginForm({ localMail = false }: { localMail?: boolean }) {
       {sp.get("reset") === "1" && <Notice tone="ok" title="Password updated">Sign in with your new password. Other sessions were signed out.</Notice>}
       {next !== "/app" && <Notice>Sign in to continue to the page you requested.</Notice>}
       {sp.get("demo") === "busy" && <Notice tone="warn" title="Demo temporarily unavailable">Too many demo workspaces were started from this network in the last few minutes. Please try again shortly, or create a free account.</Notice>}
-      {sp.get("demo") === "failed" && <Notice tone="bad" title="Demo could not be started">Something went wrong while preparing the demo workspace. Please try again.</Notice>}
+      {sp.get("demo") === "failed" && <Notice tone="bad" title="Demo could not be started">The sample workspace could not be prepared. Try again in a moment, or <Link href="/explore" className="text-accent underline">explore the polar map without an account</Link>. If it keeps failing, the service status is on the <Link href="/sources" className="text-accent underline">data sources</Link> page.</Notice>}
       <Field label="Email" htmlFor="email" required>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input id="email" name="email" type="email" autoComplete="email" defaultValue={sp.get("email") ?? ""} required />
       </Field>
       <Field label="Password" htmlFor="password" required>
         <PasswordInput id="password" name="password" autoComplete="current-password" required />
@@ -74,18 +75,5 @@ export function LoginForm({ localMail = false }: { localMail?: boolean }) {
     </form>
     <DemoButton />
     </>
-  );
-}
-
-/** Secondary one-click demo: an isolated, pre-seeded 24-hour account (see lib/demo.ts). */
-function DemoButton() {
-  const [busy, setBusy] = useState(false);
-  return (
-    <form method="post" action="/api/v1/demo" onSubmit={() => setBusy(true)} className="mt-3 text-center">
-      <button type="submit" disabled={busy} className="text-sm text-text-2 underline decoration-line-2 underline-offset-4 hover:text-text disabled:opacity-60" data-testid="demo-button">
-        {busy ? "Preparing demo workspace…" : "Continue with demo"}
-      </button>
-      <p className="mt-1 text-xs text-muted">Private sample workspace with real analyses · expires after 24 h</p>
-    </form>
   );
 }

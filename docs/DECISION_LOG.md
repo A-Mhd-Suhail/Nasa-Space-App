@@ -30,11 +30,11 @@ Consequences: nothing to migrate from SQLite (there is no SQLite database), noth
 
 **D-010 — Roles stored on the user row (`user|analyst|curator|admin`), enforced server-side in `src/lib/dal.ts`.** Curator and admin require MFA at both page and API level. Workspace membership is checked on every object read (`assertWorkspaceAccess`), returning 404 to avoid revealing existence.
 
-**D-011 — Object storage driver interface: Cloudflare R2 (S3 API) in production, filesystem + HMAC-signed short-lived URLs locally.** Keys are built server-side (`storage.ts:keys`), never accepted from clients. Analysis results and reports are stored with SHA-256; the DB stores keys and checksums only.
+**D-011 — Object storage driver interface (amended 2026-11-13: production uses Supabase Storage, see D-024; the R2 driver remains an unused alternative). Original text: Cloudflare R2 (S3 API) in production, filesystem + HMAC-signed short-lived URLs locally.** Keys are built server-side (`storage.ts:keys`), never accepted from clients. Analysis results and reports are stored with SHA-256; the DB stores keys and checksums only.
 
 **D-012 — Job queue = PostgreSQL table with leases (`FOR UPDATE SKIP LOCKED`), worker pulls over an internal HTTP API.** No Redis needed. The worker holds only the service token (no DB or R2 credentials). Idempotency key = scenario definition hash; leases 60 s with heartbeats; retries with exponential backoff (15 s, 30 s, …, max 3 attempts); cancellation invalidates the lease; expired final attempts are failed.
 
-**D-013 — Worker host default: Google Cloud Run** (service for the API, Cloud Run job/service with min-instances=1 for the worker), single Docker image with `SERVICE_MODE`. Reason: container-native, scales to zero for the API, no Vercel duration limits. Not deployed (credentials required).
+**D-013 — Worker host default (superseded 2026-11-13 by D-025: jobs drain on Vercel, no separate worker host). Original text: Google Cloud Run** (service for the API, Cloud Run job/service with min-instances=1 for the worker), single Docker image with `SERVICE_MODE`. Reason: container-native, scales to zero for the API, no Vercel duration limits. Not deployed (credentials required).
 
 **D-014 — 2D map: OpenLayers with a custom LOLA polar stereographic projection and static image layers derived from the same DEM.** Moon Trek WMTS was not integrated (its polar tile matrix needs verification against GetCapabilities and adds a third-party runtime dependency); labelled as not connected. Derived layers are visual only.
 
@@ -64,3 +64,12 @@ During the completion verification the delivery sandbox could not reach `naif.jp
 **D-025 — `robots.txt`/`sitemap.xml` via Next metadata routes** (public crawlable, `/app`, `/admin`, `/settings`, `/api`, `/dev`, `/share` disallowed). UI untouched.
 
 **D-026 — Completion-pass runtime environment.** Verification ran on a Linux sandbox without root: PostgreSQL 17.5 portable binaries on :54329 (matching `dev-db.sh` ports), production `next start` (the 4 GB sandbox OOM-killed `next dev` at ~2.1 GB RSS — an environment constraint, not a product defect), worker and science API as detached processes. This validated `scripts/dev-all.mjs`'s orchestration contract (db → migrate → science → web → worker) on a second platform.
+
+**D-024 — Production storage is Supabase Storage (private bucket), accessed only from server code with the service key.** One vendor for database and objects, no extra account; signed URLs expire in 5 minutes. The R2 driver stays in the code but is not deployed.
+
+**D-025 — No separate worker host: queued jobs are drained on demand by the Vercel app.** The app leases jobs with the existing lease protocol, calls the internal science service, and stores results. Triggers: after submission, status polls, and a daily cron. Vercel rejects circular service bindings, so science never calls the app. Trade-off: each job must finish within one function run (300 s).
+
+**D-026 — Functions run in `hnd1` (Tokyo), next to the Supabase database.** Measured: 152 ms per query from `iad1`, 1–6 ms from `hnd1`.
+
+**D-027 — Email identity policy: trim + lower-case only; no Gmail dot or plus-tag folding.** Enforced in the database (`CHECK email = lower(btrim(email))` and a unique index on `lower(email)`). A duplicate sign-up answers 409 `ACCOUNT_EXISTS` and reveals nothing else (not verification state, role or name); rate limits: sign-up 5/min, resend 3/min, password reset 3 per 5 min per client address.
+

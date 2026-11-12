@@ -1,5 +1,7 @@
 # Missing features and gaps
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 Everything the product does **not** yet do, with the reason and (where applicable) the path to close it. Companion documents: `KNOWN_LIMITATIONS.md` (science claims), `REMAINING_WORK_ROADMAP.md` (ordered plan), `IMPLEMENTATION_CHECKLIST.md` (status detail).
 
 ## Gaps requiring external credentials or accounts (code complete)

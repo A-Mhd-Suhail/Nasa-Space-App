@@ -1,14 +1,22 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Button, Card, CardHeader, Field, Input, Notice, Select } from "../ui";
 import { api } from "./api";
+
+const noopSubscribe = () => () => {};
+const serverZones: string[] = [];
+const getServerZones = () => serverZones;
+let cachedZones: string[] | null = null;
+const browserZones = () => (cachedZones ??= "supportedValuesOf" in Intl ? (Intl as unknown as { supportedValuesOf(k: string): string[] }).supportedValuesOf("timeZone") : []);
 
 export function ProfileForm({ user }: { user: { name: string; email: string; preferredMode: string; displayTimezone: string; role: string } }) {
   const router = useRouter();
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; t: string } | null>(null);
   const [confirm, setConfirm] = useState("");
-  const zones = typeof Intl !== "undefined" && "supportedValuesOf" in Intl ? (Intl as unknown as { supportedValuesOf(k: string): string[] }).supportedValuesOf("timeZone") : ["UTC"];
+  // The browser's own zone list differs between engines (Firefox and Safari differ from Node and Chromium), so it must
+  // not be used while hydrating: React renders the server snapshot first, then switches to the browser's list.
+  const zones = useSyncExternalStore(noopSubscribe, browserZones, getServerZones);
   return (
     <div className="space-y-4">
       <Card>
@@ -26,7 +34,7 @@ export function ProfileForm({ user }: { user: { name: string; email: string; pre
         }}>
           <Field label="Name" htmlFor="name"><Input id="name" name="name" defaultValue={user.name} maxLength={80} /></Field>
           <Field label="Preferred mode" htmlFor="mode"><Select id="mode" name="mode" defaultValue={user.preferredMode}><option value="planning">Mission planning</option><option value="learn">Learn</option><option value="explore">Public exploration</option></Select></Field>
-          <Field label="Display time zone" htmlFor="tz" hint="Analyses and exports always use UTC."><Select id="tz" name="tz" defaultValue={user.displayTimezone}>{["UTC", ...zones.filter((z) => z !== "UTC")].map((z) => <option key={z} value={z}>{z}</option>)}</Select></Field>
+          <Field label="Display time zone" htmlFor="tz" hint="Analyses and exports always use UTC."><Select id="tz" name="tz" defaultValue={user.displayTimezone}>{["UTC", ...new Set([...zones, user.displayTimezone].filter((z) => z !== "UTC"))].map((z) => <option key={z} value={z}>{z}</option>)}</Select></Field>
           <div className="flex items-end"><Button type="submit" variant="primary">Save</Button></div>
           {msg && <div className="sm:col-span-2"><Notice tone={msg.tone}>{msg.t}</Notice></div>}
         </form>

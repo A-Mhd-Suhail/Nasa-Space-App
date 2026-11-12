@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/dal";
 import { startDemo } from "@/lib/demo";
-import { ApiError, clientIp } from "@/lib/http";
+import { ApiError, clientIp, describeCause } from "@/lib/http";
 
 /**
  * "Continue with demo": creates an isolated, pre-seeded demo account and signs it in.
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     for (const c of signIn.headers.getSetCookie()) res.headers.append("set-cookie", c);
     return res;
   } catch (e) {
-    console.error("demo start failed", (e as Error).message);
+    console.error("demo start failed", (e as Error).message.slice(0, 120), "| cause:", describeCause(e));
     return back("failed");
   }
 }

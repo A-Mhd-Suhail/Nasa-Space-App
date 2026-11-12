@@ -1,6 +1,6 @@
 {
  "kind": "moonnav.validation-report",
- "generatedAtUtc": "2026-11-11T21:08:52Z",
+ "generatedAtUtc": "2026-11-12T20:11:00Z",
  "live": true,
  "summary": {
   "pass": 52,
@@ -169,17 +169,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-875s-5m-v2 (5 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "520 points in 478 cached tiles",
+   "location": "520 points in 482 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.74
+    "medianAbsDiffM": 1.92
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.74,
-    "p95AbsDiffM": 6.19
+    "medianAbsDiffM": 1.92,
+    "p95AbsDiffM": 8.68
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",
@@ -191,17 +191,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-85s-20m-v2 (20 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "520 points in 87 cached tiles",
+   "location": "470 points in 88 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.94
+    "medianAbsDiffM": 1.7
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.94,
-    "p95AbsDiffM": 7.1
+    "medianAbsDiffM": 1.7,
+    "p95AbsDiffM": 6.62
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",
@@ -213,17 +213,17 @@
    "source": "NASA PDS LOLA GDR (tile reads by HTTP byte range)",
    "product": "lola-ldem-80s-40m-v2 (40 m) vs LDEM_75S_240M",
    "epochUtc": "-",
-   "location": "520 points in 49 cached tiles",
+   "location": "520 points in 50 cached tiles",
    "method": "same-projection products at different resolution; differences reflect sub-240 m topography",
    "moonnav": {
-    "medianAbsDiffM": 1.71
+    "medianAbsDiffM": 1.94
    },
    "reference": {
     "product": "LDEM_75S_240M"
    },
    "difference": {
-    "medianAbsDiffM": 1.71,
-    "p95AbsDiffM": 6.97
+    "medianAbsDiffM": 1.94,
+    "p95AbsDiffM": 7.35
    },
    "tolerance": "median <= 15 m and p95 <= 120 m",
    "result": "pass",

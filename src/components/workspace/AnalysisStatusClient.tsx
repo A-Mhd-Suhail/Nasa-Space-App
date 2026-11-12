@@ -17,13 +17,14 @@ export function AnalysisStatusClient({ analysisId, jobId, scenario, canAnnotate,
     queryKey: ["job", jobId],
     queryFn: () => api(`/api/v1/jobs/${jobId}`),
     enabled: !!jobId,
-    refetchInterval: (q) => (q.state.data && ["completed", "failed", "cancelled"].includes(q.state.data.job.status) ? false : 1500),
+    // Most analyses finish in a few seconds: poll quickly at first, then back off (each poll costs several queries).
+    refetchInterval: (q) => (q.state.data && ["completed", "failed", "cancelled"].includes(q.state.data.job.status) ? false : q.state.dataUpdateCount < 15 ? 1000 : q.state.dataUpdateCount < 45 ? 2500 : 5000),
   });
   const done = job.data?.job.status === "completed";
   const ana = useQuery<AnaResp>({ queryKey: ["analysis", analysisId, done], queryFn: () => api(`/api/v1/analyses/${analysisId}`) });
   const j = job.data?.job;
-  const s = ana.data?.analysis.summary;
-  const status = j?.status ?? ana.data?.analysis.status ?? "loading";
+  const s = ana.data?.analysis?.summary;
+  const status = j?.status ?? ana.data?.analysis?.status ?? "loading";
   return (
     <div className="mx-auto max-w-6xl space-y-4">
       <PageHeader crumbs={[{ label: "Projects", href: "/app/projects" }, { label: "Project", href: `/app/projects/${scenario.projectId}` }, { label: `${scenario.name} v${scenario.version}` }]} title={<span className="flex items-center gap-3">{scenario.name} <span className="text-muted">v{scenario.version}</span> <StatusBadge status={status} /></span>} description={`Analysis ${analysisId}`}
@@ -52,7 +53,7 @@ export function AnalysisStatusClient({ analysisId, jobId, scenario, canAnnotate,
             <Stat label="Panel energy" value={s.power.energyWh == null ? "—" : s.power.energyWh.toFixed(0)} unit={s.power.energyWh == null ? undefined : "Wh"} kind={s.power.energyWh == null ? "unavailable" : "modelled"} hint={s.power.energyWh == null ? "no panel assumptions" : "idealized"} />
           </div>
           <Card>
-            <CardHeader title="Open the analysis" tag={<DataTag kind="cached" />} subtitle={`Quality ${s.quality} · ${s.provenance.methodVersion} · completed ${fmtUtc(ana.data?.analysis.completedAt)}`} />
+            <CardHeader title="Open the analysis" tag={<DataTag kind="cached" />} subtitle={`Quality ${s.quality} · ${s.provenance.methodVersion} · completed ${fmtUtc(ana.data?.analysis?.completedAt)}`} />
             <div className="flex flex-wrap gap-2 p-4">
               <LinkButton variant="primary" href={`/app/analysis/sun?analysisId=${analysisId}`}>Sun & Power</LinkButton>
               <LinkButton href={`/app/analyses/${analysisId}/report`}>Mission report</LinkButton>
@@ -62,9 +63,9 @@ export function AnalysisStatusClient({ analysisId, jobId, scenario, canAnnotate,
               <LinkButton href={`/app/compare?ids=${analysisId}`}>Compare…</LinkButton>
             </div>
             {s.warnings.length > 0 && <ul className="border-t border-line px-4 py-3 text-xs text-warn">{s.warnings.map((w) => <li key={w}>• {w}</li>)}</ul>}
-            <p className="num border-t border-line px-4 py-2 text-xs text-muted">Result SHA-256 {ana.data?.analysis.resultSha256}</p>
+            <p className="num border-t border-line px-4 py-2 text-xs text-muted">Result SHA-256 {ana.data?.analysis?.resultSha256}</p>
           </Card>
-          <HorizonsValidationCard analysisId={analysisId} initial={ana.data?.analysis.validation ?? null} canRun />
+          <HorizonsValidationCard analysisId={analysisId} initial={ana.data?.analysis?.validation ?? null} canRun />
         </>
       )}
       <AnnotationsPanel analysisId={analysisId} canAnnotate={!!canAnnotate} me={me ?? ""} />

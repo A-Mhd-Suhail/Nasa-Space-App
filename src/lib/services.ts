@@ -65,9 +65,7 @@ export async function duplicateProject(u: SessionUser, id: string, requestId?: s
   const p = await getProject(u, id);
   const copy = await createProject(u, { name: `${p.name} (copy)`, description: p.description ?? undefined }, requestId);
   const scs = await db().select().from(schema.scenarios).where(eq(schema.scenarios.projectId, id));
-  for (const s of scs) {
-    await db().insert(schema.scenarios).values({ ...s, id: `scn_${randomUUID()}`, projectId: copy.id, parentScenarioId: s.id, createdBy: u.id, createdAt: new Date() });
-  }
+  if (scs.length) await db().insert(schema.scenarios).values(scs.map((s) => ({ ...s, id: `scn_${randomUUID()}`, projectId: copy.id, parentScenarioId: s.id, createdBy: u.id, createdAt: new Date() })));
   return copy;
 }
 
@@ -158,14 +156,18 @@ export async function recentAnalyses(u: SessionUser, limit = 20, status?: string
 }
 
 export async function summariesFor(u: SessionUser, ids: string[]) {
-  const out: CompareItem[] = [];
-  for (const id of ids) {
-    const { analysis, scenario } = await getAnalysis(u, id);
-    if (analysis.status !== "completed" || !analysis.summary) throw new ApiError(409, "not_ready", `Analysis ${id} is not completed`);
-    const [site] = scenario.siteId ? await db().select({ name: schema.sites.name }).from(schema.sites).where(eq(schema.sites.id, scenario.siteId)).limit(1) : [];
-    out.push({ analysisId: id, label: `${scenario.name} (v${scenario.version})`, siteName: site?.name, summary: analysis.summary as unknown as AnalysisSummary, terrain: await terrainInfo(scenario.latitudeDeg, scenario.longitudeEastDeg) });
-  }
-  return out;
+  // Independent per analysis (each lookup still enforces workspace access), so run them concurrently; order is kept.
+  return Promise.all(
+    ids.map(async (id): Promise<CompareItem> => {
+      const { analysis, scenario } = await getAnalysis(u, id);
+      if (analysis.status !== "completed" || !analysis.summary) throw new ApiError(409, "not_ready", `Analysis ${id} is not completed`);
+      const [[site], terrain] = await Promise.all([
+        scenario.siteId ? db().select({ name: schema.sites.name }).from(schema.sites).where(eq(schema.sites.id, scenario.siteId)).limit(1) : Promise.resolve([] as { name: string }[]),
+        terrainInfo(scenario.latitudeDeg, scenario.longitudeEastDeg),
+      ]);
+      return { analysisId: id, label: `${scenario.name} (v${scenario.version})`, siteName: site?.name, summary: analysis.summary as unknown as AnalysisSummary, terrain };
+    }),
+  );
 }
 
 /** Local slope / roughness at the finest LOLA resolution cached for a point (null when unavailable). */

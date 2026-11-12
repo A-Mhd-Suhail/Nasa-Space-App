@@ -9,17 +9,19 @@ Compare lunar south-pole sites and dates by **terrain-aware direct sunlight** an
 |---|---|
 | Web + BFF | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 |
 | Auth | Better Auth — email/password, email verification, password reset, TOTP MFA, DB rate limits |
-| Data | PostgreSQL 17 + Drizzle ORM (versioned SQL migrations in `drizzle/`) |
-| Object storage | Cloudflare R2 (S3 API) in production; signed local driver in dev |
+| Data | PostgreSQL (Supabase in production, a project-local cluster in development) + Drizzle ORM (versioned SQL migrations in `drizzle/`) |
+| Object storage | Supabase Storage (private bucket, server-side only) in production; signed local driver in dev |
 | Science | Python 3.12 · FastAPI · SpiceyPy (NAIF SPICE) · NumPy |
-| Jobs | PostgreSQL lease queue (`FOR UPDATE SKIP LOCKED`) + Python worker |
+| Jobs | PostgreSQL lease queue (`FOR UPDATE SKIP LOCKED`); drained on demand by the app on Vercel, or by a polling Python worker locally |
 | Visuals | OpenLayers (custom LOLA polar projection) · Apache ECharts · React Three Fiber |
-| Tests | pytest · Vitest · Playwright + axe |
+| Tests | pytest · Vitest · Playwright (Chromium, Firefox, WebKit) + axe |
 
 ```
-Browser ─► Next.js (Vercel) ─┬─► PostgreSQL (users, projects, scenarios, jobs, analyses, provenance, audit)
-                             ├─► R2 (analysis results, reports)
-                             └─► Science API (FastAPI: SPICE + LOLA horizon)   ◄── Worker leases jobs via /api/internal
+Browser ─► Vercel project (region hnd1)
+            ├─ app: Next.js (public) ─┬─► Supabase PostgreSQL (users, projects, scenarios, jobs, analyses, provenance, audit)
+            │                         ├─► Supabase Storage, private (analysis results, reports)
+            │                         └─► Gmail SMTP (verification / reset email)
+            └─ science: FastAPI (internal only; SPICE + LOLA)  ◄── called by the app with a bearer token; jobs run on demand
 ```
 
 ## Run locally (macOS)
@@ -54,7 +56,8 @@ Open **http://localhost:3100**. Verification/reset emails appear at **http://loc
 - `docs/KNOWN_LIMITATIONS.md` — what this build cannot claim
 - `docs/QA_EVIDENCE.md` — commands, results, browser flows, screenshots
 - `docs/API.md`, `docs/openapi-science.json` — API reference
-- `docs/DEPLOYMENT.md` — Vercel + Neon + R2 + Cloud Run
+- `docs/DEPLOYMENT.md` — the deployed architecture (Vercel + Supabase + internal FastAPI), variables, procedures, troubleshooting
+- `CLAUDE_HANDOFF.md` — current status, what is verified, and the exact remaining actions
 - `docs/FINAL_IMPLEMENTATION_REPORT.md` — current delivery report (`docs/FINAL_REPORT.md` is the first-session report)
 - `docs/IMPLEMENTATION_STATUS_MATRIX.md`, `docs/MISSING_FEATURES_AND_GAPS.md`, `docs/REMAINING_WORK_ROADMAP.md`
 - `docs/DESIGN_SYSTEM.md`, `docs/LOCAL_DEVELOPMENT.md`

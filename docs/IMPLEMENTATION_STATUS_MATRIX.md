@@ -1,5 +1,7 @@
 # Implementation status matrix
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 One row per shipped requirement, with the surface that implements it and the verification evidence. Statuses: **PASS** (verified), **BLOCKED** (external dependency documented), **TODO**, **NOT_IN_SCOPE** (deliberate, reasoned). Full narrative: `IMPLEMENTATION_CHECKLIST.md`; evidence: `QA_EVIDENCE.md`.
 
 ## Public area (no login)

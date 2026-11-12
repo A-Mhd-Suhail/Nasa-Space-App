@@ -1,6 +1,8 @@
+import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  check,
   doublePrecision,
   index,
   integer,
@@ -20,22 +22,29 @@ const updated = () => ts("updated_at").notNull().defaultNow();
 /* ------------------------------------------------------------------ */
 /* Identity (Better Auth core + two-factor plugin + rate limit)        */
 /* ------------------------------------------------------------------ */
-export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  image: text("image"),
-  role: text("role").notNull().default("user"), // user | analyst | curator | admin
-  twoFactorEnabled: boolean("two_factor_enabled").default(false),
-  preferredMode: text("preferred_mode"), // planning | learn | explore
-  displayTimezone: text("display_timezone").default("UTC"),
-  onboardedAt: ts("onboarded_at"),
-  termsAcceptedAt: ts("terms_accepted_at"),
-  status: text("status").notNull().default("active"), // active | suspended | deleted
-  createdAt: created(),
-  updatedAt: updated(),
-});
+export const user = pgTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    image: text("image"),
+    role: text("role").notNull().default("user"), // user | analyst | curator | admin
+    twoFactorEnabled: boolean("two_factor_enabled").default(false),
+    preferredMode: text("preferred_mode"), // planning | learn | explore
+    displayTimezone: text("display_timezone").default("UTC"),
+    onboardedAt: ts("onboarded_at"),
+    termsAcceptedAt: ts("terms_accepted_at"),
+    status: text("status").notNull().default("active"), // active | suspended | deleted
+    createdAt: created(),
+    updatedAt: updated(),
+  },
+  (t) => [
+    uniqueIndex("user_email_lower_unique").on(sql`lower(${t.email})`),
+    check("user_email_normalized_chk", sql`${t.email} = lower(btrim(${t.email}))`),
+  ],
+);
 
 export const session = pgTable(
   "session",

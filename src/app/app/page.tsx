@@ -6,6 +6,7 @@ import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { Card, CardHeader, EmptyState, LinkButton, Notice, PageHeader, StatusBadge } from "@/components/ui";
 import type { AnalysisSummary } from "@/lib/analysis-types";
+import { isDemoUser } from "@/lib/demo";
 import { currentWorkspace, requirePageUser } from "@/lib/dal";
 import { workerStatus } from "@/lib/jobs";
 import { scienceHealth } from "@/lib/science";
@@ -37,6 +38,31 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         actions={canWrite ? <><LinkButton href="/app/projects">Projects</LinkButton><LinkButton href="/app/scenarios/new" variant="primary"><Plus size={16} /> New scenario</LinkButton></> : null}
       />
       {sp.denied && <Notice tone="warn" className="mb-5" title="Access denied">Your role does not include that area.</Notice>}
+
+      {isDemoUser(u) && analyses.length > 0 && (() => {
+        const ids = analyses.map((x) => x.a.id);
+        const steps: [string, string, string][] = [
+          ["Open a prepared analysis", `/app/analyses/${ids[0]}`, "See when the Sun and Earth are visible above the real LOLA horizon, and the geometric DTE windows."],
+          ["Watch the Sun and Earth", `/app/analysis/sun?analysisId=${ids[0]}`, "Scrub or play the timeline; the terrain horizon blocks the Sun exactly where LOLA says it does."],
+          ["Compare sites and dates", `/app/compare?ids=${ids.slice(0, 4).join(",")}`, "Weighted score, Pareto set and trade-offs across the four prepared stations."],
+          ["Screen the terrain", "/app/planner", "Hazard map, suitability grid and sensitivity at 5 to 240 m resolution."],
+          ["Export the mission report", `/app/analyses/${ids[0]}/report`, "Print or download the PDF / JSON with full provenance."],
+          ["Run your own scenario", "/app/scenarios/new?guided=1", "Pick any site and dates; this runs the real pipeline, not a recording."],
+        ];
+        return (
+          <Card className="mb-6" data-testid="demo-tour">
+            <CardHeader title="Guided demo tour" subtitle="Six steps, about five minutes. The prepared analyses were computed by this same engine (NAIF SPICE + NASA LOLA) and are labelled as precomputed." />
+            <ol className="grid gap-x-6 gap-y-3 px-5 py-4 text-sm sm:grid-cols-2">
+              {steps.map(([t, href, d], i) => (
+                <li key={t} className="flex gap-3">
+                  <span className="num mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent" aria-hidden>{i + 1}</span>
+                  <span><Link href={href} className="font-medium text-accent hover:underline">{t}</Link><span className="block text-[13px] text-text-2">{d}</span></span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        );
+      })()}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <Card>

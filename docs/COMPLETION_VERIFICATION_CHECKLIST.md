@@ -1,5 +1,7 @@
 # Completion verification checklist — final delivery
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 **Date:** 2026-11-11 · **Scope:** prove, line by line, that every requirement from the NASA Space Apps Challenge "Lunar Landing Site Navigator" brief, every item from the project's own `IMPLEMENTATION_CHECKLIST.md`, every TODO from `MISSING_FEATURES_AND_GAPS.md`, and every Phase C item from `REMAINING_WORK_ROADMAP.md` is addressed in this ZIP.
 
 This document is the single source of truth for "is everything in the box?". Every row links to the file or command that proves it. `PASS` = implemented and verified in this environment; `BLOCKED` = code complete, waiting on external owner credentials; `NOT_IN_SCOPE` = deliberately excluded with a stated reason.

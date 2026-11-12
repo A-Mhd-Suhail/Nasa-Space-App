@@ -64,6 +64,13 @@
       "when": 1794356625606,
       "tag": "0008_scenario_rename",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794502330733,
+      "tag": "0009_user_email_unique",
+      "breakpoints": true
     }
   ]
 }

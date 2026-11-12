@@ -112,3 +112,63 @@ def test_packed_copies_match_the_original_products(monkeypatch: pytest.MonkeyPat
             assert (a is None) == (b is None)
             if a is not None and b is not None:
                 assert abs(a - b) <= 0.0005 + 1e-9
+
+
+# ---- API: boundaries and invalid input -------------------------------------------------------------------------
+@pytest.fixture()
+def client(monkeypatch: pytest.MonkeyPatch):
+    import os
+
+    os.environ.setdefault("SCIENCE_SERVICE_TOKEN", "x" * 32)
+    from fastapi.testclient import TestClient
+
+    from moonnav_science import api
+
+    api.TOKEN = os.environ["SCIENCE_SERVICE_TOKEN"]
+    monkeypatch.setattr(illumination, "_CACHE", {})
+    return TestClient(api.app), {"Authorization": f"Bearer {api.TOKEN}"}
+
+
+def test_point_api_requires_the_service_token(client) -> None:
+    c, _ = client
+    assert c.get("/v1/illumination/point?lat=-89.67&lon=129.78").status_code == 401
+
+
+@pytest.mark.parametrize(
+    "q",
+    [
+        "lat=-91&lon=0",
+        "lat=91&lon=0",
+        "lat=abc&lon=0",
+        "lat=-89&lon=abc",
+        "lat=nan&lon=0",
+        "lat=-89&lon=nan",
+        "lat=-89&lon=inf",
+        "lat=-89",
+        "lon=10",
+    ],
+)
+def test_point_api_rejects_invalid_input_with_422_never_500(client, q: str) -> None:
+    c, h = client
+    assert c.get(f"/v1/illumination/point?{q}", headers=h).status_code == 422
+
+
+@needs_real
+def test_point_api_boundaries_and_longitude_wrap(client) -> None:
+    c, h = client
+    get = lambda lat, lon: c.get(f"/v1/illumination/point?lat={lat}&lon={lon}", headers=h).json()  # noqa: E731
+    # The product edge is exactly 75 S: inside at -75, unknown just north of it, and never reported as 0.
+    assert get(-75.0, 10)["averageSunVisibility"] is not None
+    north = get(-74.99, 10)
+    assert north["permanentShadow"] is None and north["averageSunVisibility"] is None and "outside" in north["permanentShadowStatus"]
+    # the pole itself is covered; every longitude is the same point there
+    assert get(-90, 0)["permanentShadow"] == get(-90, 123.4)["permanentShadow"]
+    # longitude conventions: 129.78 E == -230.22 (west-negative / wrapped)
+    base = get(-89.67, 129.78)
+    assert base["permanentShadow"] is True
+    assert get(-89.67, -230.22)["permanentShadow"] is True
+    assert c.get("/v1/illumination/point?lat=-89.67&lon=489.78", headers=h).status_code == 422  # beyond +-360 is rejected, like the web API
+    # response shape and provenance are always present for a covered point
+    for k in ("averageSunVisibilityProduct", "caveat", "permanentShadowStatus"):
+        assert k in base
+    assert base["permanentShadowProduct"]["product"] == "LPSR_75S_120M_201608"

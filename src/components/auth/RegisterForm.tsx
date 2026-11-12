@@ -1,9 +1,9 @@
 "use client";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { Field, Input, Notice } from "../ui";
+import { Button, Field, Input, LinkButton, Notice } from "../ui";
 import { PasswordInput } from "./PasswordInput";
 
 export function passwordProblems(pw: string, email: string): string[] {
@@ -15,12 +15,65 @@ export function passwordProblems(pw: string, email: string): string[] {
   return p;
 }
 
+/**
+ * Shown when the address already has an account. It says so plainly and offers the three next steps; it does not
+ * reveal whether the address was ever verified (the resend button is safe for both: it sends nothing for a verified account).
+ */
+function ExistingAccount({ email, onChange }: { email: string; onChange: () => void }) {
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [cool, setCool] = useState(0);
+  useEffect(() => {
+    if (cool <= 0) return;
+    const t = setTimeout(() => setCool(cool - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cool]);
+  const q = `?email=${encodeURIComponent(email)}`;
+  async function resend() {
+    setState("sending");
+    setMsg(null);
+    const r = await authClient.sendVerificationEmail({ email, callbackURL: "/login?verified=1" });
+    if (r.error) {
+      setState("error");
+      setMsg(r.error.status === 429 ? "Too many requests. Please wait a minute before asking again." : "The link could not be sent. Please try again in a moment.");
+    } else {
+      setState("sent");
+      setCool(30);
+    }
+  }
+  return (
+    <div className="space-y-4" data-testid="existing-account">
+      <Notice tone="warn" title="You already have an account">
+        You have already created an account with this email address. Please sign in.
+        <span className="mt-1 block text-xs text-text-2">{email}</span>
+      </Notice>
+      <div className="flex flex-wrap gap-2">
+        <LinkButton variant="primary" href={`/login${q}`} data-testid="existing-signin">Sign in</LinkButton>
+        <LinkButton href={`/forgot-password${q}`} data-testid="existing-forgot">Forgot password?</LinkButton>
+        <Button type="button" onClick={onChange} data-testid="existing-change">Use a different email</Button>
+      </div>
+      <p className="text-xs leading-relaxed text-muted">
+        Haven&apos;t received your verification email?{" "}
+        <button type="button" className="text-accent underline disabled:opacity-50" disabled={state === "sending" || cool > 0} onClick={resend} data-testid="existing-resend">
+          {cool > 0 ? `Send again in ${cool}s` : "Send a new link"}
+        </button>
+      </p>
+      <div aria-live="polite" className="text-xs">
+        {state === "sent" && <span className="text-ok" data-testid="existing-resend-ok">If that account still needs verifying, a new link is on its way. Earlier links keep working until they expire.</span>}
+        {state === "error" && msg && <span className="text-bad" role="alert">{msg}</span>}
+      </div>
+    </div>
+  );
+}
+
 export function RegisterForm({ localMail = false }: { localMail?: boolean }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [general, setGeneral] = useState<string | null>(null);
+  const [existing, setExisting] = useState<string | null>(null);
 
+  if (existing) return <ExistingAccount email={existing} onChange={() => setExisting(null)} />;
   if (done) {
     return (
       <Notice tone="ok" title="Check your inbox">
@@ -59,7 +112,10 @@ export function RegisterForm({ localMail = false }: { localMail?: boolean }) {
         setGeneral(null);
         const { error } = await authClient.signUp.email({ name, email, password, callbackURL: "/app/onboarding" });
         setBusy(false);
-        // Non-enumerating: an existing address gets the same confirmation screen.
+        if (error && (error.status === 409 || error.code === "ACCOUNT_EXISTS")) {
+          setExisting(email.toLowerCase());
+          return;
+        }
         if (error && error.status !== 422 && error.status !== 400) {
           setGeneral(error.status === 429 ? "Too many attempts. Wait a minute and try again." : !error.status || error.status >= 500 ? "MoonNav could not reach its server or database. If you are running locally, start everything with `npm run dev`, then try again." : (error.message ?? "Registration failed. Please try again."));
           return;

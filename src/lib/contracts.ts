@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// In the browser the CSP forbids eval, so skip Zod's JIT feature probe (`Function("")`) instead of letting it
+// raise a CSP violation report on every page that validates a form. The server keeps the faster JIT path.
+if (typeof window !== "undefined") z.config({ jitless: true });
+
 /** Shared request contracts (validated in forms and again on the server). */
 
 export const DEFAULT_TERRAIN_PRODUCT = "lola-ldem-75s-240m-v2";

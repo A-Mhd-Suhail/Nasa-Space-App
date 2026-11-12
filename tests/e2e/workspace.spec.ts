@@ -214,8 +214,12 @@ test("workspace features: search, saved locations, shared workspace with members
   await session(page);
   // command palette search finds catalogue sites and the user's project
   await page.goto("/app");
-  await page.keyboard.press("ControlOrMeta+k");
   const box = page.getByRole("combobox", { name: /Search pages, sites/ });
+  // The shortcut is only listened for once the page has hydrated: retry the key press until the palette opens.
+  await expect(async () => {
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(box).toBeVisible({ timeout: 1_500 });
+  }).toPass({ timeout: 30_000 });
   await box.fill("Shackleton");
   await expect(page.getByRole("option", { name: /Shackleton/ }).first()).toBeVisible();
   await box.press("Enter");
@@ -252,14 +256,16 @@ test("workspace features: search, saved locations, shared workspace with members
 });
 
 test("forgot password: non-enumerating request, emailed link, reset, old sessions revoked, sign in with new password", async ({ page, browser }) => {
-  await page.goto("/forgot-password");
-  await page.getByLabel("Email").fill(`nobody-${Date.now()}@example.test`);
-  await page.getByRole("button", { name: "Send reset link" }).click();
-  await expect(page.getByText(/If an account exists for that address/)).toBeVisible();
-  await page.goto("/forgot-password");
-  await page.getByLabel("Email").fill(email);
-  await page.getByRole("button", { name: "Send reset link" }).click();
-  await expect(page.getByText(/If an account exists for that address/)).toBeVisible();
+  // Wait for hydration before typing (a value typed earlier is reset by hydration and the form would not submit).
+  const requestReset = async (address: string) => {
+    await page.goto("/forgot-password");
+    await expect(page.getByRole("button", { name: "Send reset link" })).toHaveAttribute("data-ready", "1", { timeout: 30_000 });
+    await fillStable(page.getByLabel("Email"), address);
+    await page.getByRole("button", { name: "Send reset link" }).click();
+    await expect(page.getByText(/If an account exists for that address/)).toBeVisible();
+  };
+  await requestReset(`nobody-${Date.now()}@example.test`);
+  await requestReset(email);
   const link = await mailLink(email, "reset-password");
   const ctx = await browser.newContext();
   const p2 = await ctx.newPage();

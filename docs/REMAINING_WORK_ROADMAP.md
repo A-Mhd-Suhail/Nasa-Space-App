@@ -1,5 +1,7 @@
 # Remaining work roadmap
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 Ordered, with effort estimates, for the work left after the completion verification pass. The MVP is complete and verified (`IMPLEMENTATION_STATUS_MATRIX.md`); everything here is deployment, hardening or optional scope.
 
 > **2026-11-11 update:** Phase C items 1–4 are now **CLOSED** — see the struck-through lines below and `docs/COMPLETION_VERIFICATION_CHECKLIST.md`. Only Phase A (deploy, owner credentials), Phase B (open-network verification) and the optional Phase D science extensions remain.

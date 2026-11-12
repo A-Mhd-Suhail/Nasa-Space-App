@@ -1,5 +1,7 @@
 # Final implementation report — 2026-11-10
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 ## Starting point
 The GLM 5.2 implementation described in the brief was **not present** on this machine (empty `MoonNav/` folder; no source, log or database found). MoonNav was built from scratch; none of GLM's claimed results were reused or reproduced (DECISION_LOG D-000).
 

@@ -1,5 +1,7 @@
 # Final implementation report — completion verification pass
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 **Date:** 2026-11-10/11 · **Scope:** restore and complete every missing piece of the delivered ZIP, verify the entire product end to end with real NASA data, change no UI.
 
 ## Starting point

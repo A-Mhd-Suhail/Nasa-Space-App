@@ -1,5 +1,7 @@
 # QA evidence
 
+> **Historical report.** Written before the move to Vercel + Supabase. Where it mentions Neon, Cloudflare R2 or Google Cloud Run, that is superseded: see `DEPLOYMENT.md` (actual architecture) and `IMPLEMENTATION_STATUS.md` (current status).
+
 Two full verification passes are on record:
 
 1. **Original build pass** — 2026-11-10, macOS (arm64), Node 26, Python 3.12.16, PostgreSQL 17.11. Raw logs in `docs/qa/full-run.log`, `docs/qa/workspace-rerun.log`, `docs/qa/migrations.log`, `docs/qa/build.log`.

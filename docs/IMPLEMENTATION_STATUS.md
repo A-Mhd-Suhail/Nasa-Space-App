@@ -86,6 +86,23 @@ Requirement-to-codebase matrix against `Lunar_Landing_Site_Navigator_Feature_Che
 - SVS 4930 frames are not compared pixel-by-pixel; the SVS Dial-a-Moon tables currently end on 2026-12-31.
 - Hazard screening cannot see boulders or craters smaller than the DEM cell (5–40 m); it is screening, not certification.
 
+## Master pass (2026-11-13): authentication, demo, Firefox, performance, production readiness
+Evidence for every line is in `TESTING.md` ("Current verification"). Status key: DONE = implemented and verified; OWNER = needs the owner.
+
+| Item | Status | Evidence |
+|---|---|---|
+| Signup verification, end to end | DONE | 7 verification tests ×3 browsers (valid, used, invalid, expired, resend, rate limit, token kept after resend); production delivery confirmed by the owner |
+| Duplicate sign-up prevention | DONE | 409 `ACCOUNT_EXISTS` + clear Sign in / Forgot password / safe resend screen; case-insensitive unique index + normalisation check (migration 0009, applied to production after a read-only precondition check: 79 users, 0 violations); 6 concurrent sign-ups → 1 user; verified in production |
+| Firefox E2E | DONE | Root cause was the agent shell sandbox, not macOS or Playwright; Firefox 83/83 |
+| Complete suite, one configuration | DONE | `npm run test:e2e:stack`: isolated local database, pinned config, three browsers |
+| Demo | DONE | Production failure (`ENOENT public/data/demo`) fixed; start 52 s/fail → 3.4 s; guided six-step tour; 5 demo tests ×3 browsers incl. mobile viewport and real new analysis; production 78/78 |
+| Performance | DONE | functions moved next to the database (152 ms → 3–4 ms per query); production pages 40–50% faster; parallelised loops; polling backoff; no change to 3D/terrain/visual code |
+| Reliability audit | DONE | public + demo route crawl, link check, API fuzz (found and fixed a 500 and a hydration bug); production 12/12 |
+| Initial admin + MFA | OWNER | procedure documented and the script hardened; MFA enrolment/challenge/backup-code recovery verified; **no admin account created** |
+| LOLA illumination validation | DONE | checksums verified (0.2 s cached), 95 science tests incl. boundary/invalid input, point lookups verified locally and in production |
+| Deployment docs | DONE | `DEPLOYMENT.md` rewritten against the real architecture; Neon/R2/Cloud Run removed or marked superseded |
+| Database pooler | OWNER (recommended) | switch `DATABASE_URL` to the transaction pooler (port 6543); see `DEPLOYMENT.md` |
+
 ## Final 8 workstreams pass (2026-11-12)
 Full checklist with evidence and blockers: **`FINAL_8_WORKSTREAMS.md`**.
 

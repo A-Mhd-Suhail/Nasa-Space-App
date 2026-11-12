@@ -49,7 +49,8 @@ async function seed(u: SessionUser) {
   const [startUtc, endUtc, step] = index.window;
   const project = await createProject(u, { name: "Demo · South Pole candidates", description: "Precomputed demonstration analyses (NAIF SPICE + NASA LOLA). Add your own scenarios, compare, plan and export like any workspace." });
   const d = db();
-  for (const key of DEMO_SITES) {
+  // The four demo sites are independent: seed them concurrently (each is its own scenario, object and transaction).
+  await Promise.all(DEMO_SITES.map(async (key) => {
     const result = demoFile(`${key}.json`) as AnalysisResult;
     const sc = await createScenario(u, {
       projectId: project.id, name: `${result.demo?.label ?? "Demo"} · ${key}`, site: { mode: "catalog", siteId: key }, observerHeightM: result.site.observerHeightM,
@@ -72,7 +73,7 @@ async function seed(u: SessionUser) {
       });
     });
     await d.insert(schema.savedLocations).values({ id: `loc_${randomUUID()}`, workspaceId: ws, name: key.replace(/-/g, " "), latitudeDeg: result.site.latitudeDeg, longitudeEastDeg: result.site.longitudeEastDeg, siteId: key, note: "Demo saved location", createdBy: u.id });
-  }
+  }));
 }
 
 /** Create a demo account, seed it, and return the Better Auth sign-in response (session cookies). */

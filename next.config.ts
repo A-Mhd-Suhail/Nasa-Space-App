@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
   // explicit server-side authorization in every request (see docs/DECISION_LOG.md D-007).
   cacheComponents: false,
   poweredByHeader: false,
+  // Files under public/ are served from the CDN and are NOT part of a server function's bundle. These routes read
+  // them with fs at request time, so they must be traced into the function explicitly (the demo seeded nothing and
+  // /validation showed no rows on Vercel before this).
+  outputFileTracingIncludes: {
+    "/api/v1/demo": ["./public/data/demo/**/*"],
+    "/validation": ["./public/data/validation.json"],
+  },
   turbopack: {
     rules: {
       "*.css": { loaders: ["@tailwindcss/turbopack"], as: "*.css" },

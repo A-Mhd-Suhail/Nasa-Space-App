@@ -5,7 +5,9 @@ import { Button, LinkButton } from "@/components/ui";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    console.error(error.digest ?? "client error");
+    // Server errors carry only a digest (details stay in server logs). For client render errors log the type and
+    // message so a report can be diagnosed; never the stack, props or user data.
+    console.error(error.digest ?? `client error: ${error.name}: ${String(error.message).slice(0, 200)}`);
   }, [error]);
   return (
     <main id="main" className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-start justify-center px-6 py-16">

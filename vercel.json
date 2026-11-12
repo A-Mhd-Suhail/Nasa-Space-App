@@ -5,7 +5,12 @@
       "root": ".",
       "framework": "nextjs",
       "bindings": [
-        { "type": "service", "service": "science", "format": "url", "env": "SCIENCE_API_URL" }
+        {
+          "type": "service",
+          "service": "science",
+          "format": "url",
+          "env": "SCIENCE_API_URL"
+        }
       ]
     },
     "science": {
@@ -16,9 +21,20 @@
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": { "service": "app" } }
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
   ],
   "crons": [
-    { "path": "/api/internal/cron/drain", "schedule": "0 4 * * *" }
+    {
+      "path": "/api/internal/cron/drain",
+      "schedule": "0 4 * * *"
+    }
+  ],
+  "regions": [
+    "hnd1"
   ]
 }

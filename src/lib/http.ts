@@ -18,6 +18,15 @@ export const notFound = (what = "Resource") => new ApiError(404, "not_found", `$
 export const forbidden = (msg = "You do not have access to this resource") => new ApiError(403, "forbidden", msg);
 export const unauthorized = () => new ApiError(401, "unauthorized", "Sign in required");
 
+/** Root cause of a wrapped error (drizzle hides the database error behind "Failed query"): code + message only, never query parameters. */
+export function describeCause(err: unknown): string | null {
+  for (let e = (err as { cause?: unknown } | null)?.cause, i = 0; e && i < 4; e = (e as { cause?: unknown }).cause, i++) {
+    const x = e as { code?: unknown; message?: unknown };
+    if (x.code || x.message) return `${String(x.code ?? "")} ${String(x.message ?? "").split("\n")[0].slice(0, 160)}`.trim();
+  }
+  return null;
+}
+
 export function errorResponse(err: unknown, requestId: string): NextResponse {
   if (err instanceof ApiError) {
     return NextResponse.json(
@@ -32,7 +41,18 @@ export function errorResponse(err: unknown, requestId: string): NextResponse {
       { status: 422, headers: { "x-request-id": requestId } },
     );
   }
-  console.error(JSON.stringify({ level: "error", requestId, message: err instanceof Error ? err.message : String(err) }));
+  // Postgres class 22 "data exception" (invalid byte sequence such as a NUL in an id, bad text representation, value out
+  // of range, string too long) means the CLIENT sent a value the database cannot hold: a 422, not a server fault.
+  for (let e: unknown = err, i = 0; e && i < 4; e = (e as { cause?: unknown }).cause, i++) {
+    const code = (e as { code?: unknown }).code;
+    if (typeof code === "string" && /^22[0-9A-Z]{3}$/.test(code)) {
+      return NextResponse.json(
+        { error: { code: "invalid_input", message: "A value in the request is not valid", requestId } },
+        { status: 422, headers: { "x-request-id": requestId } },
+      );
+    }
+  }
+  console.error(JSON.stringify({ level: "error", requestId, message: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200), cause: describeCause(err) }));
   return NextResponse.json(
     { error: { code: "internal_error", message: "Unexpected server error", requestId } },
     { status: 500, headers: { "x-request-id": requestId } },

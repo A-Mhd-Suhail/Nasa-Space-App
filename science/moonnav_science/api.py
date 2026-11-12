@@ -639,6 +639,8 @@ from .illumination import point as illum_point  # noqa: E402
 
 
 @app.get("/v1/illumination/point", dependencies=[Depends(require_token)])
-def illumination_point(lat: float = Query(..., ge=-90, le=90), lon: float = Query(...)) -> dict[str, Any]:
+def illumination_point(
+    lat: float = Query(..., ge=-90, le=90, allow_inf_nan=False), lon: float = Query(..., ge=-360, le=360, allow_inf_nan=False)
+) -> dict[str, Any]:
     """Permanent-shadow flag and 18.6-year average Sun/Earth visibility from the LOLA team's products."""
     return illum_point(lat, normalize_lon_east(lon), DATA_DIR)

@@ -6,6 +6,7 @@ import sitesData from "@/data/sites.json";
 import { HeroChart } from "@/components/home/HeroChart";
 import { HomeGlobe } from "@/components/home/HomeGlobe";
 import { HorizonPlate } from "@/components/home/HorizonPlate";
+import { DemoButton } from "@/components/auth/DemoButton";
 import { DataTag, LinkButton } from "@/components/ui";
 import type { AnalysisResult } from "@/lib/analysis-types";
 
@@ -51,6 +52,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-3">
               <LinkButton href="/app/scenarios/new?guided=1" variant="primary" s="lg">Start mission planning <ArrowRight size={17} /></LinkButton>
               <LinkButton href="/explore" variant="secondary" s="lg">Explore without an account</LinkButton>
+              <DemoButton variant="cta" testId="home-demo-button" />
               <LinkButton href="#method" variant="ghost" s="lg">How it works</LinkButton>
             </div>
             <dl className="mt-10 grid grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-line bg-line text-[13px]">
