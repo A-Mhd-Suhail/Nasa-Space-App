@@ -70,5 +70,5 @@ E2E suites read verification links from the local outbox. Start the web server w
 |---|---|
 | Production reset ×3, verification ×2 (all logged) | all accepted by Gmail with SMTP 250, correct recipient, production link host, 0.6–3 s |
 | Local auth E2E after the mail changes | `auth-fixes.spec.ts` 8/8 (Chromium + WebKit); register + forgot-password pass on both |
-| Inbox placement | **not verified by the application**; the owner searches Gmail by message id (see `CLAUDE_HANDOFF.md`) |
+| Inbox arrival | **Confirmed by the owner** for the sign-up verification and the password-reset email (message ids in `CLAUDE_HANDOFF.md`). The app itself only sees SMTP acceptance. |
 Note: the password-reset limiter (3 per 5 min per IP) is shared across local and production through the database; space E2E runs at least 5 minutes apart.

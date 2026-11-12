@@ -46,10 +46,10 @@ Findings from production logs and code:
   - It uses a fresh transport per attempt with explicit timeouts, retries once on transient errors (timeouts, resets, 4xx), and refuses to send a localhost link from a public deployment.
   - The login page's "Send a new link" reports failures instead of claiming success.
 - **Read the logs**: `npx vercel logs -e production --since 10m --json | grep mail.delivery`.
-- **What can't be verified from here**: whether Gmail placed a message in Inbox, Spam, or only "All Mail". The server only sees SMTP acceptance, and reading the mailbox is out of scope for the credentials we hold (SMTP only). Use the Gmail search `rfc822msgid:<message-id>` with "All Mail" selected, from the ids in the logs.
+- **Confirmed by the owner (2026-11-12): both final messages arrived in Gmail.** Email delivery is DONE in production. The application itself can only see SMTP acceptance; whether Gmail placed a message in Inbox, Spam, or only "All Mail". The server only sees SMTP acceptance, and reading the mailbox is out of scope for the credentials we hold (SMTP only). Use the Gmail search `rfc822msgid:<message-id>` with "All Mail" selected, from the ids in the logs.
 - **Likely inbox-side cause**: the sender and recipient are the same Gmail account (`amhdsuhail2026@gmail.com` → `…+moonnav@…`). Gmail may skip the Inbox, notifications, or fold identical subjects into one thread for mail you send to yourself. Test with a different recipient address before treating it as an application bug.
 
-### Final verification on the deployed build (03:12 UTC, 2026-11-12) — inbox placement still to be confirmed by the owner
+### Final verification on the deployed build (03:12 UTC, 2026-11-12) — inbox arrival CONFIRMED by the owner for both messages
 | Flow | Gmail SMTP result | Message-ID (search `rfc822msgid:` in Gmail, "All Mail") |
 |---|---|---|
 | Sign-up verification (`…+moonnav3@gmail.com`) | accepted, `250 2.0.0 OK`, 1.2 s, link host `moonnav.vercel.app` | `<95561c58-a5ba-fb3f-5e2f-ee32c3f9099b@gmail.com>` |
