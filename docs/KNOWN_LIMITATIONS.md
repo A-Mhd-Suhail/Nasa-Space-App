@@ -48,3 +48,8 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
 | Point values at rims vary between pixels | Steep illumination gradients (0 → 59% between adjacent 120 m pixels at the pole) | One-point comparisons can disagree by tens of percent | Validation compares against the 3×3 neighbourhood range and flags "high local gradient" | `lola-avgsun-south-pole` |
 | Analysis window ≠ 18.6-year average | Analyses cover ≤ 400 days | Earth visibility in short windows differs from the long-term mean | Long-term Sun/Earth context comes from the LOLA products, labelled as source data and kept separate from the analysed window | Mission Report "Long-term sunlight / Earth" row |
 | No lander-scale hazards below 5 m | No public sub-5 m DEM for the whole cap | Boulders and small craters are not assessed | Hazard screen is labelled "screening", not certification | Hazard result caveats |
+
+## Deletion
+- Deletion is permanent (rows are removed and their stored result/report files are deleted best-effort); there is no recycle bin. Archive a project instead if it may be needed again. Audit records are kept.
+- Account deletion removes the personal field book with the account; a personal workspace cannot be deleted on its own, not even by an administrator.
+- If a stored file cannot be removed, the row is still deleted and the audit record's `filesNotRemoved` count says how many files remain in storage.

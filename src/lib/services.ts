@@ -6,6 +6,7 @@ import type { AnalysisResult, AnalysisSummary } from "./analysis-types";
 import type { CompareItem } from "./compare";
 import { canonicalDefinition, normalizeLonEast, type ScenarioInput, stableStringify } from "./contracts";
 import { assertWorkspaceAccess, audit, currentWorkspaceId, type SessionUser } from "./dal";
+import { assertMayDelete, impactOf, impactSummary, refuseIfBusy, removeStored } from "./deletion";
 import { ApiError, notFound } from "./http";
 import { buildCsv, buildJson, buildPdf, type ReportContext } from "./report-builders";
 import { science } from "./science";
@@ -53,12 +54,15 @@ export async function patchProject(u: SessionUser, id: string, patch: Partial<{ 
 
 export async function deleteProject(u: SessionUser, id: string, confirmName: string, requestId?: string) {
   const p = await getProject(u, id);
-  await assertWorkspaceAccess(u, p.workspaceId, "editor");
+  await assertMayDelete(u, p.workspaceId, p.createdBy);
   if (confirmName.trim() !== p.name.trim()) throw new ApiError(422, "invalid_input", "Type the project name to confirm deletion", [{ field: "confirmName", message: "Name does not match" }]);
-  const [n] = await db().select({ n: sql<number>`count(*)::int` }).from(schema.scenarios).where(eq(schema.scenarios.projectId, id));
-  // Scenarios are immutable rows guarded by a trigger on UPDATE only; DELETE cascades through analyses, jobs and reports.
+  const impact = await impactOf({ projectId: id });
+  refuseIfBusy(impact);
+  // Rows cascade through scenarios, analyses, jobs, reports, share links and annotations; the audit record is kept.
   await db().delete(schema.projects).where(eq(schema.projects.id, id));
-  await audit({ actorUserId: u.id, action: "project.delete", objectType: "project", objectId: id, metadata: { name: p.name, scenarios: n?.n ?? 0 }, requestId });
+  const failed = await removeStored(impact.storageKeys);
+  await audit({ actorUserId: u.id, action: "project.delete", objectType: "project", objectId: id, metadata: { name: p.name, ...impactSummary(impact, failed) }, requestId });
+  return impactSummary(impact, failed);
 }
 
 export async function duplicateProject(u: SessionUser, id: string, requestId?: string) {
@@ -286,8 +290,12 @@ export async function renameScenario(u: SessionUser, id: string, name: string, r
 }
 
 export async function deleteScenario(u: SessionUser, id: string, requestId?: string) {
-  const s = await getScenario(u, id);
-  await assertWorkspaceAccess(u, s.workspaceId, "editor");
+  const sc = await getScenario(u, id);
+  await assertMayDelete(u, sc.workspaceId, sc.createdBy);
+  const impact = await impactOf({ scenarioId: id });
+  refuseIfBusy(impact);
   await db().delete(schema.scenarios).where(eq(schema.scenarios.id, id));
-  await audit({ actorUserId: u.id, action: "scenario.delete", objectType: "scenario", objectId: id, metadata: { name: s.name, projectId: s.projectId }, requestId });
+  const failed = await removeStored(impact.storageKeys);
+  await audit({ actorUserId: u.id, action: "scenario.delete", objectType: "scenario", objectId: id, metadata: { name: sc.name, projectId: sc.projectId, ...impactSummary(impact, failed) }, requestId });
+  return impactSummary(impact, failed);
 }

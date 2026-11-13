@@ -1,8 +1,8 @@
 import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
 
@@ -97,6 +97,22 @@ export async function getObject(key: string): Promise<Buffer> {
     return Buffer.from(await r.Body!.transformToByteArray());
   }
   return readFile(localPath(key));
+}
+
+/** Remove one stored object. Missing objects are not an error (deletion is idempotent). Server-side callers only. */
+export async function deleteObject(key: string): Promise<void> {
+  assertKey(key);
+  if (env().STORAGE_DRIVER === "supabase") {
+    const { base, headers, bucket } = sb();
+    const r = await fetch(`${base}/object/${bucket}/${objPath(key)}`, { method: "DELETE", headers });
+    if (!r.ok && r.status !== 404 && r.status !== 400) throw new Error(`storage delete failed (HTTP ${r.status})`);
+    return;
+  }
+  if (env().STORAGE_DRIVER === "r2") {
+    await r2().send(new DeleteObjectCommand({ Bucket: env().R2_BUCKET!, Key: key }));
+    return;
+  }
+  await unlink(localPath(key)).catch((e: NodeJS.ErrnoException) => { if (e.code !== "ENOENT") throw e; });
 }
 
 /** Short-lived download URL. Treat as a bearer token: never log it. */

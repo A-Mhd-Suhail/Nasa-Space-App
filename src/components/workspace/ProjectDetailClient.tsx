@@ -3,17 +3,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, CardHeader, EmptyState, Field, Input, LinkButton, Notice, PageHeader, StatusBadge, Textarea } from "../ui";
+import { ConfirmDialog } from "../ConfirmDialog";
 import { api } from "./api";
 
 type A = { id: string; status: string; quality: string | null; createdAt: string };
-type S = { id: string; name: string; version: number; lat: number; lon: number; siteId: string | null; start: string; end: string; step: number; analyses: A[] };
+type S = { id: string; name: string; version: number; lat: number; lon: number; siteId: string | null; start: string; end: string; step: number; analyses: A[]; canDelete: boolean };
 
-export function ProjectDetailClient({ project, scenarios, comparisons }: { project: { id: string; name: string; description: string | null; notes: string | null; status: string; createdAt: string }; scenarios: S[]; comparisons: { id: string; n: number; createdAt: string; ids: string[] }[] }) {
+export function ProjectDetailClient({ project, scenarios, comparisons, canDeleteProject }: { canDeleteProject: boolean; project: { id: string; name: string; description: string | null; notes: string | null; status: string; createdAt: string }; scenarios: S[]; comparisons: { id: string; n: number; createdAt: string; ids: string[] }[] }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(project.notes ?? "");
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [delScenario, setDelScenario] = useState<S | null>(null);
+  const [delProject, setDelProject] = useState(false);
+  const [delBusy, setDelBusy] = useState(false);
+  const [delErr, setDelErr] = useState<string | null>(null);
 
   const patch = async (body: Record<string, unknown>, ok: string) => {
     try {
@@ -36,6 +41,7 @@ export function ProjectDetailClient({ project, scenarios, comparisons }: { proje
             <Button s="sm" onClick={() => setEditing(!editing)}>Rename</Button>
             <Button s="sm" onClick={async () => { const r = await api<{ project: { id: string } }>(`/api/v1/projects/${project.id}/duplicate`, { method: "POST" }); router.push(`/app/projects/${r.project.id}`); }}>Duplicate</Button>
             <Button s="sm" onClick={() => patch({ status: project.status === "active" ? "archived" : "active" }, project.status === "active" ? "Project archived" : "Project restored")}>{project.status === "active" ? "Archive" : "Restore"}</Button>
+            {canDeleteProject && <Button s="sm" variant="danger" data-testid="project-delete" onClick={() => { setDelErr(null); setDelProject(true); }}>Delete</Button>}
             <LinkButton s="sm" variant="primary" href={`/app/scenarios/new?project=${project.id}`}>New scenario</LinkButton>
           </>
         }
@@ -68,6 +74,7 @@ export function ProjectDetailClient({ project, scenarios, comparisons }: { proje
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <LinkButton s="sm" href={`/app/scenarios/new?from=${s.id}`}>New version</LinkButton>
+                        {s.canDelete && <Button s="sm" variant="danger" aria-label={`Delete scenario ${s.name}`} data-testid={`scenario-delete-${s.id}`} onClick={() => { setDelErr(null); setDelScenario(s); }}>Delete</Button>}
                         <Button s="sm" variant="primary" disabled={busyId === s.id} onClick={async () => {
                           setBusyId(s.id);
                           try {
@@ -112,23 +119,32 @@ export function ProjectDetailClient({ project, scenarios, comparisons }: { proje
           </Card>
         </div>
       </div>
-      <details className="group rounded-[6px] border border-line bg-panel">
-        <summary className="cursor-pointer list-none px-5 py-3 text-[13px] text-muted hover:text-text">Danger zone <span className="text-xs">— delete this project</span></summary>
-        <form className="flex flex-wrap items-end gap-3 border-t border-line p-5" onSubmit={async (e) => {
-          e.preventDefault();
-          const confirmName = String(new FormData(e.currentTarget).get("confirmName") ?? "");
+      <ConfirmDialog open={!!delScenario} title="Delete this scenario?" confirmLabel="Delete scenario" busy={delBusy} error={delErr} onClose={() => !delBusy && setDelScenario(null)}
+        onConfirm={async () => {
+          if (!delScenario) return;
+          setDelBusy(true); setDelErr(null);
           try {
-            await api(`/api/v1/projects/${project.id}`, { method: "DELETE", body: { confirmName } });
+            await api(`/api/v1/scenarios/${delScenario.id}`, { method: "DELETE" });
+            setMsg({ tone: "ok", text: `Scenario “${delScenario.name}” deleted.` });
+            setDelScenario(null);
+            router.refresh();
+          } catch (e) { setDelErr((e as Error).message); } finally { setDelBusy(false); }
+        }}>
+        <p><strong className="text-text">{delScenario?.name}</strong> v{delScenario?.version} will be permanently deleted together with its {delScenario?.analyses.length ?? 0} analys{delScenario?.analyses.length === 1 ? "is" : "es"}, and any reports and share links made from them.</p>
+        <p>This cannot be undone. The audit record of the deletion is kept. Use “New version” instead if you only want to change the inputs.</p>
+      </ConfirmDialog>
+      <ConfirmDialog open={delProject} title="Delete this project?" confirmLabel="Delete project" requireText={project.name} busy={delBusy} error={delErr} onClose={() => !delBusy && setDelProject(false)}
+        onConfirm={async () => {
+          setDelBusy(true); setDelErr(null);
+          try {
+            await api(`/api/v1/projects/${project.id}`, { method: "DELETE", body: { confirmName: project.name } });
             router.push("/app/projects");
             router.refresh();
-          } catch (err) {
-            setMsg({ tone: "bad", text: (err as Error).message });
-          }
+          } catch (e) { setDelErr((e as Error).message); setDelBusy(false); }
         }}>
-          <div className="min-w-64 flex-1"><Field label={`Delete project — type “${project.name}” to confirm`} htmlFor="del-project" hint="Permanently deletes its scenarios, analyses, reports and share links. Audit records are kept."><Input id="del-project" name="confirmName" autoComplete="off" /></Field></div>
-          <Button type="submit" variant="danger">Delete project</Button>
-        </form>
-      </details>
+        <p><strong className="text-text">{project.name}</strong> and its {scenarios.length} scenario{scenarios.length === 1 ? "" : "s"}, all their analyses, reports and share links will be permanently deleted.</p>
+        <p>This cannot be undone. Prefer <strong>Archive</strong> if you may need it again. The audit record is kept.</p>
+      </ConfirmDialog>
     </div>
   );
 }

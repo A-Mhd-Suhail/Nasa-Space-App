@@ -3,6 +3,7 @@ import { Check, LogOut, Trash2, UserPlus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, CardHeader, cx, Field, Input, Notice, Select, StatusBadge } from "../ui";
+import { ConfirmDialog } from "../ConfirmDialog";
 import { api } from "./api";
 
 type W = { id: string; name: string; role: string; personal: boolean; members: number };
@@ -18,6 +19,9 @@ export function WorkspacesClient({ workspaces, currentId, me }: { workspaces: W[
   const [invitations, setInvitations] = useState<Inv[] | null>(null);
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; t: string } | null>(null);
   const [newName, setNewName] = useState("");
+  const [delOpen, setDelOpen] = useState(false);
+  const [delBusy, setDelBusy] = useState(false);
+  const [delErr, setDelErr] = useState<string | null>(null);
   const w = workspaces.find((x) => x.id === sel) ?? workspaces[0];
   const owner = w.role === "owner";
 
@@ -122,11 +126,25 @@ export function WorkspacesClient({ workspaces, currentId, me }: { workspaces: W[
             {w.personal && <p className="mt-4 text-sm text-muted">Personal field books cannot be shared. Create a shared workspace to collaborate.</p>}
           </div>
           {owner && !w.personal && (
-            <form className="flex flex-wrap items-end gap-3 border-t border-line bg-bad-soft/40 p-5" onSubmit={async (e) => { e.preventDefault(); const confirmName = String(new FormData(e.currentTarget).get("confirm")); await act(async () => { await api(`/api/v1/workspaces/${w.id}`, { method: "DELETE", body: { confirmName } }); setSel(currentId); }, "Workspace deleted."); }}>
-              <div className="min-w-60 flex-1"><Field label={`Delete workspace — type “${w.name}” to confirm`} htmlFor="wsdel" hint="Deletes its projects, scenarios, analyses, reports and saved locations."><Input id="wsdel" name="confirm" /></Field></div>
-              <Button type="submit" variant="danger"><Trash2 size={15} /> Delete workspace</Button>
-            </form>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bad-soft/40 p-5">
+              <p className="min-w-60 flex-1 text-sm text-text-2">Deleting a workspace permanently removes its projects, scenarios, analyses, reports, share links and saved locations for every member.</p>
+              <Button variant="danger" data-testid="workspace-delete" onClick={() => { setDelErr(null); setDelOpen(true); }}><Trash2 size={15} /> Delete workspace</Button>
+            </div>
           )}
+          <ConfirmDialog open={delOpen} title="Delete this workspace?" confirmLabel="Delete workspace" requireText={w.name} busy={delBusy} error={delErr} onClose={() => !delBusy && setDelOpen(false)}
+            onConfirm={async () => {
+              setDelBusy(true); setDelErr(null);
+              try {
+                await api(`/api/v1/workspaces/${w.id}`, { method: "DELETE", body: { confirmName: w.name } });
+                setDelOpen(false);
+                setSel(currentId === w.id ? workspaces.find((x) => x.personal)?.id ?? workspaces.find((x) => x.id !== w.id)?.id ?? currentId : currentId);
+                setMsg({ tone: "ok", t: `Workspace “${w.name}” deleted.` });
+                router.refresh();
+              } catch (e) { setDelErr((e as Error).message); } finally { setDelBusy(false); }
+            }}>
+            <p><strong className="text-text">{w.name}</strong> has {w.members} member{w.members === 1 ? "" : "s"}. Everything inside it will be permanently deleted for all of them.</p>
+            <p>This cannot be undone. It is refused while any analysis in it is still queued or running. The audit record is kept.</p>
+          </ConfirmDialog>
         </Card>
       </div>
     </div>

@@ -22,6 +22,5 @@ export const PATCH = route<Ctx>(async (req, { params }, requestId) => {
 export const DELETE = route<Ctx>(async (_req, { params }, requestId) => {
   const u = await requireApiUser();
   const { scenarioId } = await params;
-  await deleteScenario(u, scenarioId, requestId);
-  return json({ ok: true });
+  return json({ ok: true, removed: await deleteScenario(u, scenarioId, requestId) });
 });

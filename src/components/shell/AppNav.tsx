@@ -51,6 +51,7 @@ const ADMIN: Item[] = [
   { href: "/admin/ingestion", label: "Ingestion", icon: ListChecks, match: "^/admin/ingestion" },
   { href: "/admin/jobs", label: "Jobs", icon: ListChecks },
   { href: "/admin/users", label: "Users & roles", icon: Users },
+  { href: "/admin/workspaces", label: "Workspaces", icon: UsersRound },
   { href: "/admin/audit", label: "Audit log", icon: ShieldCheck },
 ];
 

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { assertWorkspaceAccess, audit, listWorkspaces, type SessionUser, type WsRole } from "./dal";
+import { impactOf, impactSummary, refuseIfBusy, removeStored } from "./deletion";
 import { ApiError, notFound } from "./http";
 
 export async function createWorkspace(u: SessionUser, name: string, requestId?: string) {
@@ -21,13 +22,35 @@ export async function renameWorkspace(u: SessionUser, id: string, name: string, 
   await audit({ actorUserId: u.id, action: "workspace.rename", objectType: "workspace", objectId: id, metadata: { name }, requestId });
 }
 
+async function purgeWorkspace(actor: SessionUser, w: typeof schema.workspaces.$inferSelect, via: "owner" | "admin", requestId?: string, reason?: string) {
+  if (w.personal) throw new ApiError(409, "personal_workspace", "A personal field book cannot be deleted (it goes with the account)");
+  const impact = await impactOf({ workspaceId: w.id });
+  refuseIfBusy(impact);
+  // Rows cascade (members, projects, scenarios, analyses, jobs, reports, share links, saved locations, plans, invitations).
+  await db().delete(schema.workspaces).where(eq(schema.workspaces.id, w.id));
+  const failed = await removeStored(impact.storageKeys);
+  const [members] = await db().select({ n: sql<number>`count(*)::int` }).from(schema.workspaceMembers).where(eq(schema.workspaceMembers.workspaceId, w.id));
+  await audit({ actorUserId: actor.id, action: via === "admin" ? "workspace.admin_delete" : "workspace.delete", objectType: "workspace", objectId: w.id, metadata: { name: w.name, ownerUserId: w.ownerUserId, via, ...(reason ? { reason } : {}), ...impactSummary(impact, failed), members: members?.n ?? 0 }, requestId });
+  return impactSummary(impact, failed);
+}
+
+/** Owner-only, typed-name confirmation. */
 export async function deleteWorkspace(u: SessionUser, id: string, confirmName: string, requestId?: string) {
   await assertWorkspaceAccess(u, id, "owner");
   const [w] = await db().select().from(schema.workspaces).where(eq(schema.workspaces.id, id)).limit(1);
+  if (!w) throw notFound("Workspace");
   if (w.personal) throw new ApiError(409, "personal_workspace", "Your personal field book cannot be deleted (delete the account instead)");
   if (confirmName.trim() !== w.name.trim()) throw new ApiError(422, "invalid_input", "Type the workspace name to confirm", [{ field: "confirmName", message: "Name does not match" }]);
-  await db().delete(schema.workspaces).where(eq(schema.workspaces.id, id));
-  await audit({ actorUserId: u.id, action: "workspace.delete", objectType: "workspace", objectId: id, metadata: { name: w.name }, requestId });
+  return purgeWorkspace(u, w, "owner", requestId);
+}
+
+/** Administrator path (the caller has passed requireApiRole("admin"), which enforces MFA). Needs the exact name and a reason. */
+export async function adminDeleteWorkspace(admin: SessionUser, id: string, confirmName: string, reason: string, requestId?: string) {
+  const [w] = await db().select().from(schema.workspaces).where(eq(schema.workspaces.id, id)).limit(1);
+  if (!w) throw notFound("Workspace");
+  if (w.personal) throw new ApiError(409, "personal_workspace", "Personal field books cannot be deleted from here; they belong to the account");
+  if (confirmName.trim() !== w.name.trim()) throw new ApiError(422, "invalid_input", "Type the workspace name to confirm", [{ field: "confirmName", message: "Name does not match" }]);
+  return purgeWorkspace(admin, w, "admin", requestId, reason);
 }
 
 export async function listMembers(u: SessionUser, id: string) {

@@ -46,6 +46,7 @@ Codes: `unauthorized` 401, `forbidden` / `mfa_required` / `forbidden_origin` 403
 | PATCH | `/api/v1/admin/products/{id}/status` | curator — `{status, reason}` with allowed transitions |
 | POST | `/api/v1/storage/presign-upload` | curator — requires the R2 storage driver; returns 501 on the deployed Supabase storage (direct uploads are disabled, see KNOWN_LIMITATIONS) |
 | PATCH | `/api/v1/admin/users/{id}/role` | admin — `{role, reason}` |
+| DELETE | `/api/v1/admin/workspaces/{id}` | admin + MFA — `{confirmName, reason}`; shared workspaces only; 409 while analyses run |
 | POST | `/api/v1/admin/jobs/{id}/retry` | admin |
 
 ## Internal (worker, bearer `SCIENCE_SERVICE_TOKEN`)

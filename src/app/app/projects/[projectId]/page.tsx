@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { ProjectDetailClient } from "@/components/workspace/ProjectDetailClient";
 import { requirePageUser } from "@/lib/dal";
@@ -15,12 +15,15 @@ export default async function ProjectPage({ params }: { params: Promise<{ projec
   const scs = await listScenarios(u, projectId);
   const cmps = await db().select().from(schema.comparisons).where(eq(schema.comparisons.workspaceId, p.workspaceId)).orderBy(desc(schema.comparisons.createdAt)).limit(20);
   const ids = new Set(scs.flatMap((s) => s.analyses.map((a) => a.id)));
+  const [mem] = await db().select({ role: schema.workspaceMembers.role }).from(schema.workspaceMembers).where(and(eq(schema.workspaceMembers.workspaceId, p.workspaceId), eq(schema.workspaceMembers.userId, u.id))).limit(1);
+  const mayDelete = (createdBy: string | null) => mem?.role === "owner" || (mem?.role === "editor" && createdBy === u.id);
   const related = cmps.filter((c) => c.analysisIds.some((id) => ids.has(id)));
   return (
     <ProjectDetailClient
+      canDeleteProject={mayDelete(p.createdBy)}
       project={{ id: p.id, name: p.name, description: p.description, notes: p.notes, status: p.status, createdAt: p.createdAt.toISOString() }}
       scenarios={scs.map((s) => ({
-        id: s.id, name: s.name, version: s.version, lat: s.latitudeDeg, lon: s.longitudeEastDeg, siteId: s.siteId, start: s.startUtc.toISOString(), end: s.endUtc.toISOString(), step: s.stepSeconds,
+        id: s.id, name: s.name, version: s.version, lat: s.latitudeDeg, lon: s.longitudeEastDeg, siteId: s.siteId, start: s.startUtc.toISOString(), end: s.endUtc.toISOString(), step: s.stepSeconds, canDelete: mayDelete(s.createdBy),
         analyses: s.analyses.map((a) => ({ id: a.id, status: a.status, quality: a.quality, createdAt: a.createdAt.toISOString() })),
       }))}
       comparisons={related.map((c) => ({ id: c.id, n: c.analysisIds.length, createdAt: c.createdAt.toISOString(), ids: c.analysisIds }))}

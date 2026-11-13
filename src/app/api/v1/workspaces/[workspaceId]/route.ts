@@ -17,6 +17,5 @@ export const DELETE = route<Ctx>(async (req, { params }, requestId) => {
   const u = await requireApiUser();
   const { workspaceId } = await params;
   const { confirmName } = z.object({ confirmName: z.string() }).parse(await readJson(req));
-  await deleteWorkspace(u, workspaceId, confirmName, requestId);
-  return json({ ok: true });
+  return json({ ok: true, removed: await deleteWorkspace(u, workspaceId, confirmName, requestId) });
 });

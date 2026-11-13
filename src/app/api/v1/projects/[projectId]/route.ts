@@ -23,6 +23,5 @@ export const DELETE = route<Ctx>(async (req, { params }, requestId) => {
   const u = await requireApiUser();
   const { projectId } = await params;
   const { confirmName } = z.object({ confirmName: z.string() }).parse(await readJson(req));
-  await deleteProject(u, projectId, confirmName, requestId);
-  return json({ ok: true });
+  return json({ ok: true, removed: await deleteProject(u, projectId, confirmName, requestId) });
 });
