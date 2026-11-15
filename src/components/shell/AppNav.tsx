@@ -1,7 +1,7 @@
 "use client";
 import {
   BookOpen, ChartSpline, Crosshair, Database, FileText, FolderKanban, Gauge, GitCompareArrows, Globe2, LayoutDashboard, ListChecks, Map, Menu,
-  Mountain, PanelLeftClose, PanelLeftOpen, Plus, ScrollText, ShieldCheck, Sun, Users, UsersRound, X,
+  Mountain, PanelLeftClose, PanelLeftOpen, Plus, ScrollText, ShieldCheck, Sun, TriangleAlert, Users, UsersRound, X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
@@ -32,6 +32,7 @@ const GROUPS: Group[] = [
       { href: "/app/analysis/sun", label: "Sun & Power", icon: Sun },
       { href: "/app/analysis/earth", label: "Earth & DTE", icon: Globe2 },
       { href: "/app/planner", label: "Mission Planner", icon: Crosshair },
+      { href: "/app/contingency", label: "Emergency Simulator", icon: TriangleAlert },
       { href: "/app/compare", label: "Compare", icon: GitCompareArrows },
       { href: "/app/reports", label: "Reports", icon: FileText },
     ],

@@ -50,7 +50,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 
 type TexState = { tex: THREE.CanvasTexture | null; loaded: number; total: number; failed: number };
 
-function useMoonTexture(): TexState {
+export function useMoonTexture(): TexState {
   const [s, setS] = useState<TexState>({ tex: null, loaded: 0, total: 36, failed: 0 });
   useEffect(() => {
     let live = true;

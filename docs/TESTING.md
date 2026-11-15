@@ -12,7 +12,7 @@
 - Run it from a normal terminal (not a sandboxed tool shell): see the Firefox finding below.
 
 ### Results
-Latest complete run after the deletion work: **282 passed, 0 failed** (94 per browser, incl. the 6 `deletion.spec.ts` tests). Previous: (2026-11-13, method 1.1.0, includes the new solar-surface and invitation tests), all specs, one stack: **264 passed, 0 failed, 0 skipped** in 19.9 min, 88 per browser (Chromium, Firefox, WebKit). Vitest 62, science pytest 129, ruff and mypy clean.
+Latest complete run after the Mission Emergency Simulator (2026-11-16): **330 passed, 0 failed** (110 per browser: Chromium, Firefox, WebKit; includes the 16 `contingency.spec.ts` tests per browser). Two small contingency-only changes followed it (orbit-view Moon material, source-route rate limit); `contingency.spec.ts` was re-run afterwards: 48/48. Vitest 119 (57 new in `contingency.test.ts`), science pytest 129. Earlier: latest complete run after the deletion work: **282 passed, 0 failed** (94 per browser, incl. the 6 `deletion.spec.ts` tests). Previous: (2026-11-13, method 1.1.0, includes the new solar-surface and invitation tests), all specs, one stack: **264 passed, 0 failed, 0 skipped** in 19.9 min, 88 per browser (Chromium, Firefox, WebKit). Vitest 62, science pytest 129, ruff and mypy clean.
 
 Previous run (before method 1.1.0): **249 passed, 0 failed, 0 skipped, 0 flaky** in 19.8 min. Per browser: **chromium 83/83**, **webkit 83/83**, **firefox 83/83** (the same 83 tests in each engine; no test is skipped or engine-specific).
 Specs (tests per browser): `auth-fixes` 4, `demo` 5, `features` 6, `planner` 8, `public` 21, `reliability` 4, `security` 7, `signup-duplicates` 8, `verification` 7, `visual` 3, `workspace` 10.

@@ -379,6 +379,9 @@ and troubleshooting, see
 
 ------------------------------------------------------------------------
 
+## Mission Emergency Simulator
+`/app/contingency` (sidebar: Analyse → Emergency Simulator) is a 3D decision-support simulation of lunar-landing contingencies: communication blackout and a simulated relay orbiter (terrain-aware geometric visibility, kept separate from RF), trajectory deviation, emergency maneuvers within real propulsion limits (including `RECOVERY NOT FEASIBLE`), and alternative landing sites with mandatory pass/fail/unknown checks. It uses MoonNav's SPICE, LOLA and live Horizons pipeline and is labelled **SIMULATED MISSION — NOT LIVE SPACECRAFT CONTROL**. See `MISSION_CONTINGENCY_SIMULATOR.md`, `DATA_SOURCE_PROVENANCE.md`, `MISSION_SIMULATION_VALIDATION.md`.
+
 ## Documentation
 
 The repository includes additional technical and scientific

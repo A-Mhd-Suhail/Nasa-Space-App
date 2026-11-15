@@ -40,6 +40,12 @@ Codes: `unauthorized` 401, `forbidden` / `mfa_required` / `forbidden_origin` 403
 | GET/PATCH/DELETE | `/api/v1/me` | profile, onboarding, account deletion (`{confirm:"DELETE"}`) |
 | GET | `/api/v1/me/export` | personal data export |
 
+## Mission Emergency Simulator (`/app/contingency`)
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/api/v1/contingency/environment` | signed in, 30/min — `{latitudeDeg, longitudeEastDeg, utc, candidateRadiusM?}`: SPICE Sun/Earth, LOLA horizon, live JPL Horizons cross-check (best effort), terrain grid and candidate landing zones with long-term illumination |
+| GET | `/api/v1/contingency/sources` | public, cached 30 min (refreshes limited to 6/min per client) — live provenance checks for QuickMap, NASA Moon Trek, JPL Horizons and the CSA page |
+
 ## Curator / admin (MFA required)
 | Method | Path | Role |
 |---|---|---|

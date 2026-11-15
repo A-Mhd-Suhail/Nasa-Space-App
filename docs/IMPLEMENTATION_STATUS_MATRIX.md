@@ -50,6 +50,7 @@ One row per shipped requirement, with the surface that implements it and the ver
 | `/admin/ingestion` ingestion dashboard (discovered → validated stage log) | PASS | `/admin/ingestion` page; `IngestionClient.tsx`; `GET /api/v1/admin/ingestion` |
 | `/admin/jobs` job monitor, logs, retry (admin), cancel | PASS | `jobs` routes; admin tests |
 | `/admin/users` role management (admin, audited) | PASS | `security.spec.ts:76` |
+| Mission Emergency Simulator `/app/contingency` (blackout + relay geometry, deviation, recovery feasibility, alternative sites, real data + provenance) | PASS | `contingency.test.ts`, `contingency.spec.ts` |
 | Delete scenario / project / workspace with confirmation dialogs, role rules, running-job guard, audit; admin workspace deletion at `/admin/workspaces` | PASS | `deletion.spec.ts` |
 | `/admin/audit` append-only audit (DB trigger) | PASS | `security.spec.ts:76`; `workspace.spec.ts:196` |
 

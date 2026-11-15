@@ -53,3 +53,9 @@ What this build cannot claim (also printed in every PDF report and on `/limitati
 - Deletion is permanent (rows are removed and their stored result/report files are deleted best-effort); there is no recycle bin. Archive a project instead if it may be needed again. Audit records are kept.
 - Account deletion removes the personal field book with the account; a personal workspace cannot be deleted on its own, not even by an administrator.
 - If a stored file cannot be removed, the row is still deleted and the audit record's `filesNotRemoved` count says how many files remain in storage.
+
+## Mission Emergency Simulator
+- Educational decision support only: the vehicle model (point mass, uniform gravity, no attitude or sensor dynamics), its default mass/thrust/Isp values and the relay orbit (circular, hypothetical) are illustrative. No real spacecraft, Gateway or Lunar Reconnaissance Orbiter relay data is used or implied.
+- Terrain-aware visibility uses the LOLA horizon computed at the landing target, corrected for the lander's altitude but not for its lateral offset; candidate-zone terrain is at most 240 m (often 20 m) posting resampled to 60 m cells and does not resolve boulders.
+- A geometric relay or Earth window does not prove a working radio link; the optional RF margin is free-space arithmetic from user-supplied values only.
+- QuickMap and the Canadian Space Agency portal are reference links only (no documented programmatic data interface was used).
