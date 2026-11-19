@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# ============================================================================
+# DEPENDENCIES & PACKAGE MANAGERS
+# ============================================================================
+/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,68 +11,142 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
 
-# testing
-/coverage
-
-# next.js
+# ============================================================================
+# BUILD & OUTPUT DIRECTORIES
+# ============================================================================
 /.next/
 /out/
+/build/
+/dist/
+/.vercel/
+.vercel
 
-# production
-/build
+# ============================================================================
+# NEXT.JS SPECIFIC
+# ============================================================================
+.next/
+next-env.d.ts
+*.tsbuildinfo
 
-# misc
-.DS_Store
-*.pem
+# ============================================================================
+# TESTING & COVERAGE
+# ============================================================================
+/coverage/
+/test-results/
+/.nyc_output/
+/playwright-report/
+/playwright/.cache/
 
-# debug
+# ============================================================================
+# ENVIRONMENT VARIABLES (SECRETS)
+# ============================================================================
+# Never commit .env files (keep .env.example only)
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+!.env.example
+.env.local.backup
+.env*.local
+
+# ============================================================================
+# LOGS
+# ============================================================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
+*.log
+npm-*.log
 
-# env files (can opt-in for committing if needed)
-.env*
+# ============================================================================
+# SYSTEM & EDITOR FILES
+# ============================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
 
-# vercel
-.vercel
+# ============================================================================
+# SECURITY & CREDENTIALS
+# ============================================================================
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+service-account*.json
+credentials.json
+*-credentials.json
+secrets/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ============================================================================
+# IDE & TOOL CACHES
+# ============================================================================
+.claude/settings.local.json
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.turbo/
+.eslintcache
+.stylelintcache
+tsconfig.tsbuildinfo
 
-# MoonNav local data (downloaded sources, local db, objects, outbox)
+# ============================================================================
+# PYTHON & SCIENCE TOOLING
+# ============================================================================
+/science/.venv/
+/science/venv/
+/science/__pycache__/
+/science/.pytest_cache/
+/science/.ruff_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+
+# ============================================================================
+# LOCAL DATA & DATABASES
+# ============================================================================
+# All local data (downloaded NASA products, high-res tile cache, local Postgres, objects, outbox)
+/data/
 /data/raw/
 /data/pg/
 /data/objects/
 /data/outbox/
-/data/*.log
-/science/.venv/
-__pycache__/
-/test-results/
-/playwright-report/
-.env*.local
-!.env.example
 /data/logs/
 /data/qa/
+/data/*.log
 /backups/
 
-# Claude Code per-machine settings
-.claude/settings.local.json
-
-# All local data (downloaded NASA products, high-res tile cache, local Postgres, objects, outbox)
-/data/
-# Tool caches and scratch files
-/science/.pytest_cache/
-/science/.ruff_cache/
-.ruff_cache/
-.mypy_cache/
+# ============================================================================
+# BUILD & SCRATCH FILES
+# ============================================================================
 *.tmp.mjs
-# Secrets: never commit (keep .env.example only)
-*.key
-*.p12
-service-account*.json
+*.tmp.js
+.cache/
 
-# Vercel science build output (runtime NASA data)
-/science/data/
+# ============================================================================
+# WORKSPACE & TOOL FILES
+# ============================================================================
+.impeccable/questions/
+.impeccable/
